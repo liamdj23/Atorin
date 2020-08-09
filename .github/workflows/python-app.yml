@@ -22,12 +22,11 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
-        sudo apt install screen
         python -m pip install --upgrade pip distest
         make
     - name: Run bot
       run: |
-        screen venv/bin/python src/main.py TOKEN=${{ secrets.DISCORD_TOKEN }}
+        venv/bin/python src/main.py TOKEN=${{ secrets.DISCORD_TOKEN }}
     - name: Test commands
       run: |
         python tests/test_commands.py TARGET=${{ secrets.BOT_ID }} TESTER=${{ secrets.TESTER_TOKEN }}
