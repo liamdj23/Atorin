@@ -35,11 +35,9 @@ jobs:
       run: |
         pip install --user --upgrade setuptools wheel
         python setup.py sdist bdist_wheel
-        ls dist/
-        sleep 5
-    - name: Upload to Github Releases
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: dist/*
-        tag: ${{ github.ref }}
+    - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Atorin
+          path: |
+            dist
