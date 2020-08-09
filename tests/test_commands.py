@@ -1,5 +1,5 @@
 import distest
-import os
+import sys
 
 test_collector = distest.TestCollector()
 
@@ -10,12 +10,4 @@ async def test_ping(interface):
 
 
 if __name__ == '__main__':
-    distest.run_command_line_bot(
-        os.environ["TARGET"],
-        os.environ["TESTER"],
-        "all",
-        615868692818952193,
-        True,
-        test_collector,
-        10
-    )
+    distest.run_dtest_bot(sys.argv, test_collector)

@@ -31,7 +31,7 @@ jobs:
         sleep 5
     - name: Test commands
       run: |
-        TARGET=${{ secrets.BOT_ID }} TESTER=${{ secrets.TESTER_TOKEN }} python tests/test_commands.py
+        python tests/test_commands.py -c ${{ secrets.CHANNEL_ID }} -r all ${{ secrets.BOT_ID }} ${{ secrets.TESTER_TOKEN }}
     - name: Create package
       run: |
         pip install --user --upgrade setuptools wheel
