@@ -28,4 +28,4 @@ if __name__ == '__main__':
         await bot.invoke(ctx)
 
 
-    bot.run(os.environ["DISCORD_TOKEN"])
+    bot.run(os.environ["TOKEN"])
