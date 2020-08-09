@@ -31,13 +31,3 @@ jobs:
       run: |
         sleep 5
         python tests/test_commands.py -c ${{ secrets.CHANNEL_ID }} -r all ${{ secrets.BOT_ID }} ${{ secrets.TESTER_TOKEN }}
-    - name: Create package
-      run: |
-        pip install --user --upgrade setuptools wheel
-        python setup.py sdist bdist_wheel
-    - name: Archive production artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: Atorin
-          path: |
-            dist
