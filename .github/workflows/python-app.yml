@@ -27,10 +27,10 @@ jobs:
         pip install -r requirements.txt
     - name: Run bot
       run: |
-        python src/main.py TOKEN=${{ secrets.DISCORD_TOKEN }}
+        TOKEN=${{ secrets.DISCORD_TOKEN }} python src/main.py
     - name: Test commands
       run: |
-        python tests/test_commands.py TARGET=${{ secrets.BOT_ID }} TESTER=${{ secrets.TESTER_TOKEN }}
+        TARGET=${{ secrets.BOT_ID }} TESTER=${{ secrets.TESTER_TOKEN }} python tests/test_commands.py
     - name: Create package
       run: |
         pip install --user --upgrade setuptools wheel
