@@ -22,11 +22,15 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
+        sudo apt install screen
+        python -m pip install --upgrade pip distest
         make
-    - name: Test with pytest
+    - name: Run bot
       run: |
-        pytest
+        screen venv/bin/python src/main.py TOKEN=${{ secrets.DISCORD_TOKEN }}
+    - name: Test commands
+      run: |
+        python tests/test_commands.py TARGET=${{ secrets.BOT_ID }} TESTER=${{ secrets.TESTER_TOKEN }}
     - name: Create package
       run: |
         pip install --user --upgrade setuptools wheel
