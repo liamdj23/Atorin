@@ -22,11 +22,14 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
+        make dependencies
+        make config
         python -m pip install --upgrade pip distest
         pip install -r requirements.txt
     - name: Run bot
       run: |
-        TOKEN=${{ secrets.DISCORD_TOKEN }} nohup python src/main.py &
+        sed -i 's/DISCORD_TOKEN/${{ secrets.DISCORD_TOKEN }}/g' settings/main.json
+        nohup python src/main.py &
     - name: Test commands
       run: |
         sleep 5

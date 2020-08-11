@@ -1,11 +1,13 @@
 import discord
 from discord.ext import commands
 import os
+from settings import Settings
 
 
 class Atorin(commands.Bot):
     def __init__(self, **kwargs):
         super(Atorin, self).__init__(command_prefix="&", **kwargs)
+        self.settings = Settings()
 
 
 if __name__ == '__main__':
@@ -28,4 +30,4 @@ if __name__ == '__main__':
         await bot.invoke(ctx)
 
 
-    bot.run(os.environ["TOKEN"])
+    bot.run(bot.settings.main.token)
