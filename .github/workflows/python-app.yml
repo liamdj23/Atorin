@@ -28,8 +28,9 @@ jobs:
         pip install -r requirements.txt
     - name: Run bot
       run: |
+        cd src
         sed -i 's/DISCORD_TOKEN/${{ secrets.DISCORD_TOKEN }}/g' settings/main.json
-        cd src/ && nohup python main.py &
+        nohup python main.py &
     - name: Test commands
       run: |
         sleep 5

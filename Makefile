@@ -4,7 +4,7 @@ dependencies:
 	sudo apt update
 	sudo apt install -y mongodb-org
 config:
-	cd settings && python3 __init__.py
+	cd src/settings && python3 __init__.py
 python-dependencies:
 	python3 -m pip install --user virtualenv
 virtual: .venv/bin/pip
