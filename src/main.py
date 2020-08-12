@@ -30,4 +30,4 @@ if __name__ == '__main__':
         await bot.invoke(ctx)
 
 
-    bot.run(bot.settings.main.token)
+    bot.run(bot.settings.main["token"])
