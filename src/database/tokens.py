@@ -1,6 +1,7 @@
 from mongoengine import *
 
 
-class Server(document):
+class Token(Document):
     name = StringField(required=True)
+    key = StringField(required=True)
 

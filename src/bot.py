@@ -1,17 +1,13 @@
 import mongoengine
 from discord.ext import commands
-import logging
 
 from cogs.fun import Fun
 from cogs.ping import Ping
 from settings import Settings
 
-logger = logging.getLogger(__name__)
-log_formatter = logging.Formatter('%(asctime)s [%(filename)s|%(funcName)s] -%(levelname)s- :: %(message)s ')
-err_handler = logging.StreamHandler()
-err_handler.setLevel(logging.ERROR)
-err_handler.setFormatter(log_formatter)
-logger.addHandler(err_handler)
+from logger import logger
+
+from dashboard.server import Dashboard
 
 
 class Atorin(commands.Bot):
@@ -20,6 +16,7 @@ class Atorin(commands.Bot):
         self.settings = Settings()
         self.mongo = mongoengine.connect('atorin')
         self.log = logger
+        self.web = Dashboard()
         self.add_cog(Ping(self))
         self.add_cog(Fun(self))
 
@@ -28,5 +25,13 @@ class Atorin(commands.Bot):
             ctx = await self.get_context(message)
             await self.invoke(ctx)
 
-    def run(self, *args, **kwargs):
-        super(Atorin, self).run(self.settings.main["token"])
+        @self.event
+        async def on_connect():
+            self.log.info("Successfully connected to Discord API.")
+
+        @self.event
+        async def on_ready():
+            self.log.info("Atorin is ready.")
+
+    async def run(self, *args, **kwargs):
+        await super(Atorin, self).start(self.settings.main["token"])

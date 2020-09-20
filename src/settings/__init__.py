@@ -1,7 +1,8 @@
 import json
 
 main_file = {
-    "token": "DISCORD_TOKEN"
+    "token": "DISCORD_TOKEN",
+    "log_level": "INFO"
 }
 
 
