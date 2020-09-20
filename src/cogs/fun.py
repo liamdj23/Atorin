@@ -3,6 +3,7 @@ import aiohttp
 from random import randrange
 from io import BytesIO
 import discord
+from pyfiglet import Figlet
 
 
 class Fun(commands.Cog):
@@ -85,3 +86,15 @@ class Fun(commands.Cog):
         if isinstance(error, commands.CommandError):
             await ctx.send("Nie udało się uzyskać obrazka. Spróbuj ponownie za chwilę.")
         self.bot.log.error(error)
+
+    @commands.command(brief="Tworzy figlet", description="Wpisz aby otrzymać napis stworzony z mniejszych znaków.")
+    async def figlet(self, ctx, *, text):
+        if not text:
+            raise commands.MissingRequiredArgument
+        f = Figlet()
+        await ctx.send(f"```{f.renderText(text)}```")
+
+    @figlet.error
+    async def figlet_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: `&figlet <tekst>`")

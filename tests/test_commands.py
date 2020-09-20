@@ -41,5 +41,15 @@ async def test_cat(interface):
 async def test_fox(interface):
     await interface.assert_reply_has_image("&fox")
 
+
+@test_collector()
+async def test_figlet_no_argument(interface):
+    await interface.assert_reply_contains("&figlet", "❌ Poprawne użycie: `&figlet <tekst>`")
+
+
+@test_collector()
+async def test_figlet(interface):
+    await interface.assert_reply_contains("&figlet test", "```")
+
 if __name__ == '__main__':
     distest.run_dtest_bot(sys.argv, test_collector)
