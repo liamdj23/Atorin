@@ -98,3 +98,21 @@ class Fun(commands.Cog):
     async def figlet_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Poprawne użycie: `&figlet <tekst>`")
+
+    @commands.command(aliases=["wtc"],
+                      brief="Wysyła losowy commit z whatthecommit.com",
+                      description="Jeśli nie masz pomysłu na tytuł commita, skorzystaj z tej komendy")
+    async def commit(self, ctx):
+        async with aiohttp.ClientSession() as session:
+            async with session.get("http://whatthecommit.com/index.txt") as r:
+                if r.status == 200:
+                    text = await r.text()
+                    await ctx.send("git commit -m '{0}'".format(text.replace("\n", "")))
+                else:
+                    raise commands.CommandError
+
+    @commit.error
+    async def commit_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send("Nie udało się uzyskać commita. Spróbuj ponownie za chwilę.")
+        self.bot.log.error(error)

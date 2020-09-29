@@ -51,5 +51,10 @@ async def test_figlet_no_argument(interface):
 async def test_figlet(interface):
     await interface.assert_reply_contains("&figlet test", "```")
 
+
+@test_collector()
+async def test_commit(interface):
+    await interface.assert_reply_contains("&commit", "git commit -m")
+
 if __name__ == '__main__':
     distest.run_dtest_bot(sys.argv, test_collector)
