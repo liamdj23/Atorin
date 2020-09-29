@@ -4,6 +4,7 @@ from random import randrange
 from io import BytesIO
 import discord
 from pyfiglet import Figlet
+import unicodedata
 
 
 class Fun(commands.Cog):
@@ -115,4 +116,33 @@ class Fun(commands.Cog):
     async def commit_error(self, ctx, error):
         if isinstance(error, commands.CommandError):
             await ctx.send("Nie udało się uzyskać commita. Spróbuj ponownie za chwilę.")
+        self.bot.log.error(error)
+
+    @commands.command(usage="tekst",
+                      brief="Generuje osiągniecie z Minecrafta",
+                      description="Stwórz osiągniecie z własnym tekstem",
+                      aliases=["achieve", "osiągniecie"])
+    async def achievement(self, ctx, *, text):
+        if len(text) > 25:
+            raise commands.BadArgument
+        text = unicodedata.normalize('NFKD', text).replace("ł", "l").replace("Ł", "L").encode('ASCII', 'ignore').decode("UTF-8")
+        async with aiohttp.ClientSession() as session:
+            async with session.post("https://mcgen.herokuapp.com/a.php?t={0}&h=Osiagniecie%20zdobyte!&i={1}"
+                                    .format(text, randrange(39))) as r:
+                if r.status == 200:
+                    image = await r.content.read()
+                    await ctx.send(file=discord.File(BytesIO(image), filename="achievement.png"))
+                else:
+                    raise commands.CommandError
+
+    @achievement.error
+    async def achievement_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: `&achievement <tekst>`")
+            return
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Zbyt duża ilość znaków, limit to 25 znaków.")
+            return
+        if isinstance(error, commands.CommandError):
+            await ctx.send("Nie udało się wygenerować obrazka. Spróbuj ponownie za chwilę.")
         self.bot.log.error(error)

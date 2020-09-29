@@ -56,5 +56,21 @@ async def test_figlet(interface):
 async def test_commit(interface):
     await interface.assert_reply_contains("&commit", "git commit -m")
 
+
+@test_collector()
+async def test_achievement_no_argument(interface):
+    await interface.assert_reply_contains("&achievement", "❌ Poprawne użycie: `&achievement <tekst>`")
+
+
+@test_collector()
+async def test_achievement_bad_argument(interface):
+    random_text = ''.join(random.choices(string.ascii_letters, k=26))
+    await interface.assert_reply_contains("&achievement " + random_text, "❌ Zbyt duża ilość znaków, limit to 25 znaków.")
+
+
+@test_collector()
+async def test_achievement(interface):
+    await interface.assert_reply_has_image("&achievement test")
+
 if __name__ == '__main__':
     distest.run_dtest_bot(sys.argv, test_collector)
