@@ -1,4 +1,5 @@
 import mongoengine
+from influxdb import InfluxDBClient
 from discord.ext import commands
 
 from cogs.fun import Fun
@@ -6,6 +7,7 @@ from cogs.ping import Ping
 from settings import Settings
 
 from logger import logger
+from database import stats
 
 from dashboard.server import Dashboard
 
@@ -15,7 +17,9 @@ class Atorin(commands.Bot):
         super(Atorin, self).__init__(command_prefix="&", **kwargs)
         self.settings = Settings()
         self.mongo = mongoengine.connect('atorin')
+        self.influx = InfluxDBClient(database="atorin")
         self.log = logger
+        self.stats = stats
         self.web = Dashboard()
         self.add_cog(Ping(self))
         self.add_cog(Fun(self))
@@ -23,6 +27,11 @@ class Atorin(commands.Bot):
         @self.event
         async def on_message(message):
             ctx = await self.get_context(message)
+            if ctx.author.bot and ctx.author.id == 742076835549937805:
+                pass
+            elif ctx.author.bot:
+                return
+            self.stats.commands_usage(ctx.author.id, ctx.guild.id, ctx.command.name)
             await self.invoke(ctx)
 
         @self.event
