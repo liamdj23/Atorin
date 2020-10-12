@@ -18,6 +18,8 @@ class Atorin(commands.Bot):
         self.settings = Settings()
         self.mongo = mongoengine.connect('atorin')
         self.influx = InfluxDBClient(database="atorin")
+        self.influx.create_database("atorin")
+        self.influx.switch_database("atorin")
         self.log = logger
         self.stats = Stats(self.influx)
         self.web = Dashboard()
