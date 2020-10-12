@@ -7,7 +7,7 @@ from cogs.ping import Ping
 from settings import Settings
 
 from logger import logger
-from database import stats
+from database.stats import Stats
 
 from dashboard.server import Dashboard
 
@@ -19,7 +19,7 @@ class Atorin(commands.Bot):
         self.mongo = mongoengine.connect('atorin')
         self.influx = InfluxDBClient(database="atorin")
         self.log = logger
-        self.stats = stats
+        self.stats = Stats(self.influx)
         self.web = Dashboard()
         self.add_cog(Ping(self))
         self.add_cog(Fun(self))
