@@ -4,6 +4,7 @@ from discord.ext import commands
 
 from cogs.fun import Fun
 from cogs.ping import Ping
+from cogs.admin import Admin
 from settings import Settings
 
 from logger import logger
@@ -25,6 +26,7 @@ class Atorin(commands.Bot):
         self.web = Dashboard()
         self.add_cog(Ping(self))
         self.add_cog(Fun(self))
+        self.add_cog(Admin(self))
 
         @self.event
         async def on_message(message):
