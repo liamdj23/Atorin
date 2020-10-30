@@ -9,6 +9,7 @@ class Admin(commands.Cog):
     @commands.command()
     @commands.has_guild_permissions(kick_members=True)
     @commands.bot_has_guild_permissions(kick_members=True)
+    @commands.guild_only()
     async def kick(self, ctx, member: discord.Member):
         await ctx.guild.kick(member)
         await ctx.send(f"🦶 {member.mention} został wyrzucony przez {ctx.author.mention}")
@@ -30,6 +31,7 @@ class Admin(commands.Cog):
     @commands.command()
     @commands.has_guild_permissions(ban_members=True)
     @commands.bot_has_guild_permissions(ban_members=True)
+    @commands.guild_only()
     async def ban(self, ctx, member: discord.Member, *, reason: str = None):
         await ctx.guild.ban(member, reason=reason, delete_message_days=0)
         await ctx.send(f"⛔ **{str(member)}** został zbanowany przez **{str(ctx.author)}**")
@@ -51,6 +53,7 @@ class Admin(commands.Cog):
     @commands.command()
     @commands.has_guild_permissions(ban_members=True)
     @commands.bot_has_guild_permissions(ban_members=True)
+    @commands.guild_only()
     async def unban(self, ctx, *, member: str):
         ban_list = await ctx.guild.bans()
         for ban in ban_list:
@@ -72,4 +75,26 @@ class Admin(commands.Cog):
             await ctx.send("❌ Nie znaleziono użytkownika na liście zbanowanych.")
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Poprawne użycie: &unban <użytkownik>")
+        self.bot.log.error(error)
+
+    @commands.command(aliases=["delmsg"])
+    @commands.has_guild_permissions(manage_messages=True)
+    @commands.bot_has_guild_permissions(manage_messages=True)
+    @commands.guild_only()
+    async def clear(self, ctx, count: int):
+        messages = await ctx.channel.purge(limit=count)
+        await ctx.send(f"🗑 Usunięto **{len(messages)}** wiadomości ✅")
+
+    @clear.error
+    async def clear_error(self, ctx, error):
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send("❌ Nie masz uprawnień do zarządzania wiadomościami.")
+        if isinstance(error, commands.BotMissingPermissions):
+            await ctx.send("❌ Bot nie ma uprawnień do zarządzania wiadomościami.")
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.send("❌ Tę komendę możesz użyć tylko na serwerze.")
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Poprawne użycie: &clear <1-100>")
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: &clear <1-100>")
         self.bot.log.error(error)
