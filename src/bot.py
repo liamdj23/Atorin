@@ -1,10 +1,13 @@
 import mongoengine
 from influxdb import InfluxDBClient
 from discord.ext import commands
+import discord
+from datetime import datetime
 
 from cogs.fun import Fun
 from cogs.ping import Ping
 from cogs.admin import Admin
+from cogs.info import Info
 from settings import Settings
 
 from logger import logger
@@ -27,6 +30,7 @@ class Atorin(commands.Bot):
         self.add_cog(Ping(self))
         self.add_cog(Fun(self))
         self.add_cog(Admin(self))
+        self.add_cog(Info(self))
 
         @self.event
         async def on_message(message):
@@ -46,5 +50,13 @@ class Atorin(commands.Bot):
         async def on_ready():
             self.log.info("Atorin is ready.")
 
+    async def embed(self):
+        embed = discord.Embed()
+        embed.timestamp = datetime.now()
+        embed.set_footer(text="Atorin", icon_url=str(self.user.avatar_url))
+        embed.colour = discord.Colour(0xc4c3eb)
+        return embed
+
     async def run(self, *args, **kwargs):
         await super(Atorin, self).start(self.settings.main["token"])
+

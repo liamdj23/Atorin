@@ -106,5 +106,10 @@ async def test_unban_bad_argument(interface):
     await interface.assert_reply_contains("&unban " + random_text, "❌ Nie znaleziono użytkownika na liście zbanowanych.")
 
 
+@test_collector()
+async def test_avatar(interface):
+    await interface.assert_reply_has_image("&avatar AtorinBotTest")
+
+
 if __name__ == '__main__':
     distest.run_dtest_bot(sys.argv, test_collector)
