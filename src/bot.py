@@ -41,8 +41,9 @@ class Atorin(commands.Bot):
                 pass
             elif ctx.author.bot:
                 return
-            self.stats.commands_usage(ctx.author.id, ctx.guild.id, ctx.command.name)
-            await self.invoke(ctx)
+            if ctx.command:
+                await self.invoke(ctx)
+                self.stats.commands_usage(ctx.author.id, ctx.guild.id, ctx.command.name)
 
         @self.event
         async def on_connect():

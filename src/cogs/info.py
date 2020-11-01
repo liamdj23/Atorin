@@ -21,3 +21,7 @@ class Info(commands.Cog):
         if isinstance(error, discord.HTTPException):
             await ctx.send("❌ Wystąpił błąd przy pobieraniu avatara, spróbuj ponownie.")
         self.bot.log.error(error)
+
+    @commands.command()
+    async def invite(self, ctx):
+        await ctx.send("🔹 Dodaj Atorina na swój serwer, korzystając z tego linku:\n <https://liamdj23.ovh/addbot>")
