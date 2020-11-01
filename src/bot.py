@@ -18,7 +18,9 @@ from dashboard.server import Dashboard
 
 class Atorin(commands.Bot):
     def __init__(self, **kwargs):
-        super(Atorin, self).__init__(command_prefix="&", **kwargs)
+        intents = discord.Intents.default()
+        intents.members = True
+        super(Atorin, self).__init__(command_prefix="&", intents=intents, **kwargs)
         self.settings = Settings()
         self.mongo = mongoengine.connect('atorin')
         self.influx = InfluxDBClient(database="atorin")
