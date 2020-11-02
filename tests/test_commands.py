@@ -56,7 +56,7 @@ async def test_minecraft_server(interface):
         title="Status serwera Minecraft: mojemc.pl",
         color=0xc4c3eb)
     )
-    await interface.assert_reply_embed_equals("&mc srv mojemc.pl", embed)
+    await interface.assert_reply_embed_equals("&mc srv mojemc.pl", embed, attributes_to_check=["title", "color"])
 
 
 if __name__ == '__main__':
