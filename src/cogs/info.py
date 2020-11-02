@@ -25,3 +25,20 @@ class Info(commands.Cog):
     @commands.command()
     async def invite(self, ctx):
         await ctx.send("🔹 Dodaj Atorina na swój serwer, korzystając z tego linku:\n <https://liamdj23.ovh/addbot>")
+
+    @commands.command()
+    async def user(self, ctx, member: discord.Member = None):
+        if member is None:
+            member = ctx.author
+        embed = await self.bot.embed()
+        embed.title = "Informacje o " + member.name + "#" + member.discriminator
+        embed.add_field(name="🆔 ID", value=member.id)
+        embed.add_field(name="🎭 Pseudonim", value=member.nick)
+        embed.add_field(name="👶 Data utworzenia konta", value=member.created_at.replace(microsecond=0), inline=False)
+        embed.add_field(name="🤝 Data dołączenia", value=member.joined_at.replace(microsecond=0))
+        roles = ""
+        for role in member.roles:
+            roles += role.mention + ","
+        embed.add_field(name="🏅 Role", value=roles)
+        embed.set_thumbnail(url=member.avatar_url)
+        await ctx.send(embed=embed)

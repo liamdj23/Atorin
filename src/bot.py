@@ -8,6 +8,8 @@ from cogs.fun import Fun
 from cogs.ping import Ping
 from cogs.admin import Admin
 from cogs.info import Info
+from cogs.games import Games
+
 from settings import Settings
 
 from logger import logger
@@ -33,6 +35,7 @@ class Atorin(commands.Bot):
         self.add_cog(Fun(self))
         self.add_cog(Admin(self))
         self.add_cog(Info(self))
+        self.add_cog(Games(self))
 
         @self.event
         async def on_message(message):
@@ -55,7 +58,7 @@ class Atorin(commands.Bot):
 
     async def embed(self):
         embed = discord.Embed()
-        embed.timestamp = datetime.now()
+        embed.timestamp = datetime.utcnow()
         embed.set_footer(text="Atorin", icon_url=str(self.user.avatar_url))
         embed.colour = discord.Colour(0xc4c3eb)
         return embed
