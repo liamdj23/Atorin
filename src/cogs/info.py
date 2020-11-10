@@ -42,3 +42,19 @@ class Info(commands.Cog):
         embed.add_field(name="🏅 Role", value=roles)
         embed.set_thumbnail(url=member.avatar_url)
         await ctx.send(embed=embed)
+
+    @commands.command()
+    async def server(self, ctx):
+        guild = ctx.guild
+        embed = await self.bot.embed()
+        embed.title = "Informacje o " + guild.name
+        embed.add_field(name="🆔 ID", value=guild.id)
+        embed.add_field(name="🌍 Region", value=guild.region)
+        embed.add_field(name="💬 Liczba kanałów", value=len(guild.channels))
+        embed.add_field(name="👥 Liczba członków", value=guild.member_count)
+        embed.add_field(name="👑 Właściciel", value=guild.owner)
+        embed.add_field(name="👶 Data utworzenia", value=guild.created_at.replace(microsecond=0))
+        embed.set_thumbnail(url=guild.icon_url)
+        await ctx.send(embed=embed)
+
+
