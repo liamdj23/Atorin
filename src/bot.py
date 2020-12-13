@@ -13,9 +13,13 @@ from cogs.games import Games
 from settings import Settings
 
 from logger import logger
-from database.stats import Stats
+import models
+import utils
 
 from dashboard.server import Dashboard
+
+from events.guild import GuildEvents
+from events.member import MemberEvents
 
 
 class Atorin(commands.Bot):
@@ -24,13 +28,16 @@ class Atorin(commands.Bot):
         intents.members = True
         super(Atorin, self).__init__(command_prefix="&", intents=intents, **kwargs)
         self.settings = Settings()
-        self.mongo = mongoengine.connect('atorin')
+        mongoengine.connect('atorin')
+        self.mongo = models
         self.influx = InfluxDBClient(database="atorin")
         self.influx.create_database("atorin")
         self.influx.switch_database("atorin")
         self.log = logger
-        self.stats = Stats(self.influx)
-        self.web = Dashboard()
+        self.utils = utils
+        self.web = Dashboard(self)
+        self.guild_events = GuildEvents(self)
+        self.member_events = MemberEvents(self)
         self.add_cog(Ping(self))
         self.add_cog(Fun(self))
         self.add_cog(Admin(self))
@@ -46,7 +53,7 @@ class Atorin(commands.Bot):
                 return
             if ctx.command:
                 await self.invoke(ctx)
-                self.stats.commands_usage(ctx.author.id, ctx.guild.id, ctx.command.name)
+                self.stats_commands_usage(ctx.author.id, ctx.guild.id, ctx.command.name)
 
         @self.event
         async def on_connect():
@@ -62,6 +69,21 @@ class Atorin(commands.Bot):
         embed.set_footer(text="Atorin", icon_url=str(self.user.avatar_url))
         embed.colour = discord.Colour(0xc4c3eb)
         return embed
+
+    def stats_commands_usage(self, user, server, command):
+        self.influx.write_points([{
+            "measurement": "commandsUsage",
+            "tags": {
+                "userId": user,
+                "serverId": server
+            },
+            "fields": {
+                "command": command
+            }
+        }])
+
+    def avatar(self):
+        return self.avatar()
 
     async def run(self, *args, **kwargs):
         await super(Atorin, self).start(self.settings.main["token"])

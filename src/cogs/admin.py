@@ -5,6 +5,8 @@ import discord
 class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.bool_to_state = bot.utils.bool_to_state
+        self.state_to_bool = bot.utils.state_to_bool
 
     @commands.command()
     @commands.has_guild_permissions(kick_members=True)
@@ -98,3 +100,42 @@ class Admin(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Poprawne użycie: &clear <1-100>")
         self.bot.log.error(error)
+
+    @commands.command()
+    @commands.has_guild_permissions(administrator=True)
+    @commands.guild_only()
+    async def logs(self, ctx, state: str = None, channel: discord.TextChannel = None):
+        server = self.bot.mongo.Server.objects(id=ctx.guild.id).first()
+        if state is None:
+            embed = await self.bot.embed()
+            embed.title = "Powiadomienia o zdarzeniach"
+            if server.logs.enabled:
+                embed.description = "💡 Aby zarządać powiadomieniami wejdź na " \
+                                    "[stronę bota](https://bot.liamdj23.ovh/panel).\n" \
+                                    "💡 Aby wyłączyć powiadomienia o zdarzeniach, wpisz " \
+                                    "`&logs off`"
+                embed.add_field(name="👋 Nowy członek:", value=self.bool_to_state("join" in server.logs.events))
+                embed.add_field(name="💀 Opuszczenie serwera:", value=self.bool_to_state("leave" in server.logs.events))
+            else:
+                embed.add_field(name="💬 Powiadomienia:", value=self.bool_to_state(server.logs.enabled))
+                embed.description = "💡 Aby włączyć powiadomenia o zdarzeniach wpisz `&logs on #nazwa_kanału`"
+            await ctx.send(embed=embed)
+            return
+        if self.state_to_bool(state) is None:
+            raise commands.BadArgument
+        if state == "on":
+            if channel is None:
+                raise commands.BadArgument
+            server.logs.channel = channel.id
+        if channel and not ctx.guild.me.permissions_in(channel).send_messages:
+            await ctx.send("❌ Bot nie posiada uprawnień do wysyłania wiadomości na kanale " + channel.mention)
+            return
+        state_bool = self.state_to_bool(state)
+        server.logs.enabled = state_bool
+        server.save()
+        await ctx.send("Powiadomienia o zdarzeniach: " + self.bool_to_state(state_bool))
+
+    @logs.error
+    async def logs_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Poprawne użycie: `&logs on #nazwa_kanału` lub `&logs off`")

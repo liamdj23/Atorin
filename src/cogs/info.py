@@ -27,6 +27,7 @@ class Info(commands.Cog):
         await ctx.send("🔹 Dodaj Atorina na swój serwer, korzystając z tego linku:\n <https://liamdj23.ovh/addbot>")
 
     @commands.command()
+    @commands.guild_only()
     async def user(self, ctx, member: discord.Member = None):
         if member is None:
             member = ctx.author
@@ -44,6 +45,7 @@ class Info(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
+    @commands.guild_only()
     async def server(self, ctx):
         guild = ctx.guild
         embed = await self.bot.embed()
