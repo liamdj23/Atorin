@@ -59,5 +59,13 @@ async def test_minecraft_server(interface):
     await interface.assert_reply_embed_equals("&mc srv mojemc.pl", embed, attributes_to_check=["title", "color"])
 
 
+@test_collector()
+async def test_weather(interface):
+    embed = (Embed(
+        title="Pogoda w Warszawa",
+    ))
+    await interface.assert_reply_embed_equals("&weather warszawa", embed, attributes_to_check=["title"])
+
+
 if __name__ == '__main__':
     distest.run_dtest_bot(sys.argv, test_collector)
