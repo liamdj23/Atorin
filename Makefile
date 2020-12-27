@@ -4,7 +4,7 @@ dependencies:
 	sudo curl -sL https://repos.influxdata.com/influxdb.key | sudo apt-key add -
 	echo "deb https://repos.influxdata.com/ubuntu bionic stable" | sudo tee /etc/apt/sources.list.d/influxdb.list
 	sudo apt update
-	sudo apt install -y mongodb-org influxdb
+	sudo apt install -y mongodb-org influxdb python3 python3-pip
 	sudo systemctl daemon-reload
 	sudo systemctl start influxdb
 	sudo systemctl start mongod
