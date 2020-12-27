@@ -30,8 +30,8 @@ jobs:
       run: |
         cd src
         sed -i 's/DISCORD_TOKEN/${{ secrets.DISCORD_TOKEN }}/g' settings/main.json
-        mongo 127.0.0.1 --eval 'use atorin; db.createCollection("token");'
-        mongo 127.0.0.1/atorin --eval 'let document = { "name":"weather", "key":"${{ secrets.OWM_TOKEN }}" }; db.token.insert(document);'
+        mongo 127.0.0.1 --eval "use atorin; db.createCollection(\"token\");"
+        mongo 127.0.0.1/atorin --eval "let document = { \"name\":\"weather\", \"key\":\"${{ secrets.OWM_TOKEN }}\" }; db.token.insert(document);"
         nohup python main.py &
     - name: Test commands
       run: |
