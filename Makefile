@@ -12,7 +12,7 @@ config:
 	cd src && python3 settings/__init__.py
 virtual: .venv/bin/pip
 .venv/bin/pip:
-	virtualenv -p python3 .venv
+	python3 -m virtualenv venv
 install:
 	.venv/bin/pip install -Ur requirements.txt
 update-requirements: install
