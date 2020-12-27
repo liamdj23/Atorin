@@ -4,14 +4,12 @@ dependencies:
 	sudo curl -sL https://repos.influxdata.com/influxdb.key | sudo apt-key add -
 	echo "deb https://repos.influxdata.com/ubuntu bionic stable" | sudo tee /etc/apt/sources.list.d/influxdb.list
 	sudo apt update
-	sudo apt install -y mongodb-org influxdb python3 python3-pip
+	sudo apt install -y mongodb-org influxdb python3 python3-pip python3-virtualenv
 	sudo systemctl daemon-reload
 	sudo systemctl start influxdb
 	sudo systemctl start mongod
 config:
 	cd src && python3 settings/__init__.py
-python-dependencies:
-	python3 -m pip install --user virtualenv
 virtual: .venv/bin/pip
 .venv/bin/pip:
 	virtualenv -p python3 .venv
@@ -19,4 +17,4 @@ install:
 	.venv/bin/pip install -Ur requirements.txt
 update-requirements: install
 	.venv/bin/pip freeze > requirements.txt
-.PHONY: dependencies python-dependencies virtual install config
+.PHONY: dependencies virtual install config
