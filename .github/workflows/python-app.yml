@@ -35,4 +35,4 @@ jobs:
         nohup python main.py &
     - name: Test commands
       run: |
-        nohup python tests/test_commands.py -c ${{ secrets.CHANNEL_ID }} -r all ${{ secrets.BOT_ID }} ${{ secrets.TESTER_TOKEN }} &
+        python tests/test_commands.py -c ${{ secrets.CHANNEL_ID }} -r all ${{ secrets.BOT_ID }} ${{ secrets.TESTER_TOKEN }}
