@@ -13,5 +13,5 @@ class Server(mongoengine.Document):
 
 
 class Token(mongoengine.Document):
-    name = mongoengine.StringField(primary_key=True)
+    id = mongoengine.StringField(primary_key=True)
     key = mongoengine.StringField()

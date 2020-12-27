@@ -70,7 +70,7 @@ class Info(commands.Cog):
 
     @commands.command(aliases=["pogoda"])
     async def weather(self, ctx, *, city: str):
-        token = self.bot.mongo.Token.objects(name="weather").first().key
+        token = self.bot.mongo.Token.objects(id="weather").first().key
         async with aiohttp.ClientSession() as session:
             async with session.get('http://api.openweathermap.org/data/2.5/weather?appid={0}&units=metric&lang=pl&q={1}'
                                    .format(token, quote(city))) as r:

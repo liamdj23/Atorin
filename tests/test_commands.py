@@ -62,7 +62,7 @@ async def test_minecraft_server(interface):
 @test_collector()
 async def test_weather(interface):
     embed = (Embed(
-        title="Pogoda w Warszawa",
+        title="Pogoda w Warszawa"
     ))
     await interface.assert_reply_embed_equals("&weather warszawa", embed, attributes_to_check=["title"])
 
