@@ -5,6 +5,7 @@ from io import BytesIO
 import discord
 from pyfiglet import Figlet
 import unicodedata
+from PIL import Image, ImageDraw, ImageFont
 
 
 class Fun(commands.Cog):
@@ -126,14 +127,15 @@ class Fun(commands.Cog):
         if len(text) > 25:
             raise commands.BadArgument
         text = unicodedata.normalize('NFKD', text).replace("ł", "l").replace("Ł", "L").encode('ASCII', 'ignore').decode("UTF-8")
-        async with aiohttp.ClientSession() as session:
-            async with session.post("https://mcgen.herokuapp.com/a.php?t={0}&h=Osiagniecie%20zdobyte!&i={1}"
-                                    .format(text, randrange(39))) as r:
-                if r.status == 200:
-                    image = await r.content.read()
-                    await ctx.send(file=discord.File(BytesIO(image), filename="achievement.png"))
-                else:
-                    raise commands.CommandError
+        template = Image.open("assets/achievement/{0}.png".format(randrange(39)))
+        d1 = ImageDraw.Draw(template)
+        font = ImageFont.truetype("assets/achievement/font.ttf", 16)
+        d1.text((60, 7), "Osiagniecie zdobyte!", font=font, fill=(255, 255, 0))
+        d1.text((60, 30), text, font=font)
+        img = BytesIO()
+        template.save(img, "PNG")
+        img.seek(0)
+        await ctx.send(file=discord.File(img, filename="achievement.png"))
 
     @achievement.error
     async def achievement_error(self, ctx, error):
