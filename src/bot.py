@@ -25,7 +25,7 @@ from events.member import MemberEvents
 class Atorin(commands.Bot):
     def __init__(self, **kwargs):
         intents = discord.Intents.default()
-        intents.members = True
+        intents.members = False
         super(Atorin, self).__init__(command_prefix="&", intents=intents, **kwargs)
         self.settings = Settings()
         mongoengine.connect('atorin')
