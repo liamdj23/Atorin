@@ -34,19 +34,28 @@ class Games(commands.Cog):
     @minecraft.command(aliases=["srv"])
     async def server(self, ctx, domain: is_domain):
         async with aiohttp.ClientSession() as session:
-            async with session.get(f'https://mcapi.xdefcon.com/server/{domain}/full/json') as r:
+            async with session.get(f"https://api.mcsrvstat.us/2/{domain}") as r:
                 if r.status == 200:
                     data = await r.json()
-                    if data["serverStatus"] == "online":
+                    if data["online"]:
                         embed = await self.bot.embed()
                         embed.title = f"Status serwera Minecraft: {domain}"
-                        embed.add_field(name="🔌 Wersja", value=data["version"])
-                        embed.add_field(name="👥 Liczba graczy", value="{0}/{1}".format(data["players"], data["maxplayers"]))
-                        embed.add_field(name="🌍 Ping", value=data["ping"])
-                        embed.add_field(name="🔠 MOTD", value="`" + data["motd"]["text"].strip() + "`", inline=False)
-                        embed.set_thumbnail(url="attachment://logo.png")
-                        image = base64.b64decode(data["icon"].replace("data:image/png;base64,", ""))
-                        await ctx.send(embed=embed, file=discord.File(BytesIO(image), filename="logo.png"))
+                        if 'version' in data:
+                            embed.add_field(name="🔌 Wersja", value=data["version"])
+                        if 'players' in data:
+                            embed.add_field(name="👥 Liczba graczy", value="{0}/{1}".format(data["players"]["online"], data["players"]["max"]))
+                        if 'map' in data:
+                            embed.add_field(name="🌍 Mapa", value=data["map"])
+                        if 'software' in data:
+                            embed.add_field(name="🗜 Silnik", value=data["software"])
+                        if 'motd' in data:
+                            embed.add_field(name="🔠 MOTD", value="```yml\n" + "\n".join(data["motd"]["clean"]) + "\n```", inline=False)
+                        if 'icon' in data:
+                            embed.set_thumbnail(url="attachment://logo.png")
+                            image = base64.b64decode(data["icon"].replace("data:image/png;base64,", ""))
+                            await ctx.send(embed=embed, file=discord.File(BytesIO(image), filename="logo.png"))
+                        else:
+                            await ctx.send(embed=embed)
                     else:
                         raise commands.CommandError
                 else:
@@ -68,7 +77,7 @@ class Games(commands.Cog):
     @minecraft.command()
     async def skin(self, ctx, nick: is_minecraft_nick):
         async with aiohttp.ClientSession() as session:
-            async with session.get(f'https://mcapi.xdefcon.com/skin/full/{nick}/512.png') as r:
+            async with session.get(f"https://mcapi.xdefcon.com/skin/full/{nick}/512.png") as r:
                 if r.status == 200:
                     image = await r.content.read()
                     await ctx.send(file=discord.File(BytesIO(image), filename="skin.png"))
