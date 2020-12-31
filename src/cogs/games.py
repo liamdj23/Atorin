@@ -77,7 +77,7 @@ class Games(commands.Cog):
     @minecraft.command()
     async def skin(self, ctx, nick: is_minecraft_nick):
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"https://mcapi.xdefcon.com/skin/full/{nick}/512.png") as r:
+            async with session.get(f"https://minotar.net/body/{nick}") as r:
                 if r.status == 200:
                     image = await r.content.read()
                     await ctx.send(file=discord.File(BytesIO(image), filename="skin.png"))
