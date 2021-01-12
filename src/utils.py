@@ -49,3 +49,8 @@ def get_weather_emoji(weather_id):
         return hot
     else:
         return default
+
+
+def progress_bar(percent, text):
+    j = percent / 100
+    return f"[{'|' * int(10 * j):{10}s}] {int(100 * j)}%  {text}"

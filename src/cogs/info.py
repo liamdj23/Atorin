@@ -3,7 +3,8 @@ import discord
 from io import BytesIO
 import aiohttp
 from urllib.parse import quote
-from utils import get_weather_emoji
+from utils import get_weather_emoji, progress_bar
+import psutil
 
 
 class Info(commands.Cog):
@@ -100,6 +101,22 @@ class Info(commands.Cog):
         if isinstance(error, commands.CommandError):
             await ctx.send("❌ Wystąpił błąd, spróbuj ponownie później.")
         self.bot.log.error(error)
+
+    @commands.command()
+    async def bot(self, ctx):
+        embed = await self.bot.embed()
+        embed.title = "Informacje o AtorinBot"
+        embed.add_field(name="🌐 Liczba serwerów", value=len(self.bot.guilds))
+        # embed.add_field(name="👥 Użytkownicy", value=len(self.bot.users))
+        embed.add_field(name="👨‍💻 Autor", value="liamdj23#9081")
+        embed.add_field(name="📄 Panel zarządzania", value="https://bot.liamdj23.ovh/panel", inline=False)
+        cp = psutil.Process()
+        embed.add_field(name="🖥 Użycie zasobów", inline=False, value="```css\n{0}\n{1}```".format(
+            progress_bar(int(cp.cpu_percent()), "CPU"),
+            progress_bar(int(cp.memory_percent()), "RAM")))
+        await ctx.send(embed=embed)
+
+
 
 
 
