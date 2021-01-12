@@ -20,10 +20,13 @@ class Info(commands.Cog):
     async def avatar_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Poprawne użycie: `&avatar @użytkownik`")
+            return
         if isinstance(error, commands.BadArgument):
             await ctx.send("❌ Nie znaleziono użytkownika o podanej nazwie.")
+            return
         if isinstance(error, discord.HTTPException):
             await ctx.send("❌ Wystąpił błąd przy pobieraniu avatara, spróbuj ponownie.")
+            return
         self.bot.log.error(error)
 
     @commands.command()
@@ -67,6 +70,7 @@ class Info(commands.Cog):
     async def server_error(self, ctx, error):
         if isinstance(error, commands.NoPrivateMessage):
             await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
+            return
         self.bot.log.error(error)
 
     @commands.command(aliases=["pogoda"])
@@ -96,10 +100,13 @@ class Info(commands.Cog):
     async def weather_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Poprawne użycie: `&pogoda <miejscowość>`")
+            return
         if isinstance(error, commands.BadArgument):
             await ctx.send("❌ Nie znaleziono podanej miejscowości.")
+            return
         if isinstance(error, commands.CommandError):
             await ctx.send("❌ Wystąpił błąd, spróbuj ponownie później.")
+            return
         self.bot.log.error(error)
 
     @commands.command()

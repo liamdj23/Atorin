@@ -27,6 +27,7 @@ class Fun(commands.Cog):
     async def shiba_error(self, ctx, error):
         if isinstance(error, commands.CommandError):
             await ctx.send("Nie udało się uzyskać obrazka. Spróbuj ponownie za chwilę.")
+            return
         self.bot.log.error(error)
 
     @commands.command(usage="tekst",
@@ -53,6 +54,7 @@ class Fun(commands.Cog):
             return
         if isinstance(error, commands.CommandError):
             await ctx.send("Nie udało się wygenerować obrazka. Spróbuj ponownie za chwilę.")
+            return
         self.bot.log.error(error)
 
     @commands.command(brief="Losowe zdjęcie kota",
@@ -70,6 +72,7 @@ class Fun(commands.Cog):
     async def cat_error(self, ctx, error):
         if isinstance(error, commands.CommandError):
             await ctx.send("Nie udało się uzyskać obrazka. Spróbuj ponownie za chwilę.")
+            return
         self.bot.log.error(error)
 
     @commands.command(brief="Losowe zdjęcie lisa",
@@ -87,6 +90,7 @@ class Fun(commands.Cog):
     async def fox_error(self, ctx, error):
         if isinstance(error, commands.CommandError):
             await ctx.send("Nie udało się uzyskać obrazka. Spróbuj ponownie za chwilę.")
+            return
         self.bot.log.error(error)
 
     @commands.command(brief="Tworzy figlet", description="Wpisz aby otrzymać napis stworzony z mniejszych znaków.")
@@ -100,6 +104,8 @@ class Fun(commands.Cog):
     async def figlet_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Poprawne użycie: `&figlet <tekst>`")
+            return
+        self.bot.log.error(error)
 
     @commands.command(aliases=["wtc"],
                       brief="Wysyła losowy commit z whatthecommit.com",
@@ -117,6 +123,7 @@ class Fun(commands.Cog):
     async def commit_error(self, ctx, error):
         if isinstance(error, commands.CommandError):
             await ctx.send("Nie udało się uzyskać commita. Spróbuj ponownie za chwilę.")
+            return
         self.bot.log.error(error)
 
     @commands.command(usage="tekst",
@@ -147,4 +154,5 @@ class Fun(commands.Cog):
             return
         if isinstance(error, commands.CommandError):
             await ctx.send("Nie udało się wygenerować obrazka. Spróbuj ponownie za chwilę.")
+            return
         self.bot.log.error(error)

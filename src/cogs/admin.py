@@ -20,14 +20,19 @@ class Admin(commands.Cog):
     async def kick_error(self, ctx, error):
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Nie masz uprawnień do wyrzucania użytkowników.")
+            return
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send("❌ Bot nie ma uprawnień do wyrzucania użytkowników.")
+            return
         if isinstance(error, commands.NoPrivateMessage):
             await ctx.send("❌ Tę komendę możesz użyć tylko na serwerze.")
+            return
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Poprawne użycie: &kick <użytkownik>")
+            return
         if isinstance(error, commands.BadArgument):
             await ctx.send("❌ Nie znaleziono użytkownika o podanej nazwie.")
+            return
         self.bot.log.error(error)
 
     @commands.command()
@@ -42,14 +47,19 @@ class Admin(commands.Cog):
     async def ban_error(self, ctx, error):
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Nie masz uprawnień do banowania użytkowników.")
+            return
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send("❌ Bot nie ma uprawnień do banowania użytkowników.")
+            return
         if isinstance(error, commands.NoPrivateMessage):
             await ctx.send("❌ Tę komendę możesz użyć tylko na serwerze.")
+            return
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Poprawne użycie: &ban <użytkownik> [powód]")
+            return
         if isinstance(error, commands.BadArgument):
             await ctx.send("❌ Nie znaleziono użytkownika o podanej nazwie.")
+            return
         self.bot.log.error(error)
 
     @commands.command()
@@ -69,14 +79,19 @@ class Admin(commands.Cog):
     async def unban_error(self, ctx, error):
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Nie masz uprawnień do banowania użytkowników.")
+            return
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send("❌ Bot nie ma uprawnień do banowania użytkowników.")
+            return
         if isinstance(error, commands.NoPrivateMessage):
             await ctx.send("❌ Tę komendę możesz użyć tylko na serwerze.")
+            return
         if isinstance(error, commands.BadArgument):
             await ctx.send("❌ Nie znaleziono użytkownika na liście zbanowanych.")
+            return
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Poprawne użycie: &unban <użytkownik>")
+            return
         self.bot.log.error(error)
 
     @commands.command(aliases=["delmsg"])
@@ -91,14 +106,19 @@ class Admin(commands.Cog):
     async def clear_error(self, ctx, error):
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Nie masz uprawnień do zarządzania wiadomościami.")
+            return
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send("❌ Bot nie ma uprawnień do zarządzania wiadomościami.")
+            return
         if isinstance(error, commands.NoPrivateMessage):
             await ctx.send("❌ Tę komendę możesz użyć tylko na serwerze.")
+            return
         if isinstance(error, commands.BadArgument):
             await ctx.send("❌ Poprawne użycie: &clear <1-100>")
+            return
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Poprawne użycie: &clear <1-100>")
+            return
         self.bot.log.error(error)
 
     @commands.command()
@@ -139,3 +159,5 @@ class Admin(commands.Cog):
     async def logs_error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
             await ctx.send("❌ Poprawne użycie: `&logs on #nazwa_kanału` lub `&logs off`")
+            return
+        self.bot.log.error(error)
