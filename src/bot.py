@@ -62,6 +62,7 @@ class Atorin(commands.Bot):
         @self.event
         async def on_ready():
             self.log.info("Atorin is ready.")
+            await self.update_status()
 
     async def embed(self):
         embed = discord.Embed()
@@ -84,6 +85,9 @@ class Atorin(commands.Bot):
 
     def avatar(self):
         return self.avatar()
+
+    async def update_status(self):
+        await self.change_presence(activity=discord.Game(name="z {} serwerami".format(len(self.guilds))))
 
     async def run(self, *args, **kwargs):
         await super(Atorin, self).start(self.settings.main["token"])
