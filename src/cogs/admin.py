@@ -126,6 +126,8 @@ class Admin(commands.Cog):
     @commands.guild_only()
     async def logs(self, ctx, state: str = None, channel: discord.TextChannel = None):
         server = self.bot.mongo.Server.objects(id=ctx.guild.id).first()
+        if not server:
+            server = self.bot.mongo.Server(id=ctx.guild.id, logs=self.bot.mongo.Logs(enabled=False, events=["join", "leave"]))
         if state is None:
             embed = await self.bot.embed()
             embed.title = "Powiadomienia o zdarzeniach"
@@ -136,8 +138,9 @@ class Admin(commands.Cog):
                                     "`&logs off`"
                 embed.add_field(name="👋 Nowy członek:", value=self.bool_to_state("join" in server.logs.events))
                 embed.add_field(name="💀 Opuszczenie serwera:", value=self.bool_to_state("leave" in server.logs.events))
+                embed.add_field(name="🗑 Usunęcie wiadomości:", value=self.bool_to_state("message_delete" in server.logs.events))
             else:
-                embed.add_field(name="💬 Powiadomienia:", value=self.bool_to_state(server.logs.enabled))
+                embed.add_field(name="💬 Powiadomienia:", value=self.bool_to_state(False))
                 embed.description = "💡 Aby włączyć powiadomenia o zdarzeniach wpisz `&logs on #nazwa_kanału`"
             await ctx.send(embed=embed)
             return
