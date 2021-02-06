@@ -116,6 +116,7 @@ class Info(commands.Cog):
         embed.add_field(name="🌐 Liczba serwerów", value=len(self.bot.guilds))
         # embed.add_field(name="👥 Użytkownicy", value=len(self.bot.users))
         embed.add_field(name="👨‍💻 Autor", value="liamdj23#9081")
+        embed.add_field(name="🎭 Discord", value="https://discord.gg/Ygr5wAZbsZ", inline=False)
         embed.add_field(name="📄 Panel zarządzania", value="https://bot.liamdj23.ovh/panel", inline=False)
         cp = psutil.Process()
         embed.add_field(name="🖥 Użycie zasobów", inline=False, value="```css\n{0}\n{1}```".format(
