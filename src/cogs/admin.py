@@ -8,7 +8,8 @@ class Admin(commands.Cog):
         self.bool_to_state = bot.utils.bool_to_state
         self.state_to_bool = bot.utils.state_to_bool
 
-    @commands.command()
+    @commands.command(brief="Wyrzuć użytkownika",
+                      description="Wpisz aby wyrzucić użytkownika z serwera")
     @commands.has_guild_permissions(kick_members=True)
     @commands.bot_has_guild_permissions(kick_members=True)
     @commands.guild_only()
@@ -35,7 +36,8 @@ class Admin(commands.Cog):
             return
         self.bot.log.error(error)
 
-    @commands.command()
+    @commands.command(brief="Banowanie użytkownika",
+                      description="Wpisz aby zbanować użytkownika")
     @commands.has_guild_permissions(ban_members=True)
     @commands.bot_has_guild_permissions(ban_members=True)
     @commands.guild_only()
@@ -62,7 +64,8 @@ class Admin(commands.Cog):
             return
         self.bot.log.error(error)
 
-    @commands.command()
+    @commands.command(brief="Odbanuj użytkownika",
+                      description="Wpisz aby odbanować użytkownika")
     @commands.has_guild_permissions(ban_members=True)
     @commands.bot_has_guild_permissions(ban_members=True)
     @commands.guild_only()
@@ -94,7 +97,8 @@ class Admin(commands.Cog):
             return
         self.bot.log.error(error)
 
-    @commands.command(aliases=["delmsg"])
+    @commands.command(aliases=["delmsg"], brief="Usuwanie wiadomości",
+                      description="Wpisz usunąć dużą ilość wiadomości")
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_guild_permissions(manage_messages=True)
     @commands.guild_only()
@@ -121,7 +125,8 @@ class Admin(commands.Cog):
             return
         self.bot.log.error(error)
 
-    @commands.command()
+    @commands.command(brief="Powiadomienia o zdarzeniach",
+                      description="Wpisz aby otrzymywać powiadomienia o zdarzeniach na serwerze")
     @commands.has_guild_permissions(administrator=True)
     @commands.guild_only()
     async def logs(self, ctx, state: str = None, channel: discord.TextChannel = None):

@@ -26,7 +26,8 @@ class Games(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group(aliases=["mc"])
+    @commands.group(aliases=["mc"], brief="Sprawdź skina lub serwer Minecraft",
+                      description="Wpisz aby otrzymać skina gracza lub sprawdzić status serwera Minecraft")
     async def minecraft(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send("❌ Poprawne użycie: `&mc <srv|skin> <adres|nick>`")

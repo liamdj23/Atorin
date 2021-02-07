@@ -11,7 +11,8 @@ class Info(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(brief="Zdjęcie profilowe użytkownika",
+                      description="Wpisz aby otrzymać zdjęcie profilowe użytkownika")
     async def avatar(self, ctx, *, user: discord.User):
         avatar = await user.avatar_url.read()
         await ctx.send(file=discord.File(BytesIO(avatar), filename=user.name + ".png"))
@@ -29,11 +30,13 @@ class Info(commands.Cog):
             return
         self.bot.log.error(error)
 
-    @commands.command()
+    @commands.command(brief="Link do bota i serwera supportu",
+                      description="Wpisz aby zaprosić Atorina na swój serwer lub uzyskać wsparcie")
     async def invite(self, ctx):
         await ctx.send("🔹 Dodaj Atorina na swój serwer, korzystając z tego linku:\n <https://liamdj23.ovh/addbot>")
 
-    @commands.command()
+    @commands.command(brief="Informacje o użytkowniku",
+                      description="Wpisz aby otrzymać informacje o użytkowniku")
     @commands.guild_only()
     async def user(self, ctx, member: discord.Member = None):
         if member is None:
@@ -51,7 +54,8 @@ class Info(commands.Cog):
         embed.set_thumbnail(url=member.avatar_url)
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(brief="Informacje o serwerze",
+                      description="Wpisz aby otrzymać informacje o serwerze")
     @commands.guild_only()
     async def server(self, ctx):
         guild = ctx.guild
@@ -73,7 +77,8 @@ class Info(commands.Cog):
             return
         self.bot.log.error(error)
 
-    @commands.command(aliases=["pogoda"])
+    @commands.command(aliases=["pogoda"], brief="Pogoda w Twojej miejscowości",
+                      description="Wpisz aby otrzymać aktualną pogodę w Twojej miejscowości")
     async def weather(self, ctx, *, city: str):
         token = self.bot.mongo.Token.objects(id="weather").first().key
         async with aiohttp.ClientSession() as session:
@@ -109,7 +114,8 @@ class Info(commands.Cog):
             return
         self.bot.log.error(error)
 
-    @commands.command()
+    @commands.command(brief="Informacje o Atorinie",
+                      description="Wpisz aby otrzymać informacje o Atorinie")
     async def bot(self, ctx):
         embed = await self.bot.embed()
         embed.title = "Informacje o AtorinBot"
