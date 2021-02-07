@@ -22,12 +22,12 @@ def is_minecraft_nick(argument: str):
     raise commands.BadArgument
 
 
-class Games(commands.Cog):
+class Games(commands.Cog, name="🕹 Gry"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group(aliases=["mc"], brief="Sprawdź skina lub serwer Minecraft",
-                      description="Wpisz aby otrzymać skina gracza lub sprawdzić status serwera Minecraft")
+    @commands.group(aliases=["mc"], usage="<srv|skin> <adres|nick>",
+                    description="Wpisz aby otrzymać skina gracza lub sprawdzić status serwera Minecraft")
     async def minecraft(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send("❌ Poprawne użycie: `&mc <srv|skin> <adres|nick>`")
@@ -44,13 +44,15 @@ class Games(commands.Cog):
                         if 'version' in data:
                             embed.add_field(name="🔌 Wersja", value=data["version"])
                         if 'players' in data:
-                            embed.add_field(name="👥 Liczba graczy", value="{0}/{1}".format(data["players"]["online"], data["players"]["max"]))
+                            embed.add_field(name="👥 Liczba graczy",
+                                            value="{0}/{1}".format(data["players"]["online"], data["players"]["max"]))
                         if 'map' in data:
                             embed.add_field(name="🌍 Mapa", value=data["map"])
                         if 'software' in data:
                             embed.add_field(name="🗜 Silnik", value=data["software"])
                         if 'motd' in data:
-                            embed.add_field(name="🔠 MOTD", value="```yml\n" + "\n".join(data["motd"]["clean"]) + "\n```", inline=False)
+                            embed.add_field(name="🔠 MOTD",
+                                            value="```yml\n" + "\n".join(data["motd"]["clean"]) + "\n```", inline=False)
                         if 'icon' in data:
                             embed.set_thumbnail(url="attachment://logo.png")
                             image = base64.b64decode(data["icon"].replace("data:image/png;base64,", ""))

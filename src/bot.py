@@ -24,7 +24,7 @@ class Atorin(commands.Bot):
     def __init__(self, **kwargs):
         intents = discord.Intents.default()
         intents.members = False
-        super(Atorin, self).__init__(command_prefix="&", intents=intents, **kwargs)
+        super(Atorin, self).__init__(command_prefix="&", help_command=None, intents=intents, **kwargs)
         self.settings = Settings()
         mongoengine.connect('atorin')
         self.mongo = models

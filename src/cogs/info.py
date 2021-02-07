@@ -1,23 +1,19 @@
 from discord.ext import commands
-import discord
-from io import BytesIO
 import aiohttp
 from urllib.parse import quote
 from utils import get_weather_emoji, progress_bar
 import psutil
 
 
-class Info(commands.Cog):
+class Info(commands.Cog, name="ℹ Informacje"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(brief="Link do bota i serwera supportu",
-                      description="Wpisz aby zaprosić Atorina na swój serwer lub uzyskać wsparcie")
+    @commands.command(description="Wpisz aby zaprosić Atorina na swój serwer lub uzyskać wsparcie")
     async def invite(self, ctx):
         await ctx.send("🔹 Dodaj Atorina na swój serwer, korzystając z tego linku:\n <https://liamdj23.ovh/addbot>")
 
-    @commands.command(brief="Informacje o serwerze",
-                      description="Wpisz aby otrzymać informacje o serwerze")
+    @commands.command(description="Wpisz aby otrzymać informacje o serwerze")
     @commands.guild_only()
     async def server(self, ctx):
         guild = ctx.guild
@@ -38,8 +34,9 @@ class Info(commands.Cog):
             return
         self.bot.log.error(error)
 
-    @commands.command(aliases=["pogoda"], brief="Pogoda w Twojej miejscowości",
-                      description="Wpisz aby otrzymać aktualną pogodę w Twojej miejscowości")
+    @commands.command(aliases=["pogoda"],
+                      description="Wpisz aby otrzymać aktualną pogodę w Twojej miejscowości",
+                      usage="<miejscowość>")
     async def weather(self, ctx, *, city: str):
         token = self.bot.mongo.Token.objects(id="weather").first().key
         async with aiohttp.ClientSession() as session:
@@ -75,8 +72,7 @@ class Info(commands.Cog):
             return
         self.bot.log.error(error)
 
-    @commands.command(brief="Informacje o Atorinie",
-                      description="Wpisz aby otrzymać informacje o Atorinie")
+    @commands.command(description="Wpisz aby otrzymać informacje o Atorinie")
     async def bot(self, ctx):
         embed = await self.bot.embed()
         embed.title = "Informacje o AtorinBot"
@@ -89,6 +85,31 @@ class Info(commands.Cog):
             progress_bar(int(cp.cpu_percent()), "CPU"),
             progress_bar(int(cp.memory_percent()), "RAM")))
         await ctx.send(embed=embed)
+
+    @commands.command(aliases=["pomoc", "komendy"], description="Lista komend AtorinBot")
+    async def help(self, ctx, arg=None):
+        embed = await self.bot.embed()
+        embed.title = "Lista komend AtorinBot"
+        all_commands = [c.name for c in self.bot.commands]
+        if not arg:
+            embed.description = "Liczba komend: {}" \
+                                "\n Aby uzyskać więcej informacji o komendzie wpisz &help komenda" \
+                                " np. `&help shiba`".format(len(all_commands))
+            for name, cog in self.bot.cogs.items():
+                cog_commands = ", ".join([c.name for c in cog.get_commands()])
+                embed.add_field(name=name, value="```{}```".format(cog_commands), inline=False)
+            await ctx.send(embed=embed)
+        elif arg in all_commands:
+            cmd = self.bot.get_command(arg)
+            if cmd.usage:
+                embed.add_field(name="▶ Komenda", value="```{} {}```".format(cmd.name, cmd.usage), inline=False)
+            else:
+                embed.add_field(name="▶ Komenda", value="```{}```".format(cmd.name), inline=False)
+            if cmd.aliases:
+                embed.add_field(name="🔠 Aliasy", value="```{}```".format(", ".join(cmd.aliases)), inline=False)
+            embed.add_field(name="💬 Opis", value="```{}```".format(cmd.description))
+            await ctx.send(embed=embed)
+
 
 
 

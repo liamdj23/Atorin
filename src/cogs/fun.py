@@ -8,12 +8,11 @@ import unicodedata
 from PIL import Image, ImageDraw, ImageFont
 
 
-class Fun(commands.Cog):
+class Fun(commands.Cog, name="🎲 Zabawa"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(brief="Losowe zdjęcie Shiba Inu",
-                      description="Wpisz aby otrzymać losowe zdjęcie Shiba Inu 🐶")
+    @commands.command(description="Wpisz aby otrzymać losowe zdjęcie Shiba Inu 🐶")
     async def shiba(self, ctx):
         async with aiohttp.ClientSession() as session:
             async with session.get('http://shibe.online/api/shibes?count=1') as r:
@@ -30,8 +29,7 @@ class Fun(commands.Cog):
             return
         self.bot.log.error(error)
 
-    @commands.command(usage="tekst",
-                      brief="Generuje pasek w stylu 'Wiadomości'",
+    @commands.command(usage="<tekst>",
                       description="Stwórz pasek z wiadomości z własnym tekstem")
     async def tvp(self, ctx, *, text):
         if len(text) > 48:
@@ -57,8 +55,7 @@ class Fun(commands.Cog):
             return
         self.bot.log.error(error)
 
-    @commands.command(brief="Losowe zdjęcie kota",
-                      description="Wpisz aby otrzymać losowe zdjęcie kotka")
+    @commands.command(description="Wpisz aby otrzymać losowe zdjęcie kotka")
     async def cat(self, ctx):
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.thecatapi.com/v1/images/search?limit=1') as r:
@@ -75,8 +72,7 @@ class Fun(commands.Cog):
             return
         self.bot.log.error(error)
 
-    @commands.command(brief="Losowe zdjęcie lisa",
-                      description="Wpisz aby otrzymać losowe zdjęcie lisa")
+    @commands.command(description="Wpisz aby otrzymać losowe zdjęcie lisa")
     async def fox(self, ctx):
         async with aiohttp.ClientSession() as session:
             async with session.get('https://randomfox.ca/floof/') as r:
@@ -93,7 +89,7 @@ class Fun(commands.Cog):
             return
         self.bot.log.error(error)
 
-    @commands.command(brief="Tworzy figlet", description="Wpisz aby otrzymać napis stworzony z mniejszych znaków.")
+    @commands.command(usage="<tekst>", description="Wpisz aby otrzymać napis stworzony z mniejszych znaków.")
     async def figlet(self, ctx, *, text):
         if not text:
             raise commands.MissingRequiredArgument
@@ -107,9 +103,7 @@ class Fun(commands.Cog):
             return
         self.bot.log.error(error)
 
-    @commands.command(aliases=["wtc"],
-                      brief="Wysyła losowy commit z whatthecommit.com",
-                      description="Jeśli nie masz pomysłu na tytuł commita, skorzystaj z tej komendy")
+    @commands.command(description="Jeśli nie masz pomysłu na tytuł commita, skorzystaj z tej komendy")
     async def commit(self, ctx):
         async with aiohttp.ClientSession() as session:
             async with session.get("http://whatthecommit.com/index.txt") as r:
@@ -126,8 +120,7 @@ class Fun(commands.Cog):
             return
         self.bot.log.error(error)
 
-    @commands.command(usage="tekst",
-                      brief="Generuje osiągniecie z Minecrafta",
+    @commands.command(usage="<tekst>",
                       description="Stwórz osiągniecie z własnym tekstem",
                       aliases=["achieve", "osiągniecie"])
     async def achievement(self, ctx, *, text):

@@ -1,11 +1,12 @@
 from discord.ext import commands
 
 
-class Admin(commands.Cog):
+class Admin(commands.Cog, name="🛠 Administracyjne"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliases=["delmsg"], brief="Usuwanie wiadomości",
+    @commands.command(aliases=["delmsg", "purge"],
+                      usage="<1-100>",
                       description="Wpisz usunąć dużą ilość wiadomości")
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_guild_permissions(manage_messages=True)
