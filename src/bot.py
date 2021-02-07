@@ -5,7 +5,6 @@ import discord
 from datetime import datetime
 
 from cogs.fun import Fun
-from cogs.ping import Ping
 from cogs.admin import Admin
 from cogs.info import Info
 from cogs.games import Games
@@ -19,7 +18,6 @@ import utils
 from dashboard.server import Dashboard
 
 from events.guild import GuildEvents
-from events.member import MemberEvents
 
 
 class Atorin(commands.Bot):
@@ -37,8 +35,6 @@ class Atorin(commands.Bot):
         self.utils = utils
         self.web = Dashboard(self)
         self.guild_events = GuildEvents(self)
-        self.member_events = MemberEvents(self)
-        self.add_cog(Ping(self))
         self.add_cog(Fun(self))
         self.add_cog(Admin(self))
         self.add_cog(Info(self))

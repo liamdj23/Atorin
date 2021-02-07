@@ -11,48 +11,10 @@ class Info(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(brief="Zdjęcie profilowe użytkownika",
-                      description="Wpisz aby otrzymać zdjęcie profilowe użytkownika")
-    async def avatar(self, ctx, *, user: discord.User):
-        avatar = await user.avatar_url.read()
-        await ctx.send(file=discord.File(BytesIO(avatar), filename=user.name + ".png"))
-
-    @avatar.error
-    async def avatar_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&avatar @użytkownik`")
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Nie znaleziono użytkownika o podanej nazwie.")
-            return
-        if isinstance(error, discord.HTTPException):
-            await ctx.send("❌ Wystąpił błąd przy pobieraniu avatara, spróbuj ponownie.")
-            return
-        self.bot.log.error(error)
-
     @commands.command(brief="Link do bota i serwera supportu",
                       description="Wpisz aby zaprosić Atorina na swój serwer lub uzyskać wsparcie")
     async def invite(self, ctx):
         await ctx.send("🔹 Dodaj Atorina na swój serwer, korzystając z tego linku:\n <https://liamdj23.ovh/addbot>")
-
-    @commands.command(brief="Informacje o użytkowniku",
-                      description="Wpisz aby otrzymać informacje o użytkowniku")
-    @commands.guild_only()
-    async def user(self, ctx, member: discord.Member = None):
-        if member is None:
-            member = ctx.author
-        embed = await self.bot.embed()
-        embed.title = "Informacje o " + member.name + "#" + member.discriminator
-        embed.add_field(name="🆔 ID", value=member.id)
-        embed.add_field(name="🎭 Pseudonim", value=member.nick)
-        embed.add_field(name="👶 Data utworzenia konta", value=member.created_at.replace(microsecond=0), inline=False)
-        embed.add_field(name="🤝 Data dołączenia", value=member.joined_at.replace(microsecond=0))
-        roles = ""
-        for role in member.roles:
-            roles += role.mention + ","
-        embed.add_field(name="🏅 Role", value=roles)
-        embed.set_thumbnail(url=member.avatar_url)
-        await ctx.send(embed=embed)
 
     @commands.command(brief="Informacje o serwerze",
                       description="Wpisz aby otrzymać informacje o serwerze")
@@ -65,7 +27,6 @@ class Info(commands.Cog):
         embed.add_field(name="🌍 Region", value=guild.region)
         embed.add_field(name="💬 Liczba kanałów", value=len(guild.channels))
         embed.add_field(name="👥 Liczba członków", value=guild.member_count)
-        embed.add_field(name="👑 Właściciel", value=guild.owner)
         embed.add_field(name="👶 Data utworzenia", value=guild.created_at.replace(microsecond=0))
         embed.set_thumbnail(url=guild.icon_url)
         await ctx.send(embed=embed)
@@ -120,7 +81,6 @@ class Info(commands.Cog):
         embed = await self.bot.embed()
         embed.title = "Informacje o AtorinBot"
         embed.add_field(name="🌐 Liczba serwerów", value=len(self.bot.guilds))
-        # embed.add_field(name="👥 Użytkownicy", value=len(self.bot.users))
         embed.add_field(name="👨‍💻 Autor", value="liamdj23#9081")
         embed.add_field(name="🎭 Discord", value="https://discord.gg/Ygr5wAZbsZ", inline=False)
         embed.add_field(name="📄 Panel zarządzania", value="https://bot.liamdj23.ovh/panel", inline=False)

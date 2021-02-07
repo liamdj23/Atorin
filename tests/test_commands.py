@@ -41,11 +41,6 @@ async def test_achievement(interface):
 
 
 @test_collector()
-async def test_avatar(interface):
-    await interface.assert_reply_has_image("&avatar AtorinBotTest")
-
-
-@test_collector()
 async def test_minecraft_skin(interface):
     await interface.assert_reply_has_image("&mc skin liamdj23")
 

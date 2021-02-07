@@ -2,7 +2,7 @@ import logging
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)  # move to config
+logger.setLevel(logging.DEBUG)
 log_formatter = logging.Formatter('%(asctime)s [%(filename)s|%(funcName)s] -%(levelname)s- :: %(message)s ')
 err_handler = logging.StreamHandler()
 err_handler.setLevel(logging.ERROR)
