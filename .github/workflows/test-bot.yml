@@ -1,0 +1,29 @@
+name: Atorin Discord Bot
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install distest
+      run: python -m pip install --upgrade pip distest
+    - name: Install jq
+      run: sudo apt install jq -y
+    - name: Fill config file
+      run: cat config.json | jq '.token = "${{ secrets.DISCORD_TOKEN }}"' | jq '.weather = "${{ secrets.OWM_TOKEN }}"' > config.tmp && mv config.tmp config.json
+    - name: Run Bot
+      run: docker-compose up -d
+    - name: Test commands
+      run: python tests/test_commands.py -c ${{ secrets.CHANNEL_ID }} -r all ${{ secrets.BOT_ID }} ${{ secrets.TESTER_TOKEN }}
