@@ -23,9 +23,9 @@ class Atorin(commands.Bot):
         intents = discord.Intents.default()
         intents.members = False
         super(Atorin, self).__init__(command_prefix="&", help_command=None, intents=intents, **kwargs)
-        mongoengine.connect('atorin')
+        mongoengine.connect('atorin', host="mongo")
         self.mongo = models
-        self.influx = InfluxDBClient(database="atorin")
+        self.influx = InfluxDBClient(database="atorin", host="influx")
         self.influx.create_database("atorin")
         self.influx.switch_database("atorin")
         self.log = logger
