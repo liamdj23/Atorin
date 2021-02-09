@@ -1,0 +1,18 @@
+version: '3'
+services:
+  atorin:
+    build: .
+    links:
+    - mongo
+    - influx
+    depends_on:
+      - influx
+      - mongo
+  mongo:
+    image: mongo
+    environment:
+      MONGO_INITDB_DATABASE: atorin
+    volumes:
+    - ./config.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+  influx:
+    image: influxdb

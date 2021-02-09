@@ -9,8 +9,6 @@ from cogs.admin import Admin
 from cogs.info import Info
 from cogs.games import Games
 
-from settings import Settings
-
 from logger import logger
 import models
 import utils
@@ -25,7 +23,6 @@ class Atorin(commands.Bot):
         intents = discord.Intents.default()
         intents.members = False
         super(Atorin, self).__init__(command_prefix="&", help_command=None, intents=intents, **kwargs)
-        self.settings = Settings()
         mongoengine.connect('atorin')
         self.mongo = models
         self.influx = InfluxDBClient(database="atorin")
@@ -86,5 +83,5 @@ class Atorin(commands.Bot):
         await self.change_presence(activity=discord.Game(name="Dołącz do serwera Discord! Link w &bot".format(len(self.guilds))))
 
     async def run(self, *args, **kwargs):
-        await super(Atorin, self).start(self.settings.main["token"])
+        await super(Atorin, self).start(self.mongo.Token.objects(id="bot").first().key)
 
