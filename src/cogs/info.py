@@ -11,7 +11,8 @@ class Info(commands.Cog, name="ℹ Informacje"):
 
     @commands.command(description="Wpisz aby zaprosić Atorina na swój serwer lub uzyskać wsparcie")
     async def invite(self, ctx):
-        await ctx.send("🔹 Dodaj Atorina na swój serwer, korzystając z tego linku:\n <https://liamdj23.ovh/addbot>")
+        await ctx.send("🔹 Dodaj Atorina na swój serwer, korzystając z tego linku: https://liamdj23.ovh/addbot\n"
+                       + "🔸 Dołącz do serwera support: https://discord.gg/Ygr5wAZbsZ")
 
     @commands.command(description="Wpisz aby otrzymać informacje o serwerze")
     @commands.guild_only()
@@ -75,11 +76,10 @@ class Info(commands.Cog, name="ℹ Informacje"):
     @commands.command(description="Wpisz aby otrzymać informacje o Atorinie")
     async def bot(self, ctx):
         embed = await self.bot.embed()
-        embed.title = "Informacje o AtorinBot"
+        embed.title = "Informacje o Atorinie"
         embed.add_field(name="🌐 Liczba serwerów", value=len(self.bot.guilds))
         embed.add_field(name="👨‍💻 Autor", value="liamdj23#9081")
         embed.add_field(name="🎭 Discord", value="https://discord.gg/Ygr5wAZbsZ", inline=False)
-        embed.add_field(name="📄 Panel zarządzania", value="https://bot.liamdj23.ovh/panel", inline=False)
         cp = psutil.Process()
         embed.add_field(name="🖥 Użycie zasobów", inline=False, value="```css\n{0}\n{1}```".format(
             progress_bar(int(cp.cpu_percent()), "CPU"),

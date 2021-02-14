@@ -18,7 +18,7 @@ from dashboard.server import Dashboard
 from events.guild import GuildEvents
 
 
-class Atorin(commands.Bot):
+class Atorin(commands.AutoShardedBot):
     def __init__(self, **kwargs):
         intents = discord.Intents.default()
         intents.members = False
