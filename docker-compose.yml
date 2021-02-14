@@ -1,7 +1,7 @@
 version: '3'
 services:
   atorin:
-    build: .
+    image: liamdj23/atorin
     links:
     - mongo
     - influx
