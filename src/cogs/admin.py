@@ -7,7 +7,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @commands.command(aliases=["delmsg", "purge"],
                       usage="<1-100>",
-                      description="Wpisz usunąć dużą ilość wiadomości")
+                      description="Wpisz aby usunąć dużą ilość wiadomości\n\nPrzykład użycia: &clear 34")
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_guild_permissions(manage_messages=True)
     @commands.guild_only()

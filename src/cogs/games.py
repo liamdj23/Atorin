@@ -34,7 +34,10 @@ class Games(commands.Cog, name="🕹 Gry"):
         self.bot = bot
 
     @commands.group(aliases=["mc"], usage="<srv|skin> <adres|nick>",
-                    description="Wpisz aby otrzymać skina gracza lub sprawdzić status serwera Minecraft")
+                    description="Wpisz aby otrzymać skina gracza lub sprawdzić status serwera Minecraft\n\n" +
+                                "Przykłady użycia:\n" +
+                                "&mc srv krainamc.pl\n" +
+                                "&mc skin liamdj23")
     async def minecraft(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send("❌ Poprawne użycie: `&mc <srv|skin> <adres|nick>`")
@@ -107,7 +110,7 @@ class Games(commands.Cog, name="🕹 Gry"):
             return
         self.bot.log.error(error)
 
-    @commands.command(description="Statystyki w grze Fortnite",
+    @commands.command(description="Statystyki w grze Fortnite\n\nPrzykład użycia: &fortnite epic liamdj23",
                       usage="<epic/psn/xbl> <nick>")
     async def fortnite(self, ctx, platform: is_platform, *, nick: str):
         async with aiohttp.ClientSession() as session:

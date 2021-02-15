@@ -36,7 +36,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
         self.bot.log.error(error)
 
     @commands.command(aliases=["pogoda"],
-                      description="Wpisz aby otrzymać aktualną pogodę w Twojej miejscowości",
+                      description="Wpisz aby otrzymać aktualną pogodę w Twojej miejscowości\n\nPrzykład użycia: &pogoda Kraków",
                       usage="<miejscowość>")
     async def weather(self, ctx, *, city: str):
         token = self.bot.mongo.Token.objects(id="weather").first().key
@@ -109,9 +109,3 @@ class Info(commands.Cog, name="ℹ Informacje"):
                 embed.add_field(name="🔠 Aliasy", value="```{}```".format(", ".join(cmd.aliases)), inline=False)
             embed.add_field(name="💬 Opis", value="```{}```".format(cmd.description))
             await ctx.send(embed=embed)
-
-
-
-
-
-

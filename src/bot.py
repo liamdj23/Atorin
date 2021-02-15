@@ -80,7 +80,7 @@ class Atorin(commands.AutoShardedBot):
         return self.avatar()
 
     async def update_status(self):
-        await self.change_presence(activity=discord.Game(name="Dołącz do serwera Discord! Link w &bot".format(len(self.guilds))))
+        await self.change_presence(activity=discord.Game(name="z {} serwerami | &help | Dołącz do serwera Discord!".format(len(self.guilds))))
 
     async def run(self, *args, **kwargs):
         await super(Atorin, self).start(self.mongo.Token.objects(id="bot").first().key)

@@ -30,7 +30,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         self.bot.log.error(error)
 
     @commands.command(usage="<tekst>",
-                      description="Stwórz pasek z wiadomości z własnym tekstem")
+                      description="Stwórz pasek z wiadomości z własnym tekstem\n\nPrzykład użycia: &tvp Atorin jest super!")
     async def tvp(self, ctx, *, text):
         if len(text) > 48:
             raise commands.BadArgument
@@ -89,7 +89,8 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             return
         self.bot.log.error(error)
 
-    @commands.command(usage="<tekst>", description="Wpisz aby otrzymać napis stworzony z mniejszych znaków.")
+    @commands.command(usage="<tekst>",
+                      description="Wpisz aby otrzymać napis stworzony z mniejszych znaków.\n\nPrzykład użycia: &figlet Atorin")
     async def figlet(self, ctx, *, text):
         if not text:
             raise commands.MissingRequiredArgument
@@ -121,7 +122,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         self.bot.log.error(error)
 
     @commands.command(usage="<tekst>",
-                      description="Stwórz osiągniecie z własnym tekstem",
+                      description="Stwórz osiągniecie z własnym tekstem\n\nPrzykład użycia: &achievement Jesteś super!",
                       aliases=["achieve", "osiągniecie"])
     async def achievement(self, ctx, *, text):
         if len(text) > 25:
