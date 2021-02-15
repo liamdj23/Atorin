@@ -90,7 +90,11 @@ class Info(commands.Cog, name="ℹ Informacje"):
     async def help(self, ctx, arg=None):
         embed = await self.bot.embed()
         embed.title = "Lista komend AtorinBot"
-        all_commands = [c.name for c in self.bot.commands]
+        all_commands = {}
+        for command in self.bot.commands:
+            all_commands[command.name] = command
+            for alias in command.aliases:
+                all_commands[alias] = command
         if not arg:
             embed.description = "Liczba komend: {}" \
                                 "\n Aby uzyskać więcej informacji o komendzie wpisz &help komenda" \
@@ -100,7 +104,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
                 embed.add_field(name=name, value="```{}```".format(cog_commands), inline=False)
             await ctx.send(embed=embed)
         elif arg in all_commands:
-            cmd = self.bot.get_command(arg)
+            cmd = all_commands[arg]
             if cmd.usage:
                 embed.add_field(name="▶ Komenda", value="```{} {}```".format(cmd.name, cmd.usage), inline=False)
             else:
