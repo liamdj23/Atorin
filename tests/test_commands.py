@@ -62,5 +62,12 @@ async def test_weather(interface):
     await interface.assert_reply_embed_equals("&weather warszawa", embed, attributes_to_check=["title"])
 
 
+@test_collector()
+async def test_fortnite(interface):
+    embed = (Embed(
+        title="Statystyki w grze Fortnite"
+    ))
+    await interface.assert_reply_embed_equals("&fortnite epic liamdj23", embed, attributes_to_check=["title"])
+
 if __name__ == '__main__':
     distest.run_dtest_bot(sys.argv, test_collector)

@@ -4,6 +4,7 @@ import aiohttp
 import discord
 from io import BytesIO
 import base64
+from urllib.parse import quote
 
 
 def is_domain(argument: str):
@@ -19,6 +20,12 @@ def is_minecraft_nick(argument: str):
     p = re.compile(regex)
     if re.search(p, argument):
         return argument
+    raise commands.BadArgument
+
+
+def is_platform(argument: str):
+    if argument.lower() in ["epic", "psn", "xbl"]:
+        return argument.lower()
     raise commands.BadArgument
 
 
@@ -97,5 +104,41 @@ class Games(commands.Cog, name="🕹 Gry"):
             return
         if isinstance(error, commands.CommandError):
             await ctx.send("❌ Wystąpił błąd przy pobieraniu danych, spróbuj ponownie")
+            return
+        self.bot.log.error(error)
+
+    @commands.command(description="Statystyki w grze Fortnite",
+                      usage="<epic/psn/xbl> <nick>")
+    async def fortnite(self, ctx, platform: is_platform, *, nick: str):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"https://fortnite-api.com/v1/stats/br/v2?name={quote(nick)}&accountType={platform}") as r:
+                if r.status == 404:
+                    await ctx.send("❌ Gracz **{}** nie istnieje lub nie grał w Fortnite!".format(nick))
+                    return
+                if r.status == 200:
+                    json = await r.json()
+                    data = json["data"]["stats"]["all"]["overall"]
+                    embed = await self.bot.embed()
+                    embed.title = "Statystyki w grze Fortnite"
+                    embed.description = "🧑 Gracz: **{}**".format(nick)
+                    embed.add_field(name="🏆 Wygrane", value=data["wins"])
+                    embed.add_field(name="⚔ Zabójstwa", value=data["kills"])
+                    embed.add_field(name="☠ Śmierci", value=data["deaths"])
+                    embed.add_field(name="🕹Rozegranych meczy", value=data["matches"])
+                    await ctx.send(embed=embed)
+                else:
+                    raise commands.CommandError
+
+    @fortnite.error
+    async def fortnite_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: `&fortnite <epic/psn/xbl> <nick>`")
+            return
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Poprawne użycie: `&fortnite <epic/psn/xbl> <nick>`")
+            return
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd przy pobieraniu danych, spróbuj ponownie")
+            print(error)
             return
         self.bot.log.error(error)
