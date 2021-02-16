@@ -3,6 +3,8 @@ from influxdb import InfluxDBClient
 from discord.ext import commands
 import discord
 from datetime import datetime
+import cleverbotfree.cbfree
+
 
 from cogs.fun import Fun
 from cogs.admin import Admin
@@ -32,6 +34,8 @@ class Atorin(commands.AutoShardedBot):
         self.utils = utils
         self.web = Dashboard(self)
         self.guild_events = GuildEvents(self)
+        self.cleverbot = cleverbotfree.cbfree.Cleverbot()
+        self.cleverbot.browser.get(self.cleverbot.url)
         self.add_cog(Fun(self))
         self.add_cog(Admin(self))
         self.add_cog(Info(self))
@@ -39,6 +43,15 @@ class Atorin(commands.AutoShardedBot):
 
         @self.event
         async def on_message(message):
+            if self.user.mentioned_in(message):
+                async with message.channel.typing():
+                    question = " ".join(message.content.split()[1:])
+                    if question:
+                        self.cleverbot.get_form()
+                        self.cleverbot.send_input(question)
+                        answer = self.cleverbot.get_response()
+                        await message.channel.send(answer)
+                return
             ctx = await self.get_context(message)
             if ctx.author.bot and ctx.author.id == 742076835549937805:
                 pass
@@ -46,7 +59,7 @@ class Atorin(commands.AutoShardedBot):
                 return
             if ctx.command:
                 await self.invoke(ctx)
-                self.stats_commands_usage(ctx.author.id, ctx.guild.id, ctx.command.name)
+                self.stats_commands_usage(ctx.guild.id, ctx.command.name)
 
         @self.event
         async def on_connect():
@@ -64,11 +77,10 @@ class Atorin(commands.AutoShardedBot):
         embed.colour = discord.Colour(0xc4c3eb)
         return embed
 
-    def stats_commands_usage(self, user, server, command):
+    def stats_commands_usage(self, server, command):
         self.influx.write_points([{
             "measurement": "commandsUsage",
             "tags": {
-                "userId": user,
                 "serverId": server
             },
             "fields": {
