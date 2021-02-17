@@ -33,3 +33,30 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             await ctx.send("❌ Poprawne użycie: &clear <1-100>")
             return
         self.bot.log.error(error)
+
+    @commands.command(aliases=["ogłoszenie", "ogloszenie"], usage="<tekst>", description="Tworzy ogłoszenie")
+    @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
+    async def advert(self, ctx, *, content: str):
+        embed = await self.bot.embed()
+        embed.title = "📣 Ogłoszenie 📣"
+        embed.description = content
+        message = await ctx.send(embed=embed)
+        await message.add_reaction("🔼")
+        await message.add_reaction("🔽")
+
+    @advert.error
+    async def advert_error(self, ctx, error):
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send("❌ Nie jesteś administratorem tego serwera!")
+            return
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.send("❌ Tę komendę możesz użyć tylko na serwerze.")
+            return
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Poprawne użycie: &advert <tekst>")
+            return
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: &advert <tekst>")
+            return
+        self.bot.log.error(error)
