@@ -32,10 +32,10 @@ class Atorin(commands.AutoShardedBot):
         self.influx.switch_database("atorin")
         self.log = logger
         self.utils = utils
-        self.web = Dashboard(self)
-        self.guild_events = GuildEvents(self)
         self.cleverbot = cleverbotfree.cbfree.Cleverbot()
         self.cleverbot.browser.get(self.cleverbot.url)
+        self.web = Dashboard(self)
+        self.guild_events = GuildEvents(self)
         self.add_cog(Fun(self))
         self.add_cog(Admin(self))
         self.add_cog(Info(self))
@@ -43,14 +43,15 @@ class Atorin(commands.AutoShardedBot):
 
         @self.event
         async def on_message(message):
-            if self.user.mentioned_in(message):
-                async with message.channel.typing():
-                    question = " ".join(message.content.split()[1:])
-                    if question:
-                        self.cleverbot.get_form()
+            if message.clean_content.startswith("@" + self.user.name):
+                question = " ".join(message.clean_content.split()[1:])
+                if question:
+                    self.cleverbot.browser.refresh()
+                    self.cleverbot.get_form()
+                    async with message.channel.typing():
                         self.cleverbot.send_input(question)
                         answer = self.cleverbot.get_response()
-                        await message.channel.send(answer)
+                        await message.reply(answer)
                 return
             ctx = await self.get_context(message)
             if ctx.author.bot and ctx.author.id == 742076835549937805:

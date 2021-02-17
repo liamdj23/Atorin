@@ -7,7 +7,7 @@ certifi==2020.6.20
 chardet==3.0.4
 cleverbotfree==1.2.7
 colorama==0.4.3
-discord.py==1.5.1
+discord.py==1.6.0
 distest==0.4.9
 geckodriver-autoinstaller==0.1.0
 idna==2.10
