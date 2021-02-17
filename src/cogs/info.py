@@ -45,9 +45,6 @@ class Info(commands.Cog, name="ℹ Informacje"):
                                    .format(token, quote(city))) as r:
                 if r.status == 200:
                     data = await r.json()
-                    if "message" in data:
-                        if data["message"] == "city not found":
-                            raise commands.BadArgument
                     embed = await self.bot.embed()
                     embed.title = "Pogoda w " + data["name"]
                     emoji = get_weather_emoji(data["weather"][0]["id"])
@@ -57,6 +54,8 @@ class Info(commands.Cog, name="ℹ Informacje"):
                     embed.add_field(name="💧 Wilgotność", value=str(data["main"]["humidity"]) + "%")
                     embed.add_field(name="💨 Wiatr", value=str(data["wind"]["speed"]) + "m/s")
                     await ctx.send(embed=embed)
+                elif r.status == 404:
+                    raise commands.BadArgument
                 else:
                     raise commands.CommandError
 
