@@ -11,8 +11,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(brief="Zdjęcie profilowe użytkownika",
-                      description="Wpisz aby otrzymać zdjęcie profilowe użytkownika\n\nPrzykład użycia:\n&avatar\n&avatar @Atorin")
+    @commands.command(description="Zdjęcie profilowe użytkownika\n\nPrzykład użycia:\n&avatar\n&avatar @Atorin")
     async def avatar(self, ctx, *, user: discord.User = None):
         if not user:
             user = ctx.author
@@ -37,7 +36,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
         await ctx.send("🔹 Dodaj Atorina na swój serwer, korzystając z tego linku: https://liamdj23.ovh/addbot\n"
                        + "🔸 Dołącz do serwera support: https://discord.gg/Ygr5wAZbsZ")
 
-    @commands.command(description="Wpisz aby otrzymać informacje o serwerze")
+    @commands.command(description="Informacje o serwerze")
     @commands.guild_only()
     async def server(self, ctx):
         guild = ctx.guild
@@ -50,6 +49,33 @@ class Info(commands.Cog, name="ℹ Informacje"):
         embed.add_field(name="👶 Data utworzenia", value=guild.created_at.replace(microsecond=0))
         embed.set_thumbnail(url=guild.icon_url)
         await ctx.send(embed=embed)
+
+    @commands.command(description="Informacje o użytkowniku\n\nPrzykład użycia:\n&user\n&user @Atorin")
+    @commands.guild_only()
+    async def user(self, ctx, member: discord.Member = None):
+        if member is None:
+            member = ctx.author
+        embed = await self.bot.embed()
+        embed.title = "Informacje o " + member.name + "#" + member.discriminator
+        embed.add_field(name="🆔 ID", value=member.id)
+        if member.nick:
+            embed.add_field(name="🎭 Pseudonim", value=member.nick)
+        embed.add_field(name="👶 Data utworzenia konta", value=member.created_at.replace(microsecond=0), inline=False)
+        embed.add_field(name="🤝 Data dołączenia", value=member.joined_at.replace(microsecond=0))
+        roles = ", ".join(role.mention for role in member.roles)
+        embed.add_field(name="🏅 Role", value=roles)
+        embed.set_thumbnail(url=member.avatar_url)
+        await ctx.send(embed=embed)
+
+    @user.error
+    async def user_error(self, ctx, error):
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
+            return
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Nie znaleziono użytkownika na tym serwerze!")
+            return
+        self.bot.log.error(error)
 
     @server.error
     async def server_error(self, ctx, error):
