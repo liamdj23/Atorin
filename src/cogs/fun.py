@@ -6,6 +6,7 @@ import discord
 from pyfiglet import Figlet
 import unicodedata
 from PIL import Image, ImageDraw, ImageFont
+import textwrap
 
 
 class Fun(commands.Cog, name="🎲 Zabawa"):
@@ -150,3 +151,41 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             await ctx.send("Nie udało się wygenerować obrazka. Spróbuj ponownie za chwilę.")
             return
         self.bot.log.error(error)
+
+    @commands.command(usage="<tekst górny | tekst dolny>",
+                      description="Stwórz własnego mema z Drake\n\nPrzykład użycia: &drake hawajska | salami")
+    async def drake(self, ctx, *, text: str):
+        if "|" not in text:
+            raise commands.BadArgument
+        lines = text.split("|")
+        if not len(lines) == 2:
+            raise commands.BadArgument
+        template = Image.open("assets/drake/template.jpg")
+        font = ImageFont.truetype("assets/drake/impact.ttf", 40)
+        d1 = ImageDraw.Draw(template)
+        offset = 20
+        for line in textwrap.wrap(lines[0].strip(), width=15):
+            d1.text((360, offset), line, font=font, fill="#000000")
+            offset += font.getsize(line)[1]
+        offset = 383
+        for line in textwrap.wrap(lines[1].strip(), width=15):
+            d1.text((360, offset), line, font=font, fill="#000000")
+            offset += font.getsize(line)[1]
+        img = BytesIO()
+        template.save(img, "PNG")
+        img.seek(0)
+        await ctx.send(file=discord.File(img, filename="drake.png"))
+
+    @drake.error
+    async def drake_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: `&drake <tekst górny | tekst dolny>`")
+            return
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Poprawne użycie: `&drake <tekst górny | tekst dolny>`")
+            return
+        if isinstance(error, commands.CommandError):
+            await ctx.send("Nie udało się wygenerować obrazka. Spróbuj ponownie za chwilę.")
+            return
+        self.bot.log.error(error)
+
