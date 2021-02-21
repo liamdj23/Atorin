@@ -63,8 +63,8 @@ class Atorin(commands.AutoShardedBot):
                 self.stats_commands_usage(ctx.guild.id, ctx.command.name)
 
         @self.event
-        async def on_connect():
-            self.log.info("Successfully connected to Discord API.")
+        async def on_shard_connect(id):
+            self.log.info("Shard {} successfully connected to Discord API.".format(id))
 
         @self.event
         async def on_ready():
