@@ -109,7 +109,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     @commands.Cog.listener()
     async def on_message_delete(self, message):
         server = self.bot.mongo.Server.objects(id=message.guild.id).first()
-        if server.logs.enabled:
+        if server and server.logs.enabled:
             channel = message.guild.get_channel(server.logs.channel)
             if channel:
                 embed = await self.bot.embed()
@@ -125,7 +125,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def on_message_edit(self, old, new):
         if old.content != new.content:
             server = self.bot.mongo.Server.objects(id=old.guild.id).first()
-            if server.logs.enabled:
+            if server and server.logs.enabled:
                 channel = old.guild.get_channel(server.logs.channel)
                 if channel:
                     embed = await self.bot.embed()
