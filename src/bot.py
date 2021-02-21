@@ -67,8 +67,8 @@ class Atorin(commands.AutoShardedBot):
             self.log.info("Shard {} successfully connected to Discord API.".format(id))
 
         @self.event
-        async def on_ready():
-            self.log.info("Atorin is ready.")
+        async def on_shard_ready(id):
+            self.log.info("Shard {} is ready.".format(id))
             await self.update_status()
 
     async def embed(self):
