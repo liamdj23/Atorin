@@ -1,7 +1,7 @@
 from discord.ext import commands
 import aiohttp
 from urllib.parse import quote
-from utils import get_weather_emoji, progress_bar
+from utils import get_weather_emoji, progress_bar, convert_size
 import psutil
 import discord
 from io import BytesIO
@@ -128,9 +128,17 @@ class Info(commands.Cog, name="ℹ Informacje"):
         embed.add_field(name="🌐 Liczba serwerów", value=len(self.bot.guilds))
         embed.add_field(name="👨‍💻 Autor", value="liamdj23#9081")
         embed.add_field(name="🎭 Discord", value="https://discord.gg/Ygr5wAZbsZ", inline=False)
-        embed.add_field(name="🖥 Użycie zasobów", inline=False, value="```css\n{0}\n{1}```".format(
+        ram = psutil.virtual_memory()
+        total_ram = convert_size(ram.total)
+        used_ram = convert_size(ram.used)
+        disk = psutil.disk_usage('/')
+        total_disk = convert_size(disk.total)
+        used_disk = convert_size(disk.used)
+        embed.add_field(name="🖥 Użycie zasobów", inline=False, value="```css\n{0}\n{1}\n{2}```".format(
             progress_bar(int(psutil.cpu_percent()), "CPU"),
-            progress_bar(int(psutil.virtual_memory().percent), "RAM")))
+            progress_bar(int(ram.percent), "RAM {}/{}".format(used_ram, total_ram)),
+            progress_bar(int(disk.percent), "Dysk {}/{}".format(used_disk, total_disk)))
+        )
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["pomoc", "komendy"], description="Lista komend AtorinBot")

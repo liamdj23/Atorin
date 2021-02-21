@@ -1,3 +1,6 @@
+import math
+
+
 def bool_to_state(value: bool):
     if value:
         return "✅ Włączone"
@@ -54,3 +57,13 @@ def get_weather_emoji(weather_id):
 def progress_bar(percent, text):
     j = percent / 100
     return f"[{'|' * int(10 * j):{10}s}] {int(100 * j)}%  {text}"
+
+
+def convert_size(size_bytes):
+    if size_bytes == 0:
+        return "0B"
+    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+    i = int(math.floor(math.log(size_bytes, 1024)))
+    p = math.pow(1024, i)
+    s = round(size_bytes / p)
+    return "%s %s" % (s, size_name[i])
