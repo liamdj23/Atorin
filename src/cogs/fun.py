@@ -7,6 +7,7 @@ from pyfiglet import Figlet
 import unicodedata
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
+import qrcode
 
 
 class Fun(commands.Cog, name="🎲 Zabawa"):
@@ -189,3 +190,23 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             return
         self.bot.log.error(error)
 
+    @commands.command(usage="<tekst lub link>",
+                      description="Utwórz własny kod QR z tekstem lub linkiem\n\nPrzykład użycia: &qr liamdj23.ovh/addbot",
+                      aliases=["kodqr", "qr"])
+    async def codeqr(self, ctx, *, content: str):
+        qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
+        qr.add_data(content)
+        qr.make(fit=True)
+        code = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+        logo = Image.open("assets/qrcode/logo.png")
+        logo.thumbnail((60, 60))
+        logo_pos = ((code.size[0] - logo.size[0]) // 2, (code.size[1] - logo.size[1]) //2)
+        code.paste(logo, logo_pos)
+        img = BytesIO()
+        code.save(img, "PNG")
+        img.seek(0)
+        await ctx.send(file=discord.File(img, filename="qr.png"))
+
+    @codeqr.error
+    async def codeqr_error(self, ctx, error):
+        self.bot.log.error(error)
