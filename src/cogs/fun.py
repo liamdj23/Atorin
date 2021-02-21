@@ -209,4 +209,13 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
 
     @codeqr.error
     async def codeqr_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: `&qr <tekst lub link>`")
+            return
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Poprawne użycie: `&qr <tekst lub link>`")
+            return
+        if isinstance(error, commands.CommandError):
+            await ctx.send("Nie udało się wygenerować kodu QR. Spróbuj ponownie za chwilę.")
+            return
         self.bot.log.error(error)
