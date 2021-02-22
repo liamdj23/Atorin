@@ -8,6 +8,8 @@ services:
     depends_on:
       - influx
       - mongo
+    volumes:
+      - ./config.json:/app/config.json
   mongo:
     image: mongo
     environment:
