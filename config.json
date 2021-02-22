@@ -1,0 +1,5 @@
+{
+  "bot":"DISCORD_TOKEN",
+  "weather":"WEATHER_TOKEN",
+  "statcord":"STATCORD_TOKEN"
+}

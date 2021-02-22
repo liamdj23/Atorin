@@ -15,6 +15,8 @@ from cogs.statcord import StatcordPost
 from logger import logger
 import models
 import utils
+import json
+import os
 
 from dashboard.server import Dashboard
 
@@ -31,6 +33,8 @@ class Atorin(commands.AutoShardedBot):
         self.influx = InfluxDBClient(database="atorin", host="influx")
         self.influx.create_database("atorin")
         self.influx.switch_database("atorin")
+        with open(os.path.dirname(__file__) + "/../config.json", 'r') as config:
+            self.config = json.load(config)
         self.log = logger
         self.utils = utils
         self.cleverbot = cleverbotfree.cbfree.Cleverbot()
@@ -98,5 +102,5 @@ class Atorin(commands.AutoShardedBot):
         await self.change_presence(activity=discord.Game(name="z {} serwerami | &help | Dołącz do serwera Discord!".format(len(self.guilds))))
 
     async def run(self, *args, **kwargs):
-        await super(Atorin, self).start(self.mongo.Token.objects(id="bot").first().key)
+        await super(Atorin, self).start(self.config["bot"])
 

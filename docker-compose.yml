@@ -12,7 +12,5 @@ services:
     image: mongo
     environment:
       MONGO_INITDB_DATABASE: atorin
-    volumes:
-    - ./config.js:/docker-entrypoint-initdb.d/mongo-init.js
   influx:
     image: influxdb

@@ -88,7 +88,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
                       description="Wpisz aby otrzymać aktualną pogodę w Twojej miejscowości\n\nPrzykład użycia: &pogoda Kraków",
                       usage="<miejscowość>")
     async def weather(self, ctx, *, city: str):
-        token = self.bot.mongo.Token.objects(id="weather").first().key
+        token = self.bot.config["weather"]
         async with aiohttp.ClientSession() as session:
             async with session.get('http://api.openweathermap.org/data/2.5/weather?appid={0}&units=metric&lang=pl&q={1}'
                                    .format(token, quote(city))) as r:

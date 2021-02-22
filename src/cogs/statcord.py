@@ -6,7 +6,7 @@ import statcord
 class StatcordPost(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.key = self.bot.mongo.Token.objects(id="statcord").first().key
+        self.key = self.bot.config["statcord"]
         self.api = statcord.Client(self.bot, self.key)
         self.api.start_loop()
 
