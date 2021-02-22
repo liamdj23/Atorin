@@ -10,6 +10,7 @@ from cogs.fun import Fun
 from cogs.admin import Admin
 from cogs.info import Info
 from cogs.games import Games
+from cogs.statcord import StatcordPost
 
 from logger import logger
 import models
@@ -40,6 +41,7 @@ class Atorin(commands.AutoShardedBot):
         self.add_cog(Admin(self))
         self.add_cog(Info(self))
         self.add_cog(Games(self))
+        self.add_cog(StatcordPost(self))
 
         @self.event
         async def on_message(message):
