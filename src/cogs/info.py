@@ -155,8 +155,9 @@ class Info(commands.Cog, name="ℹ Informacje"):
                                 "\n Aby uzyskać więcej informacji o komendzie wpisz &help komenda" \
                                 " np. `&help shiba`".format(len(self.bot.commands))
             for name, cog in self.bot.cogs.items():
-                cog_commands = ", ".join([c.name for c in cog.get_commands()])
-                embed.add_field(name=name, value="```{}```".format(cog_commands), inline=False)
+                if name != "StatcordPost":
+                    cog_commands = ", ".join([c.name for c in cog.get_commands()])
+                    embed.add_field(name=name, value="```{}```".format(cog_commands), inline=False)
             await ctx.send(embed=embed)
         elif arg in all_commands:
             cmd = all_commands[arg]
