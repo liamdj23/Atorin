@@ -4,7 +4,7 @@ import aiohttp
 import discord
 from io import BytesIO
 import base64
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 
 
 def is_domain(argument: str):
@@ -27,6 +27,34 @@ def is_platform(argument: str):
     if argument.lower() in ["epic", "psn", "xbl"]:
         return argument.lower()
     raise commands.BadArgument
+
+
+async def steam_resolve_url(url: str, key: str):
+    if "steamcommunity.com" in url:
+        parsed = urlparse(url)
+        if not parsed.netloc:
+            parsed = urlparse("https://" + url)
+        nick = parsed.path.split("/")[2]
+    else:
+        return None
+    async with aiohttp.ClientSession() as session:
+        api = "http://api.steampowered.com/ISteamUser/ResolveVanityURL/v1?vanityurl={0}&key={1}".format(quote(nick), key)
+        async with session.get(api) as r:
+            if r.status == 200:
+                data = await r.json()
+                if "steamid" not in data["response"]:
+                    return None
+                return data["response"]["steamid"], nick
+
+
+async def steam_get_stats(app_id: int, key: str, steam_id: int):
+    async with aiohttp.ClientSession() as session:
+        api = "http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid={0}&key={1}&steamid={2}".format(app_id, key, steam_id)
+        async with session.get(api) as r:
+            if r.status == 200:
+                data = await r.json()
+                if "playerstats" in data and "stats" in data["playerstats"]:
+                    return data["playerstats"]["stats"]
 
 
 class Games(commands.Cog, name="🕹 Gry"):
@@ -139,6 +167,43 @@ class Games(commands.Cog, name="🕹 Gry"):
             return
         if isinstance(error, commands.BadArgument):
             await ctx.send("❌ Poprawne użycie: `&fortnite <epic/psn/xbl> <nick>`")
+            return
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd przy pobieraniu danych, spróbuj ponownie")
+            print(error)
+            return
+        self.bot.log.error(error)
+
+    @commands.command(description="Statystyki w grze CS:GO\n\nPrzykład użycia:\n&csgo https://steamcommunity.com/id/liamxdev/",
+                      usage="<link do profilu>", aliases=["cs"])
+    async def csgo(self, ctx, url: str):
+        steam_id, nick = await steam_resolve_url(url, self.bot.config["steam"])
+        if not steam_id:
+            raise commands.BadArgument
+        stats = await steam_get_stats(730, self.bot.config["steam"], steam_id)
+        if not stats:
+            raise commands.CommandError
+        embed = await self.bot.embed()
+        embed.title = "Statystyki w grze CS:GO"
+        embed.description = "🧑 Gracz: **{}**".format(nick)
+        for i in stats:
+            if i['name'] == 'total_kills':
+                embed.add_field(name="🔫 Liczba zabójstw", value=i["value"])
+            elif i['name'] == 'total_deaths':
+                embed.add_field(name="☠ Liczba śmierci", value=i["value"])
+            elif i['name'] == 'total_matches_played':
+                embed.add_field(name="⚔ Rozegranych meczy", value=i["value"])
+            elif i['name'] == 'total_matches_won':
+                embed.add_field(name="🏆 Wygranych meczy", value=i["value"], inline=False)
+        await ctx.send(embed=embed)
+
+    @csgo.error
+    async def csgo_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: `&csgo <link do profilu>`")
+            return
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Nie znaleziono gracza")
             return
         if isinstance(error, commands.CommandError):
             await ctx.send("❌ Wystąpił błąd przy pobieraniu danych, spróbuj ponownie")
