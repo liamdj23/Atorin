@@ -175,12 +175,11 @@ class Games(commands.Cog, name="🕹 Gry"):
             return
         if isinstance(error, commands.CommandError):
             await ctx.send("❌ Wystąpił błąd przy pobieraniu danych, spróbuj ponownie")
-            print(error)
             return
         self.bot.log.error(error)
 
     @commands.command(description="Statystyki w grze CS:GO\n\nPrzykład użycia:\n&csgo https://steamcommunity.com/id/liamxdev/",
-                      usage="<link do profilu>", aliases=["cs"])
+                      usage="<link do profilu steam>", aliases=["cs"])
     async def csgo(self, ctx, url: str):
         steam_id, nick = await steam_resolve_url(url, self.bot.config["steam"])
         if not steam_id:
@@ -205,13 +204,13 @@ class Games(commands.Cog, name="🕹 Gry"):
     @csgo.error
     async def csgo_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&csgo <link do profilu>`")
+            await ctx.send("❌ Poprawne użycie: `&csgo <link do profilu steam>`")
             return
         if isinstance(error, commands.BadArgument):
             await ctx.send("❌ Nie znaleziono gracza")
             return
         if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd przy pobieraniu danych, spróbuj ponownie")
-            print(error)
+            await ctx.send("❌ Wystąpił błąd przy pobieraniu danych, spróbuj ponownie."
+                           " Sprawdź czy twój profil jest publiczny.")
             return
         self.bot.log.error(error)
