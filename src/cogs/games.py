@@ -37,6 +37,11 @@ async def steam_resolve_url(url: str, key: str):
         nick = parsed.path.split("/")[2]
     else:
         return None
+    try:
+        int(nick)
+        return nick, nick
+    except ValueError:
+        pass
     async with aiohttp.ClientSession() as session:
         api = "http://api.steampowered.com/ISteamUser/ResolveVanityURL/v1?vanityurl={0}&key={1}".format(quote(nick), key)
         async with session.get(api) as r:
