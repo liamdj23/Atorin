@@ -151,8 +151,12 @@ class Info(commands.Cog, name="ℹ Informacje"):
             for alias in command.aliases:
                 all_commands[alias] = command
         if not arg:
-            embed.description = "Liczba komend: {}" \
-                                "\n Aby uzyskać więcej informacji o komendzie wpisz &help komenda" \
+            embed.description = "💬 Oznacz Atorina na początku wiadmości aby z nim porozmawiać! (beta)\n" \
+                                "⤴ Przy zakupie usługi w hostingu lvlup.pro," \
+                                " skorzystaj z kodu `liamdj23.ovh` aby otrzymać 10% zniżki!\n" \
+                                "💌 Dołącz do serwera aby być na bieżąco z nowościami: http://liamdj23.ovh/discord\n\n" \
+                                "🔠 Liczba komend: {}" \
+                                "\n❓ Aby uzyskać więcej informacji o komendzie wpisz &help komenda" \
                                 " np. `&help shiba`".format(len(self.bot.commands))
             for name, cog in self.bot.cogs.items():
                 if name != "StatcordPost":
