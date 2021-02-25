@@ -4,9 +4,7 @@ services:
     image: liamdj23/atorin
     links:
     - mongo
-    - influx
     depends_on:
-      - influx
       - mongo
     volumes:
     - ./config.json:/app/config.json
@@ -14,5 +12,3 @@ services:
     image: mongo
     environment:
       MONGO_INITDB_DATABASE: atorin
-  influx:
-    image: influxdb

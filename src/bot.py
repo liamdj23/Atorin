@@ -1,5 +1,4 @@
 import mongoengine
-from influxdb import InfluxDBClient
 from discord.ext import commands
 import discord
 from datetime import datetime
@@ -30,9 +29,6 @@ class Atorin(commands.AutoShardedBot):
         super(Atorin, self).__init__(command_prefix="&", help_command=None, intents=intents, **kwargs)
         mongoengine.connect('atorin', host="mongo")
         self.mongo = models
-        self.influx = InfluxDBClient(database="atorin", host="influx")
-        self.influx.create_database("atorin")
-        self.influx.switch_database("atorin")
         with open(os.path.dirname(__file__) + "/../config.json", 'r') as config:
             self.config = json.load(config)
         self.log = logger
@@ -66,7 +62,6 @@ class Atorin(commands.AutoShardedBot):
                 return
             if ctx.command:
                 await self.invoke(ctx)
-                self.stats_commands_usage(ctx.guild.id, ctx.command.name)
 
         @self.event
         async def on_shard_connect(id):
@@ -83,17 +78,6 @@ class Atorin(commands.AutoShardedBot):
         embed.set_footer(text="Atorin", icon_url=str(self.user.avatar_url))
         embed.colour = discord.Colour(0xc4c3eb)
         return embed
-
-    def stats_commands_usage(self, server, command):
-        self.influx.write_points([{
-            "measurement": "commandsUsage",
-            "tags": {
-                "serverId": server
-            },
-            "fields": {
-                "command": command
-            }
-        }])
 
     def avatar(self):
         return self.avatar()
