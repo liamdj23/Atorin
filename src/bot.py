@@ -47,13 +47,14 @@ class Atorin(commands.AutoShardedBot):
         async def on_message(message):
             if message.clean_content.startswith("@" + self.user.name):
                 question = " ".join(message.clean_content.split()[1:])
-                if question:
-                    self.cleverbot.browser.refresh()
-                    self.cleverbot.get_form()
-                    async with message.channel.typing():
-                        self.cleverbot.send_input(question)
-                        answer = self.cleverbot.get_response()
-                        await message.reply(answer)
+                if not question:
+                    question = "hej"
+                self.cleverbot.browser.refresh()
+                self.cleverbot.get_form()
+                async with message.channel.typing():
+                    self.cleverbot.send_input(question)
+                    answer = self.cleverbot.get_response()
+                    await message.reply(answer)
                 return
             ctx = await self.get_context(message)
             if ctx.author.bot and ctx.author.id == 742076835549937805:
