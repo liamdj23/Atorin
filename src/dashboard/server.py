@@ -12,8 +12,9 @@ class Dashboard(web.Application):
         self["bot"] = bot
 
         self.add_routes([
-            web.get("/", home.Handler)]
-        )
+            web.get("/", home.Home),
+            web.get("/commands", home.Commands)
+        ])
 
     def start(self):
         web.run_app(self)
