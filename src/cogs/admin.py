@@ -16,7 +16,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     @commands.guild_only()
     async def clear(self, ctx, count: int):
         messages = await ctx.channel.purge(limit=count)
-        await ctx.send(f"🗑 Usunięto **{len(messages)}** wiadomości ✅")
+        await ctx.send("🗑 {} usunął **{}** wiadomości ✅".format(ctx.message.author.mention, len(messages)))
 
     @clear.error
     async def clear_error(self, ctx, error):
