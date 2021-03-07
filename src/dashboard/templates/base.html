@@ -11,7 +11,8 @@
     <nav class="navbar">
       <div class="navbar-brand">
         <a class="navbar-item" href="/">
-          Atorin
+          <img class="mr-1" src="{{ avatar }}" alt="Atorin">
+            Atorin
         </a>
         <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navMenu">
           <span aria-hidden="true"></span>
@@ -36,10 +37,28 @@
           </div>
 
           <div class="navbar-end">
+            {% if user %}
+            <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link">
+                    <img class="mr-1" src="https://cdn.discordapp.com/avatars/{{ user.id }}/{{ user.avatar }}.png ">
+                    <strong>{{ user.username }}#{{ user.discriminator }}</strong>
+                </a>
+                <div class="navbar-dropdown">
+                  <a href="/servers" class="navbar-item">
+                    Wybierz serwer
+                  </a>
+                  <hr class="navbar-divider">
+                  <a href="/logout" class="navbar-item">
+                    Wyloguj się
+                  </a>
+                </div>
+              </div>
+            {% else %}
             <div class="navbar-item">
               <div class="buttons">
-                <a href="/panel" class="button is-link">Panel</a>
+                <a href="/login" class="button is-link">Zaloguj</a>
               </div>
+            {% endif %}
             </div>
           </div>
         </div>

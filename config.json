@@ -2,5 +2,8 @@
   "bot":"",
   "weather":"",
   "statcord":"",
-  "steam":""
+  "steam":"",
+  "discord_oauth2_domain": "",
+  "discord_oauth2_id": "",
+  "discord_oauth2_secret": ""
 }
