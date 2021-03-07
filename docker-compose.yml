@@ -5,10 +5,16 @@ services:
     links:
     - mongo
     depends_on:
-      - mongo
+    - mongo
     volumes:
     - ./config.json:/app/config.json
+    ports:
+    - "8080:8080"
+    restart: always
   mongo:
     image: mongo
     environment:
       MONGO_INITDB_DATABASE: atorin
+    ports:
+    - "27017:27017"
+    restart: always
