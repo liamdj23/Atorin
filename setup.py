@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="Atorin-Discord-Bot",
-    version="0.0.1",
+    version="1.1.0",
     author="liamdj23",
     author_email="me@liamdj23.ovh",
     description="Great Discord Bot with 1k+ servers",
