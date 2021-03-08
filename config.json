@@ -5,5 +5,6 @@
   "steam":"",
   "discord_oauth2_domain": "",
   "discord_oauth2_id": "",
-  "discord_oauth2_secret": ""
+  "discord_oauth2_secret": "",
+  "instagram": []
 }

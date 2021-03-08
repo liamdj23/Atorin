@@ -8,6 +8,8 @@ import unicodedata
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
 import qrcode
+import requests
+import os, json
 
 
 class Fun(commands.Cog, name="🎲 Zabawa"):
@@ -219,3 +221,46 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             await ctx.send("Nie udało się wygenerować kodu QR. Spróbuj ponownie za chwilę.")
             return
         self.bot.log.error(error)
+
+    @commands.command(usage="<nazwa>",
+                      description="Pokazuje profil z Instagrama",
+                      aliases=["ig"])
+    async def instagram(self, ctx, name: str):
+        cookies = []
+        for cookie in self.bot.config["instagram"]:
+            cookies.append(cookie["name"]+"="+cookie["value"])
+        r = requests.get("https://www.instagram.com/{}/?__a=1".format(name.replace("@", "")), headers={
+            "cookie": "; ".join(cookies)
+        })
+        if r.status_code == 404:
+            await ctx.send("❌ Nie znaleziono użytkownika o podanej nazwie")
+            return
+        data = r.json()
+        if not data["graphql"]:
+            raise commands.CommandError
+        embed = await self.bot.embed()
+        user = data["graphql"]["user"]
+        embed.title = "Profil {} na Instagramie".format(user["username"])
+        if user["full_name"]:
+            embed.add_field(name="😊 Pełna nazwa", value=user["full_name"], inline=False)
+        if not user["is_private"]:
+            embed.add_field(name="🔑 Prywatne", value="Nie")
+        else:
+            embed.add_field(name="🔑 Prywatne", value="Tak")
+        if user["biography"]:
+            embed.add_field(name="📝 Opis", value="```yml\n{}```".format(user["biography"]), inline=False)
+        embed.add_field(name="😍 Obserwujących", value=str(user["edge_followed_by"]["count"]))
+        embed.add_field(name="👀 Obserwuje", value=str(user["edge_follow"]["count"]))
+        embed.add_field(name="🔗 Link", value="https://instagram.com/{}".format(user["username"]), inline=False)
+        if user["profile_pic_url_hd"]:
+            embed.set_thumbnail(url=user["profile_pic_url_hd"])
+        await ctx.send(embed=embed)
+
+    @instagram.error
+    async def instagram_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
+            return
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie `&ig <nazwa>`")
+            return
