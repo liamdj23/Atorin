@@ -137,3 +137,75 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
                 else:
                     server.logs.enabled = False
                     server.save()
+
+    @commands.command(description="Zbanuj użytkownika",
+                      usage="@uzytkownik <powód>")
+    @commands.has_guild_permissions(ban_members=True)
+    @commands.bot_has_guild_permissions(ban_members=True)
+    @commands.guild_only()
+    async def ban(self, ctx, member: discord.Member, *, reason: str):
+        await member.ban(delete_message_days=0)
+        await ctx.send("🔨 {} **zbanował** {} z powodu `{}`".format(
+            ctx.author.mention,
+            member.name + "#" + member.discriminator,
+            reason
+        ))
+        await member.send("🔨 Zostałeś zbanowany na serwerze {} przez {} z powodu `{}`".format(
+            ctx.guild.name, ctx.author.mention, reason))
+
+    @ban.error
+    async def ban_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Poprawne użycie: `&ban @użytkownik <powód>`")
+            return
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
+            return
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: `&ban @użytkownik <powód>`")
+            return
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send("❌ Nie masz uprawnień do banowania użytkowników")
+            return
+        if isinstance(error, commands.BotMissingPermissions):
+            await ctx.send("❌ Atorin nie ma uprawnień do banowania użytkowników")
+            return
+
+    @commands.command(
+        description="Odbanuj użytkownika",
+        usage="<nick#0000>")
+    @commands.has_guild_permissions(ban_members=True)
+    @commands.bot_has_guild_permissions(ban_members=True)
+    @commands.guild_only()
+    async def unban(self, ctx, *, member):
+        banned_users = await ctx.guild.bans()
+        if not banned_users:
+            await ctx.send("❌ Lista zbanowanych użytkowników jest pusta")
+            return
+        member_name, member_discriminator = member.split('#')
+        for ban_entry in banned_users:
+            user = ban_entry.user
+            if (user.name, user.discriminator) == (member_name, member_discriminator):
+                await ctx.guild.unban(user)
+                await ctx.send("✅ {} odbanował {}".format(ctx.author.mention, member))
+                return
+        await ctx.send("❌ Nie odnaleziono użytkownika o podanej nazwie.")
+
+    @unban.error
+    async def unban_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Poprawne użycie: `&unban <użytkownik>`")
+            return
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
+            return
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: `&unban <użytkownik>`")
+            return
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send("❌ Nie masz uprawnień do banowania użytkowników")
+            return
+        if isinstance(error, commands.BotMissingPermissions):
+            await ctx.send("❌ Atorin nie ma uprawnień do banowania użytkowników")
+            return
+
