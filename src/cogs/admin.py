@@ -209,3 +209,34 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             await ctx.send("❌ Atorin nie ma uprawnień do banowania użytkowników")
             return
 
+    @commands.command(description="Wyrzuć użytkownika", usage="@użytkownik <powód>")
+    @commands.has_guild_permissions(kick_members=True)
+    @commands.bot_has_guild_permissions(kick_members=True)
+    @commands.guild_only()
+    async def kick(self, ctx, member: discord.Member, *, reason: str):
+        await member.kick(reason=reason)
+        await ctx.send("🦶 {} wyrzucił {} z powodu {}".format(
+            ctx.author.mention,
+            member.name + "#" + member.discriminator,
+            reason
+        ))
+        await member.send("🦶 Zostałeś wyrzucony z serwera {} przez {} z powodu `{}`".format(
+            ctx.guild.name, ctx.author.mention, reason))
+
+    @kick.error
+    async def kick_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Poprawne użycie: `&kick @użytkownik <powód>`")
+            return
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
+            return
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: `&kick @użytkownik <powód>`")
+            return
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send("❌ Nie masz uprawnień do wyrzucania użytkowników")
+            return
+        if isinstance(error, commands.BotMissingPermissions):
+            await ctx.send("❌ Atorin nie ma uprawnień do wyrzucania użytkowników")
+            return
