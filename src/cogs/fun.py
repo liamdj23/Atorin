@@ -1,15 +1,15 @@
-from discord.ext import commands
-import aiohttp
-from random import randrange
-from io import BytesIO
-import discord
-from pyfiglet import Figlet
-import unicodedata
-from PIL import Image, ImageDraw, ImageFont
 import textwrap
+import unicodedata
+from io import BytesIO
+from random import randrange
+
+import aiohttp
+import discord
 import qrcode
 import requests
-import os, json
+from PIL import Image, ImageDraw, ImageFont
+from discord.ext import commands
+from pyfiglet import Figlet
 
 
 class Fun(commands.Cog, name="🎲 Zabawa"):
@@ -238,7 +238,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         data = r.json()
         if not data["graphql"]:
             raise commands.CommandError
-        embed = await self.bot.embed()
+        embed = self.bot.embed(ctx.author)
         user = data["graphql"]["user"]
         embed.title = "Profil {} na Instagramie".format(user["username"])
         if user["full_name"]:

@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>AtorinBot - {% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
+    <style>
+        img.emoji {
+           height: 1em;
+           width: 1em;
+           margin: 0 .05em 0 .1em;
+           vertical-align: -0.1em;
+        }
+    </style>
     {% block head %}{% endblock %}
   </head>
   <body>
@@ -33,6 +42,9 @@
             </a>
             <a href="/stats" class="navbar-item">
               📈 Statystyki
+            </a>
+            <a href="/premium" class="navbar-item">
+                👑 <strong>Premium</strong>
             </a>
           </div>
 
@@ -64,7 +76,13 @@
         </div>
     </nav>
 
-    <section class="hero is-link is-medium-with-navbar">
+    <section class="hero is-link is-small-with-navbar">
+    {% for message in get_flashed_messages() %}
+      <div class="notification has-text-centered is-danger">
+        <button class="delete"></button>
+          {{ message }}
+      </div>
+    {% endfor %}
       <div class="hero-body has-text-centered">
         <figure class="image is-128x128 is-inline-block">
            <img src="{% block avatar %}{% endblock %}">
@@ -84,6 +102,7 @@
         <p>
           liamdj23 | 2021
         </p>
+        <a href="/regulamin">Regulamin serwisu</a>
       </div>
     </footer>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -94,7 +113,17 @@
               $(".navbar-menu").toggleClass("is-active");
           });
       });
+      document.addEventListener('DOMContentLoaded', () => {
+          (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+            const $notification = $delete.parentNode;
+
+            $delete.addEventListener('click', () => {
+              $notification.parentNode.removeChild($notification);
+            });
+          });
+        });
   </script>
+  <script>twemoji.parse(document.body)</script>
   {% block scripts %}{% endblock %}
   </body>
 </html>

@@ -1,37 +1,40 @@
-from aiohttp import web
-import aiohttp_jinja2
-import jinja2
-import aiohttp_session
-from aiohttp_session.cookie_storage import EncryptedCookieStorage
-import base64
-from cryptography import fernet
+import os
+import threading
+
 import requests
+from flask import Flask
 
 from dashboard.routes import home
 from dashboard.routes import panel
+from dashboard.routes import premium
 
 
-class Dashboard(web.Application):
-    def __init__(self, bot, *args, **kwargs):
-        super(Dashboard, self).__init__(*args, **kwargs)
-        aiohttp_jinja2.setup(self, loader=jinja2.FileSystemLoader('dashboard/templates'))
-        fernet_key = fernet.Fernet.generate_key()
-        secret_key = base64.urlsafe_b64decode(fernet_key)
-        aiohttp_session.setup(self, EncryptedCookieStorage(secret_key))
-        self["bot"] = bot
-        self["discord"] = Discord(bot.config)
+class Dashboard(Flask):
+    def __init__(self, bot):
+        super(Dashboard, self).__init__(__name__)
+        self.config["TEMPLATES_AUTO_RELOAD"] = True
+        self.jinja_env.auto_reload = True
+        self.secret_key = os.urandom(32).hex()
+        self.bot = bot
+        self.discord = Discord(bot.config)
 
-        self.add_routes([
-            web.get("/", home.Home, name="index"),
-            web.get("/commands", home.Commands, name="commands"),
-            web.get("/login", panel.Login, name="login"),
-            web.get("/servers", panel.Servers, name="servers"),
-            web.get("/server/{server_id}", panel.Server, name="server"),
-            web.get("/logout", panel.Logout, name="logout")
-        ])
+        self.add_url_rule('/', view_func=home.home)
+        self.add_url_rule('/commands', view_func=home.commands)
+        self.add_url_rule('/login', view_func=panel.login)
+        self.add_url_rule('/servers', view_func=panel.servers)
+        self.add_url_rule('/server/<server_id>', view_func=panel.server)
+        self.add_url_rule('/logout', view_func=panel.logout)
+        self.add_url_rule('/premium', view_func=premium.premium)
+        self.add_url_rule('/thanks', view_func=premium.thanks)
+        self.add_url_rule('/buy', view_func=premium.buy)
+        self.add_url_rule('/payments', view_func=premium.payments, methods=["POST"])
+        self.add_url_rule('/sms', view_func=premium.sms, methods=["POST"])
+        self.add_url_rule('/regulamin', view_func=home.terms)
 
     def start(self):
-        web.run_app(self)
+        host = "0.0.0.0"
+        port = 8080
+        threading.Thread(target=self.run, args=(host, port,)).start()
 
 
 class Discord:
@@ -81,3 +84,4 @@ class Discord:
         return "https://discord.com/oauth2/authorize?client_id={}&redirect_uri={}" \
                "/login&response_type=code&scope=identify%20guilds".format(self.config["discord_oauth2_id"],
                                                                           self.config["discord_oauth2_domain"])
+

@@ -1,5 +1,5 @@
-from discord.ext import commands
 import discord
+from discord.ext import commands
 
 
 class Admin(commands.Cog, name="🛠 Administracyjne"):
@@ -41,7 +41,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
     async def advert(self, ctx, *, content: str):
-        embed = await self.bot.embed()
+        embed = self.bot.embed(ctx.author)
         embed.title = "📣 Ogłoszenie 📣"
         embed.description = content
         message = await ctx.send(embed=embed)
@@ -73,7 +73,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             server = self.bot.mongo.Server(id=ctx.guild.id,
                                            logs=self.bot.mongo.Logs(enabled=False))
         if state is None:
-            embed = await self.bot.embed()
+            embed = self.bot.embed(ctx.author)
             embed.title = "Powiadomienia o usuniętych i edytowanych wiadomościach"
             if server.logs.enabled:
                 embed.add_field(name="💬 Powiadomienia", value=self.bool_to_state(True))
@@ -112,7 +112,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         if server and server.logs.enabled:
             channel = message.guild.get_channel(server.logs.channel)
             if channel:
-                embed = await self.bot.embed()
+                embed = self.bot.embed()
                 embed.title = "Usunięta wiadomość"
                 embed.add_field(name="🧑 Autor", value=message.author, inline=False)
                 embed.add_field(name="✍️Treść", value="```{}```".format(message.clean_content), inline=False)
@@ -128,7 +128,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             if server and server.logs.enabled:
                 channel = old.guild.get_channel(server.logs.channel)
                 if channel:
-                    embed = await self.bot.embed()
+                    embed = self.bot.embed()
                     embed.title = "Edytowana wiadomość"
                     embed.add_field(name="🧑 Autor", value=old.author, inline=False)
                     embed.add_field(name="❎ Poprzednia treść", value="```{}```".format(old.clean_content), inline=False)

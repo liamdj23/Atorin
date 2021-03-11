@@ -1,6 +1,5 @@
-from discord.ext import commands
-
 import statcord
+from discord.ext import commands
 
 
 class StatcordPost(commands.Cog):

@@ -6,5 +6,10 @@
   "discord_oauth2_domain": "",
   "discord_oauth2_id": "",
   "discord_oauth2_secret": "",
+  "paybylink": "",
+  "shopId": 0,
+  "notify_channel": 0,
+  "sms_userid": 0,
+  "sms_serviceid": 0,
   "instagram": []
 }

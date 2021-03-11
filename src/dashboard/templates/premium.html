@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Premium{% endblock %}
+{% block avatar %}{{ avatar }}{% endblock %}
+{% block content %}
+<div class="content mt-5 mb-5 has-text-centered">
+    <p class="title">Co zyskujesz kupując Atorin Premium?</p>
+</div>
+<div class="columns mr-5 ml-5 is-mobile has-text-centered is-vcentered">
+    <div class="column is-one-quarter">
+        <img class="is-128x128 is-inline-block" src="/static/images/money-with-wings.png" alt="">
+    </div>
+    <div class="column">
+        <p class="is-size-4-tablet">Ranga "Wspierający" na oficjalnym serwerze Discord Atorina, która daje dostęp do testowania jeszcze
+            niewprowadzonych komend!
+        </p>
+    </div>
+</div>
+{% if user %}
+<div class="buttons is-centered">
+    <button class="button is-link is-size-4-tablet" id="showModalPay">
+        Kup za 4,99zł (Przelew/Blik/Paypal)
+    </button>
+    <button class="button is-link is-size-4-tablet" id="showModalSMS">
+        Kup za 7,38zł (SMS)
+    </button>
+</div>
+<div id="modalPay" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Kup Atorin Premium na 30 dni (Przelew/Blik/Paypal)</p>
+      <button class="delete" aria-label="close" id="closeModalPay"></button>
+    </header>
+    <section class="modal-card-body">
+      <p>Zostaniesz przekierowany na stronę operatora płatności</p>
+      <p>Dostępne metody płatności to Przelew, BLIK oraz Paypal</p>
+      <p>Jeśli masz pytania lub masz problem z płatnością, <a href="/discord">napisz na naszym Discordzie</a></p>
+      <p><strong>Cena: 4,99zł</strong></p>
+    </section>
+    <footer class="modal-card-foot">
+      <a href="/buy" class="button is-success">Kliknij tutaj aby kupić</a>
+      <button class="button" id="cancelModalPay">Anuluj</button>
+    </footer>
+  </div>
+</div>
+<div id="modalSMS" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Kup Atorin Premium na 30 dni (SMS)</p>
+      <button class="delete" aria-label="close" id="closeModalSMS"></button>
+    </header>
+    <section class="modal-card-body">
+      <p>W celu zakupu usługi Atorin Premium na 30 dni proszę wysłać SMS o treści <strong>ST.ATORIN</strong>
+          na numer <strong>76480</strong></p>
+      <p>Koszt wysłania wiadomości to <strong>7,38zł</strong></p>
+      <p>Płatności zapewnia firma <a href="https://paybylink.pl">PayByLink</a>.</p>
+      <p>Korzystanie z serwisu jest jednoznaczne z akceptacją <a href="https://paybylink.pl/partner/dokumenty/">regulaminów</a>.</p>
+      <p>Jeśli nie dostałeś kodu zwrotnego w ciągu 30 minut skorzystaj z <a href="https://paybylink.pl/kontakt/">formularza reklamacyjnego</a></p>
+    </section>
+    <footer class="modal-card-foot">
+      <form action="/sms" method="post">
+        <div class="field has-addons">
+          <div class="control">
+            <input name="code" class="input" type="text" placeholder="Kod zwrotny z SMSa" maxlength="8">
+          </div>
+          <div class="control">
+            <button type="submit" class="button is-success">Kliknij tutaj aby kupić</button>
+          </div>
+        </div>
+      </form>
+      <button class="button" id="cancelModalSMS">Anuluj</button>
+    </footer>
+  </div>
+</div>
+{% else %}
+<div class="content has-text-centered">
+    <a href="/login" class="button is-link is-size-4-tablet">
+            Zaloguj się aby kupić
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+    <script>
+    $(document).ready(() => {
+        const modalSMS = $('#modalSMS');
+        $('#showModalSMS').click(function(){
+            modalSMS.addClass('is-active');
+        });
+        $('#closeModalSMS').click(function(){
+            modalSMS.removeClass('is-active');
+        });
+        $('#cancelModalSMS').click(function(){
+            modalSMS.removeClass('is-active');
+        });
+        const modalPay = $('#modalPay');
+        $('#showModalPay').click(function(){
+            modalPay.addClass('is-active');
+        });
+        $('#closeModalPay').click(function(){
+            modalPay.removeClass('is-active');
+        });
+        $('#cancelModalPay').click(function(){
+            modalPay.removeClass('is-active');
+        });
+    });
+    </script>
+{% endblock %}

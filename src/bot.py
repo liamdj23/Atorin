@@ -1,24 +1,21 @@
-import mongoengine
-from discord.ext import commands
-import discord
-from datetime import datetime
-import cleverbotfree.cbfree
-
-
-from cogs.fun import Fun
-from cogs.admin import Admin
-from cogs.info import Info
-from cogs.games import Games
-from cogs.statcord import StatcordPost
-
-from logger import logger
-import models
-import utils
 import json
 import os
+from datetime import datetime
 
-from dashboard.server import Dashboard
+import cleverbotfree.cbfree
+import discord
+import mongoengine
+from discord.ext import commands
+from loguru import logger
 
+import models
+import utils
+from cogs.admin import Admin
+from cogs.fun import Fun
+from cogs.games import Games
+from cogs.info import Info
+from cogs.statcord import StatcordPost
+from dashboard.flask import Dashboard
 from events.guild import GuildEvents
 
 
@@ -73,10 +70,18 @@ class Atorin(commands.AutoShardedBot):
             self.log.info("Shard {} is ready.".format(id))
             await self.update_status()
 
-    async def embed(self):
+        @self.event
+        async def on_ready():
+            self.log.info("Atorin is ready.")
+            self.web.start()
+
+    def embed(self, author=None):
         embed = discord.Embed()
         embed.timestamp = datetime.utcnow()
-        embed.set_footer(text="Atorin", icon_url=str(self.user.avatar_url))
+        if author and self.mongo.Premium.objects(id=author.id).first():
+            embed.set_footer(text="Atorin Premium 💎", icon_url=str(self.user.avatar_url))
+        else:
+            embed.set_footer(text="Atorin", icon_url=str(self.user.avatar_url))
         embed.colour = discord.Colour(0xc4c3eb)
         return embed
 
@@ -86,6 +91,6 @@ class Atorin(commands.AutoShardedBot):
     async def update_status(self):
         await self.change_presence(activity=discord.Game(name="z {} serwerami | &help | Dołącz do serwera Discord!".format(len(self.guilds))))
 
-    async def run(self, *args, **kwargs):
-        await super(Atorin, self).start(self.config["bot"])
+    def run(self, *args, **kwargs):
+        super(Atorin, self).run(self.config["bot"])
 

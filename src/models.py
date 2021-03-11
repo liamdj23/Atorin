@@ -1,3 +1,5 @@
+import datetime
+
 import mongoengine
 
 
@@ -14,3 +16,15 @@ class Server(mongoengine.Document):
 class Token(mongoengine.Document):
     id = mongoengine.StringField(primary_key=True)
     key = mongoengine.StringField()
+
+
+class Payments(mongoengine.Document):
+    id = mongoengine.StringField(primary_key=True)
+    user = mongoengine.IntField()
+    paid = mongoengine.BooleanField(default=False)
+
+
+class Premium(mongoengine.Document):
+    id = mongoengine.IntField(primary_key=True)
+    created = mongoengine.DateTimeField(default=datetime.datetime.utcnow())
+    expire = mongoengine.DateTimeField(default=datetime.datetime.utcnow())

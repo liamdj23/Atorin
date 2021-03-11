@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Dziękuję za wsparcie{% endblock %}
+{% block avatar %}{{ avatar }}{% endblock %}
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/gh/mathusummut/confetti.js/confetti.min.js"></script>
+    <script>confetti.start()</script>
+{% endblock %}
+{% block content %}
+    <div class="content mt-3 mb-3 mr-2 ml-2 has-text-centered">
+        <p class="title">Dziękuję za wsparcie!</p>
+        <p class="subtitle">Transakcja przebiegła pomyślnie.</p>
+        <p>Dziękuję za zakup usługi <strong>Atorin Premium</strong>. Zostanie ona aktywowana na Twoim koncie Discord
+            w ciągu kilku minut.</p>
+        <p>Przekazane pięniadze zostaną przeznaczone na utrzymanie bota oraz na kebaba dla autora.</p>
+    </div>
+{% endblock %}

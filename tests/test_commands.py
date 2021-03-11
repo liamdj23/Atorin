@@ -1,5 +1,6 @@
-import distest
 import sys
+
+import distest
 from discord import Embed
 
 test_collector = distest.TestCollector()

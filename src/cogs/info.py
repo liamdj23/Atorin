@@ -1,10 +1,12 @@
-from discord.ext import commands
-import aiohttp
-from urllib.parse import quote
-from utils import get_weather_emoji, progress_bar, convert_size
-import psutil
-import discord
 from io import BytesIO
+from urllib.parse import quote
+
+import aiohttp
+import discord
+import psutil
+from discord.ext import commands
+
+from utils import get_weather_emoji, progress_bar, convert_size
 
 
 class Info(commands.Cog, name="ℹ Informacje"):
@@ -40,7 +42,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
     @commands.guild_only()
     async def server(self, ctx):
         guild = ctx.guild
-        embed = await self.bot.embed()
+        embed = self.bot.embed(ctx.author)
         embed.title = "Informacje o " + guild.name
         embed.add_field(name="🆔 ID", value=guild.id)
         embed.add_field(name="🌍 Region", value=guild.region)
@@ -55,7 +57,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
     async def user(self, ctx, member: discord.Member = None):
         if member is None:
             member = ctx.author
-        embed = await self.bot.embed()
+        embed = self.bot.embed(ctx.author)
         embed.title = "Informacje o " + member.name + "#" + member.discriminator
         embed.add_field(name="🆔 ID", value=member.id)
         if member.nick:
@@ -94,7 +96,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
                                    .format(token, quote(city))) as r:
                 if r.status == 200:
                     data = await r.json()
-                    embed = await self.bot.embed()
+                    embed = self.bot.embed(ctx.author)
                     embed.title = "Pogoda w " + data["name"]
                     emoji = get_weather_emoji(data["weather"][0]["id"])
                     embed.add_field(name=emoji + " Pogoda", value=data["weather"][0]["description"])
@@ -123,7 +125,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
 
     @commands.command(description="Wpisz aby otrzymać informacje o Atorinie")
     async def bot(self, ctx):
-        embed = await self.bot.embed()
+        embed = self.bot.embed(ctx.author)
         embed.title = "Informacje o Atorinie"
         embed.add_field(name="🌐 Liczba serwerów", value=len(self.bot.guilds))
         embed.add_field(name="👨‍💻 Autor", value="liamdj23#9081")
@@ -143,7 +145,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
 
     @commands.command(aliases=["pomoc", "komendy"], description="Lista komend AtorinBot")
     async def help(self, ctx, arg=None):
-        embed = await self.bot.embed()
+        embed = self.bot.embed(ctx.author)
         embed.title = "Lista komend AtorinBot"
         all_commands = {}
         for command in self.bot.commands:

@@ -1,10 +1,11 @@
-from discord.ext import commands
+import base64
 import re
+from io import BytesIO
+from urllib.parse import quote, urlparse
+
 import aiohttp
 import discord
-from io import BytesIO
-import base64
-from urllib.parse import quote, urlparse
+from discord.ext import commands
 
 
 def is_domain(argument: str):
@@ -82,7 +83,7 @@ class Games(commands.Cog, name="🕹 Gry"):
                 if r.status == 200:
                     data = await r.json()
                     if data["online"]:
-                        embed = await self.bot.embed()
+                        embed = self.bot.embed(ctx.author)
                         embed.title = f"Status serwera Minecraft: {domain}"
                         if 'version' in data:
                             embed.add_field(name="🔌 Wersja", value=data["version"])
@@ -154,7 +155,7 @@ class Games(commands.Cog, name="🕹 Gry"):
                 if r.status == 200:
                     json = await r.json()
                     data = json["data"]["stats"]["all"]["overall"]
-                    embed = await self.bot.embed()
+                    embed = self.bot.embed(ctx.author)
                     embed.title = "Statystyki w grze Fortnite"
                     embed.description = "🧑 Gracz: **{}**".format(nick)
                     embed.add_field(name="🏆 Wygrane", value=data["wins"])
@@ -187,7 +188,7 @@ class Games(commands.Cog, name="🕹 Gry"):
         stats = await steam_get_stats(730, self.bot.config["steam"], steam_id)
         if not stats:
             raise commands.CommandError
-        embed = await self.bot.embed()
+        embed = self.bot.embed(ctx.author)
         embed.title = "Statystyki w grze CS:GO"
         embed.description = "🧑 Gracz: **{}**".format(nick)
         for i in stats:
