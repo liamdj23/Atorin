@@ -50,27 +50,21 @@
       <p class="modal-card-title">Kup Atorin Premium na 30 dni (SMS)</p>
       <button class="delete" aria-label="close" id="closeModalSMS"></button>
     </header>
+    <form action="/sms" method="post">
     <section class="modal-card-body">
       <p>W celu zakupu usługi Atorin Premium na 30 dni proszę wysłać SMS o treści <strong>ST.ATORIN</strong>
           na numer <strong>76480</strong></p>
+      <input name="code" class="input" type="text" placeholder="Kod zwrotny z SMSa" maxlength="8">
       <p>Koszt wysłania wiadomości to <strong>7,38zł</strong></p>
       <p>Płatności zapewnia firma <a href="https://paybylink.pl">PayByLink</a>.</p>
       <p>Korzystanie z serwisu jest jednoznaczne z akceptacją <a href="https://paybylink.pl/partner/dokumenty/">regulaminów</a>.</p>
       <p>Jeśli nie dostałeś kodu zwrotnego w ciągu 30 minut skorzystaj z <a href="https://paybylink.pl/kontakt/">formularza reklamacyjnego</a></p>
     </section>
     <footer class="modal-card-foot">
-      <form action="/sms" method="post">
-        <div class="field has-addons">
-          <div class="control">
-            <input name="code" class="input" type="text" placeholder="Kod zwrotny z SMSa" maxlength="8">
-          </div>
-          <div class="control">
-            <button type="submit" class="button is-success">Kliknij tutaj aby kupić</button>
-          </div>
-        </div>
-      </form>
-      <button class="button" id="cancelModalSMS">Anuluj</button>
+      <button type="submit" class="button is-success">Kliknij tutaj aby kupić</button>
+      <a class="button" id="cancelModalSMS">Anuluj</a>
     </footer>
+    </form>
   </div>
 </div>
 {% else %}
