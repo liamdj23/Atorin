@@ -22,6 +22,7 @@ class Payments(mongoengine.Document):
     id = mongoengine.StringField(primary_key=True)
     user = mongoengine.IntField()
     paid = mongoengine.BooleanField(default=False)
+    created = mongoengine.DateTimeField(default=datetime.datetime.utcnow())
 
 
 class Premium(mongoengine.Document):
