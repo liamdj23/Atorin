@@ -19,24 +19,22 @@ def premium():
 def thanks():
     bot = current_app.bot
     discord_api = current_app.discord
-    if session.get("access_token") and session.get("transactionId"):
-        transaction = bot.mongo.Payments.objects(id=session["transactionId"]).first()
-        if transaction and transaction.paid:
-            user_api = discord_api.get_user(session["access_token"])
-            data = {"username": "Atorin", "avatar_url": bot.user.avatar_url, "embeds": [{
-                "title": "Atorin Premium 💎",
-                "description": "Użytkownik **{}#{}** zakupił usługę Atorin Premium na 30 dni! Dziękuję! ❤".format(
-                    user_api["username"], user_api["discriminator"]
-                ),
-                "color": 2555648
-            }]}
-            requests.post(bot.config["notify_channel"], json=data)
-            session.pop("transactionId", None)
-            return render_template(
+    if session.get("access_token") and session.get("transactionSuccess"):
+        user_api = discord_api.get_user(session["access_token"])
+        data = {"username": "Atorin", "avatar_url": str(bot.user.avatar_url), "embeds": [{
+            "title": "Atorin Premium 💎",
+            "description": "Użytkownik **{}#{}** zakupił usługę Atorin Premium na 30 dni! Dziękuję! ❤".format(
+                user_api["username"], user_api["discriminator"]
+            ),
+            "color": 2555648
+        }]}
+        requests.post(bot.config["notify_channel"], json=data)
+        session.pop("transactionSuccess", None)
+        return render_template(
                 "thanks.html",
                 avatar=bot.user.avatar_url,
                 user=discord_api.get_user(session.get("access_token"))
-            )
+        )
     return redirect("/")
 
 
@@ -66,7 +64,7 @@ def buy():
         response = r.json()
         payment = bot.mongo.Payments(id=response["transactionId"], user=user["id"])
         payment.save()
-        session["transactionId"] = response["transactionId"]
+        session["transactionSuccess"] = True
         return redirect(response["url"])
     else:
         session["redirect"] = "buy"
@@ -124,6 +122,7 @@ def sms():
                         premium = bot.mongo.Premium(id=user["id"])
                     premium.expire = premium.expire + datetime.timedelta(days=30)
                     premium.save()
+                    session["transactionSuccess"] = True
                     return redirect(url_for("thanks"))
                 else:
                     error = "Podany kod został już użyty!"
