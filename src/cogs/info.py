@@ -175,3 +175,18 @@ class Info(commands.Cog, name="ℹ Informacje"):
                 embed.add_field(name="🔠 Aliasy", value="```{}```".format(", ".join(cmd.aliases)), inline=False)
             embed.add_field(name="💬 Opis", value="```{}```".format(cmd.description))
             await ctx.send(embed=embed)
+
+    @commands.command(description="Kup lub sprawdź status Atorin Premium", aliases=["donate"])
+    async def premium(self, ctx):
+        embed = self.bot.embed(ctx.author)
+        data = self.bot.mongo.Premium.objects(id=ctx.author.id).first()
+        embed.title = "Atorin Premium"
+        embed.color = discord.Color(0x07fc03)
+        if data:
+            embed.description = "💎 {}, Twoje premium jest **aktywne** i jest ważne do **{}**".format(
+                ctx.author.mention, data.expire.strftime("%d/%m/%Y %H:%M")
+            )
+        else:
+            embed.description = "💎 Wesprzyj bota kupując Atorin Premium, w zamian otrzymasz dostęp do eksluzywnych" \
+                                " funkcji. Więcej informacji znajdziesz [na stronie bota](https://liamdj23.ovh/premium)."
+        await ctx.send(embed=embed)
