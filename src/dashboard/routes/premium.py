@@ -2,7 +2,6 @@ import datetime
 import hashlib
 import re
 
-import discord
 import requests
 from flask import render_template, session, current_app, redirect, url_for, request, flash
 
@@ -24,13 +23,14 @@ def thanks():
         transaction = bot.mongo.Payments.objects(id=session["transactionId"]).first()
         if transaction and transaction.paid:
             user_api = discord_api.get_user(session["access_token"])
-            embed = bot.embed()
-            embed.title = "Atorin Premium 💎"
-            embed.color = discord.Colour(0x26ff00)
-            embed.description = "Użytkownik **{}#{}** zakupił usługę Atorin Premium na 30 dni! Dziękuję! ❤".format(
-                user_api["username"], user_api["discriminator"]
-            )
-            # await bot.get_channel(bot.config["notify_channel"]).send(embed=embed)
+            data = {"username": "Atorin", "avatar_url": bot.user.avatar_url, "embeds": [{
+                "title": "Atorin Premium 💎",
+                "description": "Użytkownik **{}#{}** zakupił usługę Atorin Premium na 30 dni! Dziękuję! ❤".format(
+                    user_api["username"], user_api["discriminator"]
+                ),
+                "color": 2555648
+            }]}
+            requests.post(bot.config["notify_channel"], json=data)
             session.pop("transactionId", None)
             return render_template(
                 "thanks.html",
