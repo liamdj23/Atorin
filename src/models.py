@@ -4,7 +4,7 @@ import mongoengine
 
 
 class Logs(mongoengine.EmbeddedDocument):
-    enabled = mongoengine.BooleanField()
+    enabled = mongoengine.BooleanField(default=False)
     channel = mongoengine.IntField()
 
 
