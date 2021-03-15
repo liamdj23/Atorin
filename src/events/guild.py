@@ -5,6 +5,7 @@ class GuildEvents:
         @self.bot.event
         async def on_guild_join(guild):
             await self.bot.update_status()
+            bot.mongo.Server(id=guild.id).save()
 
         @self.bot.event
         async def on_guild_remove(guild):
