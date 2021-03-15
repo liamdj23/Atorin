@@ -78,7 +78,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             if server.logs.enabled:
                 embed.add_field(name="💬 Powiadomienia", value=self.bool_to_state(True))
                 if server.logs.channel:
-                    embed.add_field(name="📝 Kanał", value=server.logs.channel)
+                    embed.add_field(name="📝 Kanał", value=ctx.guild.get_channel(int(server.logs.channel)).mention)
                 embed.description = "💡 Aby wyłączyć powiadomienia o zdarzeniach, wpisz `&logs off`"
             else:
                 embed.add_field(name="💬 Powiadomienia", value=self.bool_to_state(False))
