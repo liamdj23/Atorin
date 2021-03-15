@@ -7,15 +7,15 @@
 </div>
 <div class="tile has-text-centered is-ancestor is-flex-wrap-wrap mr-3 ml-3">
 {% for server in data %}
-  <a href="/server/{{ server.id }}">
+  <a href="/server/{{ server.id }}/view">
     <div class="tile is-parent">
       <article class="tile is-child box">
         <p class="title is-5">{{ server.name }}</p>
         {% if server.icon %}
           <img src="https://cdn.discordapp.com/icons/{{ server.id }}/{{ server.icon }}.png" width="64" height="64">
-       {% else %}
+        {% else %}
           <img src="https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png" width="64" height="64">
-      {% endif %}
+        {% endif %}
       </article>
     </div>
   </a>

@@ -22,7 +22,7 @@ class Dashboard(Flask):
         self.add_url_rule('/commands', view_func=home.commands)
         self.add_url_rule('/login', view_func=panel.login)
         self.add_url_rule('/servers', view_func=panel.servers)
-        self.add_url_rule('/server/<server_id>', view_func=panel.server)
+        self.add_url_rule('/server/<server_id>/<setting>', view_func=panel.server, methods=["GET", "POST"])
         self.add_url_rule('/logout', view_func=panel.logout)
         self.add_url_rule('/premium', view_func=premium.premium)
         self.add_url_rule('/thanks', view_func=premium.thanks)

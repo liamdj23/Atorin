@@ -21,9 +21,11 @@ def servers():
         bot = current_app.bot
         guilds = discord.get_guilds(session["access_token"])
         servers = []
+        session["servers"] = []
         for server in guilds:
             if server["permissions"] == 2147483647:
                 servers.append(server)
+                session["servers"].append(server["id"])
         return render_template(
             "servers.html",
             avatar=bot.user.avatar_url,
@@ -35,17 +37,49 @@ def servers():
         return redirect(url_for("login"))
 
 
-def server(server_id):
+def server(server_id, setting):
     if session.get("access_token"):
-        if server_id:
+        if server_id and server_id in session["servers"]:
             bot = current_app.bot
             discord = current_app.discord
-            if bot.get_guild(int(server_id)):
-                return render_template(
-                    "server.html",
-                    avatar=bot.user.avatar_url,
-                    user=discord.get_user(session.get("access_token"))
-                )
+            guild = bot.get_guild(int(server_id))
+            if guild:
+                server_db = bot.mongo.Server.objects(id=guild.id).first()
+                if not server_db:
+                    server_db = bot.mongo.Server(id=guild.id, logs=bot.mongo.Logs())
+                    server_db.save()
+                if request.method == "GET":
+                    return render_template(
+                        "server.html",
+                        avatar=bot.user.avatar_url,
+                        user=discord.get_user(session.get("access_token")),
+                        guild=guild,
+                        logs=server_db.logs
+                    )
+                else:
+                    if setting:
+                        data = request.get_json()
+                        if setting == "logs":
+                            if "state" in data:
+                                server_db.logs.enabled = bool(data["state"])
+                                server_db.save()
+                                if data["state"]:
+                                    return "Zdarzenia zostały włączone!"
+                                else:
+                                    return "Zdarzenia zostały wyłączone!"
+                            elif "channel" in data and len(data["channel"]) == 18:
+                                if guild.get_channel(int(data["channel"])):
+                                    server_db.logs.channel = int(data["channel"])
+                                    server_db.save()
+                                    return "Pomyślnie zmieniono kanał do wysyłania zdarzeń!"
+                                else:
+                                    return "Nie znaleziono podanego kanału na tym serwerze."
+                            else:
+                                return "Przesłano nieprawidłowe dane."
+                        else:
+                            return "Nie znaleziono podanego ustawienia."
+                    else:
+                        return "Musisz podać nazwę ustawienia."
             else:
                 return redirect("/addbot")
         else:
