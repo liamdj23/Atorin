@@ -7,6 +7,7 @@ from flask import render_template, session, current_app, redirect, url_for, requ
 
 
 def premium():
+    session["redirect"] = "premium"
     bot = current_app.bot
     discord = current_app.discord
     return render_template(

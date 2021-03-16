@@ -2,6 +2,7 @@ from flask import render_template, session, current_app
 
 
 def home():
+    session["redirect"] = "home"
     bot = current_app.bot
     discord = current_app.discord
     return render_template(
@@ -15,6 +16,7 @@ def home():
 
 
 def commands():
+    session["redirect"] = "commands"
     bot = current_app.bot
     discord = current_app.discord
     return render_template(
@@ -26,6 +28,7 @@ def commands():
 
 
 def terms():
+    session["redirect"] = "regulamin"
     bot = current_app.bot
     discord = current_app.discord
     return render_template(
