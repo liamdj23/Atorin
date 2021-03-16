@@ -100,7 +100,7 @@ def payments():
 def sms():
     error = None
     if session.get("access_token"):
-        data = request.form
+        data = request.get_json()
         if data and data["code"]:
             code = re.escape(data["code"])
             if re.match("^[A-Za-z0-9]{8}$", code):
@@ -123,7 +123,7 @@ def sms():
                     premium.expire = premium.expire + datetime.timedelta(days=30)
                     premium.save()
                     session["transactionSuccess"] = True
-                    return redirect(url_for("thanks"))
+                    return url_for("thanks")
                 else:
                     error = "Podany kod został już użyty!"
             else:
@@ -132,5 +132,4 @@ def sms():
             error = "Musisz podać kod zwrotny z SMSa!"
     else:
         error = "Musisz być zalogowany!"
-    flash(error)
-    return redirect(url_for("premium"))
+    return error
