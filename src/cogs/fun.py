@@ -264,3 +264,33 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Poprawne użycie `&ig <nazwa>`")
             return
+
+    @commands.command(usage="@poszukiwany",
+                      description="Oznacz kogoś aby stał się poszukiwany\n\nPrzykład użycia: &wanted @liamdj23",
+                      aliases=["poszukiwany"])
+    async def wanted(self, ctx, *, user: discord.User):
+        template = Image.open("assets/wanted/wanted.jpg")
+        avatar = Image.open(BytesIO(await user.avatar_url.read()))
+        avatar_resized = avatar.resize((320, 320))
+        w, h = avatar_resized.size
+        template.paste(avatar_resized, (44, 123, 44+w, 123+h))
+        img = BytesIO()
+        template.save(img, "PNG")
+        img.seek(0)
+        await ctx.send(file=discord.File(img, filename="wanted.png"))
+
+    @codeqr.error
+    async def wanted_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: `&wanted @poszukiwany`")
+            return
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Poprawne użycie: &wanted @poszukiwany`")
+            return
+        if isinstance(error, commands.UserNotFound):
+            await ctx.send("❌ Nie znaleziono podanego użytkownika.")
+            return
+        if isinstance(error, commands.CommandError):
+            await ctx.send("Nie udało się wygenerować obrazka. Spróbuj ponownie za chwilę.")
+            return
+        self.bot.log.error(error)
