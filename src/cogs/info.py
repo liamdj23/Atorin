@@ -143,7 +143,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
         )
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["pomoc", "komendy"], description="Lista komend AtorinBot")
+    @commands.command(aliases=["pomoc", "komendy", "?"], description="Lista komend AtorinBot")
     async def help(self, ctx, arg=None):
         embed = self.bot.embed(ctx.author)
         embed.title = "Lista komend AtorinBot"

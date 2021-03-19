@@ -59,7 +59,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             return
         self.bot.log.error(error)
 
-    @commands.command(description="Wpisz aby otrzymać losowe zdjęcie kotka")
+    @commands.command(description="Wpisz aby otrzymać losowe zdjęcie kotka", aliases=["kot"])
     async def cat(self, ctx):
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.thecatapi.com/v1/images/search?limit=1') as r:
@@ -76,7 +76,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             return
         self.bot.log.error(error)
 
-    @commands.command(description="Wpisz aby otrzymać losowe zdjęcie lisa")
+    @commands.command(description="Wpisz aby otrzymać losowe zdjęcie lisa", aliases=["lis"])
     async def fox(self, ctx):
         async with aiohttp.ClientSession() as session:
             async with session.get('https://randomfox.ca/floof/') as r:
