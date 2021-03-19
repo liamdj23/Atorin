@@ -240,3 +240,69 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send("❌ Atorin nie ma uprawnień do wyrzucania użytkowników")
             return
+
+    @commands.command(description="Wycisza podanego użytkownika", aliases=["wycisz"])
+    @commands.has_permissions(manage_messages=True)
+    @commands.guild_only()
+    @commands.bot_has_permissions(manage_roles=True)
+    async def mute(self, ctx, member: discord.Member, *, reason=None):
+        mutedrole = discord.utils.get(ctx.guild.roles, name="Muted")
+        if not mutedrole:
+            mutedrole = await ctx.guild.create_role(name="Muted")
+            for channel in ctx.guild.channels:
+                if channel.permissions_for(ctx.guild.get_member(self.bot.user.id)).manage_roles:
+                    await channel.set_permissions(mutedrole, speak=False, send_messages=False)
+        await member.add_roles(mutedrole, reason=reason)
+        if reason:
+            await ctx.send("🔇 Wyciszono {} z powodu `{}`".format(member.mention, reason))
+            await member.send("🔇 Wyciszono Cię na serwerze **{}** z powodu `{}`".format(ctx.guild.name, reason))
+        else:
+            await ctx.send("🔇 Wyciszono {}".format(member.mention))
+            await member.send("🔇 Wyciszono Cię na serwerze **{}**".format(ctx.guild.name))
+
+    @mute.error
+    async def mute_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Poprawne użycie: `&mute @użytkownik <powód>`")
+            return
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
+            return
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: `&mute @użytkownik <powód>`")
+            return
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send("❌ Nie masz uprawnień do zarządzania wiadomościami")
+            return
+        if isinstance(error, commands.BotMissingPermissions):
+            await ctx.send("❌ Atorin nie ma uprawnień do tworzenia ról")
+            return
+        self.bot.log.error(error)
+
+    @commands.command(description="Odcisza podanego użytkownika", aliases=["odcisz"])
+    @commands.has_permissions(manage_messages=True)
+    @commands.guild_only()
+    @commands.bot_has_permissions(manage_roles=True)
+    async def unmute(self, ctx, member: discord.Member):
+        mutedrole = discord.utils.get(ctx.guild.roles, name="Muted")
+        await member.remove_roles(mutedrole)
+        await ctx.send("🔊 Odciszono **{}**".format(member.mention))
+        await member.send("🔊 Odciszono Cię na serwerze **{}**".format(ctx.guild.name))
+
+    @unmute.error
+    async def unmute_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Poprawne użycie: `&unmute @użytkownik`")
+            return
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
+            return
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: `&unmute @użytkownik`")
+            return
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send("❌ Nie masz uprawnień do zarządzania wiadomościami")
+            return
+        if isinstance(error, commands.BotMissingPermissions):
+            await ctx.send("❌ Atorin nie ma uprawnień do tworzenia ról")
+            return
