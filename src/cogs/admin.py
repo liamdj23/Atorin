@@ -307,10 +307,12 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             await ctx.send("❌ Atorin nie ma uprawnień do tworzenia ról")
             return
 
-    @commands.command(description="Przyznaje ostrzeżenie użytkownikowi", aliases=["ostrzeżenie", "ostrzezenie"])
+    @commands.command(description="Przyznaje ostrzeżenie użytkownikowi",
+                      aliases=["ostrzeżenie", "ostrzezenie"],
+                      usage=["@uzytkownik <powód>"])
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
-    async def warn(self, ctx, member: discord.Member, *, reason=None):
+    async def warn(self, ctx, member: discord.Member, *, reason):
         warning = self.bot.mongo.Warns(
             server=ctx.guild.id,
             member=member.id,
@@ -320,11 +322,8 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         warning.save()
         embed = self.bot.embed(ctx.author)
         embed.title = "Ostrzeżenie"
-        if reason:
-            embed.description = "⚠️{} został ostrzeżony przez {} z powodu `{}`".format(
-                member.mention, ctx.author.mention, reason)
-        else:
-            embed.description = "⚠️{} został ostrzeżony przez {}".format(member.mention, ctx.author.mention)
+        embed.description = "⚠️{} został ostrzeżony przez {} z powodu `{}`".format(
+            member.mention, ctx.author.mention, reason)
         embed.color = discord.Color.gold()
         await ctx.send(embed=embed)
 
@@ -359,7 +358,9 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         i = 0
         for warn in warns:
             i += 1
-            embed.description += "{}. `{}` od <@{}>\n".format(i, warn.reason, warn.given_by)
+            embed.description += "{}. `{}` od <@{}> w dniu {}\n".format(
+                i, warn.reason, warn.given_by, warn.date.strftime("%d-%m-%Y %H:%M")
+            )
         embed.color = discord.Color.gold()
         await ctx.send(embed=embed)
 
