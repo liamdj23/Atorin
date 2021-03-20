@@ -310,3 +310,10 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         if isinstance(error, commands.CommandError):
             await ctx.send("Nie udało się uzyskać obrazka. Spróbuj ponownie za chwilę.")
             return
+
+    @commands.command(description="Rzut monetą", aliases=["moneta"])
+    async def flip(self, ctx):
+        if randrange(2) == 1:
+            await ctx.send("Orzeł")
+        else:
+            await ctx.send("Reszka")
