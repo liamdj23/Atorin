@@ -241,7 +241,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             await ctx.send("❌ Atorin nie ma uprawnień do wyrzucania użytkowników")
             return
 
-    @commands.command(description="Wycisza podanego użytkownika", aliases=["wycisz"])
+    @commands.command(description="Wycisza podanego użytkownika", aliases=["wycisz"], usage="@uzytkownik <powód>")
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
@@ -279,7 +279,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             return
         self.bot.log.error(error)
 
-    @commands.command(description="Odcisza podanego użytkownika", aliases=["odcisz"])
+    @commands.command(description="Odcisza podanego użytkownika", aliases=["odcisz"], usage="@uzytkownik")
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
@@ -305,4 +305,75 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             return
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send("❌ Atorin nie ma uprawnień do tworzenia ról")
+            return
+
+    @commands.command(description="Przyznaje ostrzeżenie użytkownikowi", aliases=["ostrzeżenie", "ostrzezenie"])
+    @commands.has_permissions(administrator=True)
+    @commands.guild_only()
+    async def warn(self, ctx, member: discord.Member, *, reason=None):
+        warning = self.bot.mongo.Warns(
+            server=ctx.guild.id,
+            member=member.id,
+            given_by=ctx.author.id,
+            reason=reason
+        )
+        warning.save()
+        embed = self.bot.embed(ctx.author)
+        embed.title = "Ostrzeżenie"
+        if reason:
+            embed.description = "⚠️{} został ostrzeżony przez {} z powodu `{}`".format(
+                member.mention, ctx.author.mention, reason)
+        else:
+            embed.description = "⚠️{} został ostrzeżony przez {}".format(member.mention, ctx.author.mention)
+        embed.color = discord.Color.gold()
+        await ctx.send(embed=embed)
+
+    @warn.error
+    async def warn_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Poprawne użycie: `&warn @użytkownik <powód>`")
+            return
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
+            return
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: `&warn @użytkownik <powód>`")
+            return
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send("❌ Musisz być administratorem tego serwera!")
+            return
+
+    @commands.command(description="Pokazuje przyznane ostrzeżenia podanemu użytkownikowi",
+                      aliases=["ostrzeżenia", "ostrzezenia"], usage="@użytkownik")
+    @commands.has_permissions(administrator=True)
+    @commands.guild_only()
+    async def warns(self, ctx, member: discord.Member):
+        warns = self.bot.mongo.Warns.objects(server=ctx.guild.id, member=member.id)
+        if len(warns) == 0:
+            await ctx.send("✅ Brak ostrzeżeń")
+            return
+        embed = self.bot.embed(ctx.author)
+        embed.title = "Ostrzeżenia"
+        embed.description = "**{}** otrzymał/a **{}** {}\n\n".format(
+            member, len(warns), "ostrzeżenie" if len(warns) == 1 else "ostrzeżenia")
+        i = 0
+        for warn in warns:
+            i += 1
+            embed.description += "{}. `{}` od <@{}>\n".format(i, warn.reason, warn.given_by)
+        embed.color = discord.Color.gold()
+        await ctx.send(embed=embed)
+
+    @warns.error
+    async def warns_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Poprawne użycie: `&warns @użytkownik`")
+            return
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
+            return
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: `&warns @użytkownik`")
+            return
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send("❌ Musisz być administratorem tego serwera!")
             return
