@@ -294,3 +294,19 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             await ctx.send("Nie udało się wygenerować obrazka. Spróbuj ponownie za chwilę.")
             return
         self.bot.log.error(error)
+
+    @commands.command(description="Wpisz aby otrzymać losowe zdjęcie pieska", aliases=["pies", "piesek"])
+    async def dog(self, ctx):
+        async with aiohttp.ClientSession() as session:
+            async with session.get('https://dog.ceo/api/breeds/image/random') as r:
+                if r.status == 200:
+                    data = await r.json()
+                    await ctx.send(data['message'])
+                else:
+                    raise commands.CommandError
+
+    @dog.error
+    async def dog_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send("Nie udało się uzyskać obrazka. Spróbuj ponownie za chwilę.")
+            return
