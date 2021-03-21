@@ -279,7 +279,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         img.seek(0)
         await ctx.send(file=discord.File(img, filename="wanted.png"))
 
-    @codeqr.error
+    @wanted.error
     async def wanted_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Poprawne użycie: `&wanted @poszukiwany`")
