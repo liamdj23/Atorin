@@ -313,7 +313,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
 
     @commands.command(description="Rzut monetą", aliases=["moneta"])
     async def flip(self, ctx):
-        if randrange(2) == 1:
-            await ctx.send("Orzeł")
-        else:
-            await ctx.send("Reszka")
+        embed = self.bot.embed(ctx.author)
+        embed.title = "Rzut monetą"
+        embed.description = "🪙 **{}**".format("Orzeł" if randrange(2) == 1 else "Reszka")
+        await ctx.send(embed=embed)
