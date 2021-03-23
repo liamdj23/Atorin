@@ -285,7 +285,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             await ctx.send("❌ Poprawne użycie: `&wanted @poszukiwany`")
             return
         if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: &wanted @poszukiwany`")
+            await ctx.send("❌ Poprawne użycie: `&wanted @poszukiwany`")
             return
         if isinstance(error, commands.UserNotFound):
             await ctx.send("❌ Nie znaleziono podanego użytkownika.")
