@@ -6,8 +6,6 @@ services:
     - mongo
     depends_on:
       - mongo
-    volumes:
-      - ./config.json:/app/config.json
     ports:
     - "8080:8080"
   mongo:
