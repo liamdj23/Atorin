@@ -108,6 +108,8 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
+        if message.author.id == self.bot.user.id:
+            return
         server = self.bot.mongo.Server.objects(id=message.guild.id).first()
         if server and server.logs.enabled:
             channel = message.guild.get_channel(server.logs.channel)
@@ -123,6 +125,8 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @commands.Cog.listener()
     async def on_message_edit(self, old, new):
+        if old.author.id == self.bot.user.id:
+            return
         if old.content != new.content:
             server = self.bot.mongo.Server.objects(id=old.guild.id).first()
             if server and server.logs.enabled:
