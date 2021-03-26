@@ -317,3 +317,36 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         embed.title = "Rzut monetą"
         embed.description = "🪙 **{}**".format("Orzeł" if randrange(2) == 1 else "Reszka")
         await ctx.send(embed=embed)
+
+    @commands.command(description="Generuje mema Change My Mind", usage="<tekst>", aliases=["cmm"])
+    async def changemymind(self, ctx, *, text: str):
+        if len(text) > 140:
+            await ctx.send("❌ Zbyt duża ilość znaków! (Wprowadzono {}, max. {})".format(len(text), 140))
+            return
+        template = Image.open("assets/changemymind/changemymind.jpg")
+        txt = Image.new("RGBA", (700, 350), (0, 0, 0, 0))
+        d1 = ImageDraw.Draw(txt)
+        font = ImageFont.truetype("assets/changemymind/impact.ttf", 24)
+        offset = 0
+        for line in textwrap.wrap(text.strip(), width=30):
+            d1.text((50, offset), line, font=font, fill="#000000")
+            offset += font.getsize(line)[1]
+        w = txt.rotate(22.5)
+        template.paste(w, (310, 200), w)
+        img = BytesIO()
+        template.save(img, "PNG")
+        img.seek(0)
+        await ctx.send(file=discord.File(img, filename="changemymind.png"))
+
+    @changemymind.error
+    async def changemymind_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: `&changemymind <tekst>`")
+            return
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Poprawne użycie: `&changemymind <tekst>`")
+            return
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd w generowaniu obrazka, spróbuj powownie później")
+            return
+        self.bot.log.error(error)
