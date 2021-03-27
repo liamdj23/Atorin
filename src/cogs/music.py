@@ -139,6 +139,19 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         if voice.is_playing():
             await ctx.send("📩 Utwór **{}** został dodany do kolejki.".format(metadata["title"]))
 
+    @play.error
+    async def play_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: `&play <tytuł lub link do Youtube>`")
+            return
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Poprawne użycie: `&play <tytuł lub link do Youtube>`")
+            return
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd, spróbuj ponownie później. "
+                           "**Jeśli błąd dalej występuje, powiadom autora na Discordzie**")
+            return
+
     @commands.command(
         description="Wstrzymuje odtwarzanie muzyki",
         aliases=["zatrzymaj"]
@@ -155,6 +168,13 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         else:
             await ctx.send("🙊 Atorin nie odtwarza muzyki.")
         return
+
+    @pause.error
+    async def pause_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd, spróbuj ponownie później. "
+                           "**Jeśli błąd dalej występuje, powiadom autora na Discordzie**")
+            return
 
     @commands.command(
         description="Wznawia odtwarzanie muzyki",
@@ -173,6 +193,13 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             await ctx.send("🙊 Atorin nie odtwarza muzyki.")
         return
 
+    @resume.error
+    async def resume_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd, spróbuj ponownie później. "
+                           "**Jeśli błąd dalej występuje, powiadom autora na Discordzie**")
+            return
+
     @commands.command(
         description="Zatrzymuje odtwarzanie muzyki"
     )
@@ -187,6 +214,13 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         else:
             await ctx.send("🙊 Atorin nie odtwarza muzyki.")
         return
+
+    @stop.error
+    async def stop_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd, spróbuj ponownie później. "
+                           "**Jeśli błąd dalej występuje, powiadom autora na Discordzie**")
+            return
 
     @commands.command(
         description="Pomija aktualnie odtwarzany utwór",
@@ -205,15 +239,25 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             await ctx.send("🙊 Atorin nie odtwarza muzyki.")
         return
 
+    @skip.error
+    async def skip_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd, spróbuj ponownie później. "
+                           "**Jeśli błąd dalej występuje, powiadom autora na Discordzie**")
+            return
+
     @commands.command(
         description="Ustawia głośność aktualnie odtwarzanego utworu",
-        aliases=["głośność", "glosnosc"]
+        aliases=["głośność", "glosnosc"],
+        usage="<0-100>"
     )
     @commands.guild_only()
     async def volume(self, ctx, vol: int):
         if not ctx.author.voice:
             await ctx.send("❌ Musisz być połączony do kanału głosowego!")
             return
+        if vol > 100 or vol < 0:
+            raise commands.BadArgument
         voice = ctx.guild.voice_client
         if voice and voice.is_playing():
             player = self.get_player(ctx)
@@ -223,6 +267,19 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         else:
             await ctx.send("🙊 Atorin nie odtwarza muzyki.")
         return
+
+    @volume.error
+    async def volume_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd, spróbuj ponownie później. "
+                           "**Jeśli błąd dalej występuje, powiadom autora na Discordzie**")
+            return
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("❌ Poprawne użycie: `&volume <0-100>`")
+            return
+        if isinstance(error, commands.BadArgument):
+            await ctx.send("❌ Poprawne użycie: `&volume <0-100>`")
+            return
 
     @commands.command(
         description="Wyświetla kolejkę utworów do odtworzenia",
@@ -250,6 +307,13 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             await ctx.send("🙊 Atorin nie odtwarza muzyki.")
         return
 
+    @queue.error
+    async def queue_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd, spróbuj ponownie później. "
+                           "**Jeśli błąd dalej występuje, powiadom autora na Discordzie**")
+            return
+
     @commands.command(
         description="Wyświetla aktualnie odtwarzany utwór",
         aliases=["np", "nowp"]
@@ -265,3 +329,10 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         embed.add_field(name="💃 Zaproponowany przez", value=ctx.author.mention)
         embed.set_thumbnail(url=song["thumbnail"])
         await ctx.send(embed=embed)
+
+    @nowplaying.error
+    async def nowplaying_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd, spróbuj ponownie później. "
+                           "**Jeśli błąd dalej występuje, powiadom autora na Discordzie**")
+            return
