@@ -138,7 +138,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
         used_disk = convert_size(disk.used)
         embed.add_field(name="🖥 Użycie zasobów", inline=False, value="```css\n{0}\n{1}\n{2}```".format(
             progress_bar(int(psutil.cpu_percent()), "CPU"),
-            progress_bar(int(ram.percent), "RAM {}/{}".format(used_ram, total_ram)),
+            progress_bar(int((ram.used / ram.total) * 100), "RAM {}/{}".format(used_ram, total_ram)),
             progress_bar(int(disk.percent), "Dysk {}/{}".format(used_disk, total_disk)))
         )
         await ctx.send(embed=embed)
