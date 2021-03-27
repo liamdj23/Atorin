@@ -270,15 +270,15 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
 
     @volume.error
     async def volume_error(self, ctx, error):
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd, spróbuj ponownie później. "
-                           "**Jeśli błąd dalej występuje, powiadom autora na Discordzie**")
-            return
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Poprawne użycie: `&volume <0-100>`")
             return
         if isinstance(error, commands.BadArgument):
             await ctx.send("❌ Poprawne użycie: `&volume <0-100>`")
+            return
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd, spróbuj ponownie później. "
+                           "**Jeśli błąd dalej występuje, powiadom autora na Discordzie**")
             return
 
     @commands.command(
