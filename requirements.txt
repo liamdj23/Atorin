@@ -4,7 +4,6 @@ requests~=2.24.0
 Pillow~=8.0.1
 pyfiglet~=0.8.post1
 psutil~=5.8.0
-cleverbotfree~=1.2.7
 mongoengine~=0.20.0
 loguru~=0.5.3
 Flask~=1.1.2
