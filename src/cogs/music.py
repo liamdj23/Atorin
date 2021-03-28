@@ -46,7 +46,7 @@ class Player:
             embed.title = "Teraz odtwarzane"
             embed.add_field(name="🎧 Utwór", value=song["title"], inline=False)
             embed.add_field(name="🛤️ Długość", value=time.strftime("%H:%M:%S", time.gmtime(song["duration"])))
-            embed.add_field(name="💃 Zaproponowany przez", value=self.ctx.author.mention)
+            embed.add_field(name="💃 Zaproponowany przez", value=song["requester"].mention)
             embed.set_thumbnail(url=song["thumbnail"])
             await self.ctx.send(embed=embed)
 
@@ -135,6 +135,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         if not voice:
             voice = await voice_channel.connect()
         player = self.get_player(ctx)
+        metadata["requester"] = ctx.author
         await player.queue.put(metadata)
         if voice.is_playing():
             await ctx.send("📩 Utwór **{}** został dodany do kolejki.".format(metadata["title"]))
