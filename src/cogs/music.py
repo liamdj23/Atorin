@@ -127,18 +127,25 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         await searching.edit(content="✅ Wybrano **#{}**. **{}** ({}).".format(
             choice + 1, results[choice]["title"], results[choice]["duration"]
         ), embed=None)
+        info_message = await ctx.send("📥 Pobieranie informacji...")
         metadata = ytdl.extract_info("https://www.youtube.com/watch?v=" + results[choice]["id"], download=False)
         if metadata["filesize"] > 15000000:
-            await ctx.send("❌ Rozmiar podanego utworu jest za duży.")
+            await info_message.edit(content="❌ Rozmiar podanego utworu jest za duży.")
             return
+        await info_message.edit(content="💾 Pobieranie pliku...")
         ytdl.download(["https://www.youtube.com/watch?v=" + results[choice]["id"]])
+        await info_message.edit(content="✅ Pobrano.")
         if not voice:
+            await info_message.edit(content="🎙️ Dołączanie do kanału...")
             voice = await voice_channel.connect()
+            await info_message.edit(content="✅ Dołączono.")
         player = self.get_player(ctx)
         metadata["requester"] = ctx.author
         await player.queue.put(metadata)
         if voice.is_playing():
-            await ctx.send("📩 Utwór **{}** został dodany do kolejki.".format(metadata["title"]))
+            await info_message.edit(content="📩 Utwór **{}** został dodany do kolejki.".format(metadata["title"]))
+        else:
+            await info_message.delete()
 
     @play.error
     async def play_error(self, ctx, error):
