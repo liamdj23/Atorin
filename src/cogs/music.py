@@ -8,6 +8,7 @@ from youtube_search import YoutubeSearch
 from asyncio import TimeoutError
 from async_timeout import timeout
 import asyncio
+import os.path
 
 ytdl_options = {
     "format": "bestaudio[ext=m4a]",
@@ -132,9 +133,10 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         if metadata["filesize"] > 15000000:
             await info_message.edit(content="❌ Rozmiar podanego utworu jest za duży.")
             return
-        await info_message.edit(content="💾 Pobieranie pliku...")
-        ytdl.download(["https://www.youtube.com/watch?v=" + results[choice]["id"]])
-        await info_message.edit(content="✅ Pobrano.")
+        if not os.path.isfile("../songs/" + metadata["id"] + ".m4a"):
+            await info_message.edit(content="💾 Pobieranie pliku...")
+            ytdl.download(["https://www.youtube.com/watch?v=" + metadata["id"]])
+            await info_message.edit(content="✅ Pobrano.")
         if not voice:
             await info_message.edit(content="🎙️ Dołączanie do kanału...")
             voice = await voice_channel.connect()
