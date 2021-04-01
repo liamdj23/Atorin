@@ -14,4 +14,4 @@ geckodriver-autoinstaller~=0.1.0
 statcord.py==3.0.8
 youtube_dl>=2021.4.1
 PyNaCl~=1.4.0
-youtube-search>=2.1.0
+youtube-search-python>=1.4.3
