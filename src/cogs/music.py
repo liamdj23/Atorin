@@ -1,14 +1,16 @@
+from youtubesearchpython.__future__ import VideosSearch
+
 import itertools
 
 import discord
 from discord.ext import commands
 import youtube_dl
 import time
-from youtube_search import YoutubeSearch
 from asyncio import TimeoutError
 from async_timeout import timeout
 import asyncio
 import os.path
+from datetime import datetime
 
 ytdl_options = {
     "format": "bestaudio[ext=m4a]",
@@ -46,9 +48,9 @@ class Player:
             embed = self.ctx.bot.embed(self.ctx.author)
             embed.title = "Teraz odtwarzane"
             embed.add_field(name="🎧 Utwór", value=song["title"], inline=False)
-            embed.add_field(name="🛤️ Długość", value=time.strftime("%H:%M:%S", time.gmtime(song["duration"])))
+            embed.add_field(name="🛤️ Długość", value=song["duration"])
             embed.add_field(name="💃 Zaproponowany przez", value=song["requester"].mention)
-            embed.set_thumbnail(url=song["thumbnail"])
+            embed.set_thumbnail(url=song["thumbnails"][0]["url"])
             await self.ctx.send(embed=embed)
 
             await self.next.wait()
@@ -98,10 +100,8 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         voice_channel = ctx.author.voice.channel
         voice = ctx.guild.voice_client
         searching = await ctx.send("🔎 Trwa wyszukiwanie utworu...")
-        try:
-            results = YoutubeSearch(song, max_results=5).to_dict()
-        except KeyError:
-            results = YoutubeSearch(song, max_results=5).to_dict()
+        videos_search = VideosSearch(song, limit=5, region="PL")
+        results = await videos_search.next()
         if not results:
             await ctx.send("❌ Nie znaleziono utworów o podanej nazwie.")
             return
@@ -109,7 +109,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         embed.title = "Wyniki wyszukiwania"
         embed.description = "❓ **Napisz cyfrę odpowiadającą utworowi, którego szukasz.**\n\n"
         i = 0
-        for result in results:
+        for result in results["result"]:
             i = i + 1
             embed.description += "**#{}**. {} ({})\n".format(
                 i, result["title"], result["duration"]
@@ -117,7 +117,8 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         await searching.edit(content=None, embed=embed)
 
         def check(message):
-            return message.author == ctx.author and message.content.isdigit() and not int(message.content) > 5
+            return message.author == ctx.author and message.content.isdigit() \
+                   and not int(message.content) > len(results["result"])
 
         try:
             choice = await self.bot.wait_for("message", check=check, timeout=60)
@@ -125,16 +126,20 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             await searching.edit(embed=None, content="🔇 Nie wybrano utworu.")
             return
         choice = int(choice.content) - 1
+        metadata = results["result"][choice]
         await searching.edit(content="✅ Wybrano **#{}**. **{}** ({}).".format(
-            choice + 1, results[choice]["title"], results[choice]["duration"]
+            choice + 1, metadata["title"], metadata["duration"]
         ), embed=None)
-        info_message = await ctx.send("📥 Pobieranie informacji...")
-        metadata = ytdl.extract_info("https://www.youtube.com/watch?v=" + results[choice]["id"], download=False)
-        if metadata["filesize"] > 15000000:
-            await info_message.edit(content="❌ Rozmiar podanego utworu jest za duży.")
+        info_message = await ctx.send("💿 Trwa przygotowywanie utworu...")
+        try:
+            duration = datetime.strptime(metadata["duration"], "%H:%M:%S")
+        except ValueError:
+            duration = datetime.strptime(metadata["duration"], "%M:%S")
+        if duration.minute > 10:
+            await info_message.edit(content="❌ Podany utwór jest za długi, limit to 10 minut.")
             return
         if not os.path.isfile("../songs/" + metadata["id"] + ".m4a"):
-            await info_message.edit(content="💾 Pobieranie pliku...")
+            await info_message.edit(content="💾 Pobieranie utworu...")
             ytdl.download(["https://www.youtube.com/watch?v=" + metadata["id"]])
             await info_message.edit(content="✅ Pobrano.")
         if not voice:
