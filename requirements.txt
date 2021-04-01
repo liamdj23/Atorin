@@ -12,6 +12,6 @@ setuptools~=53.0.0
 discord.py~=1.6.0
 geckodriver-autoinstaller~=0.1.0
 statcord.py==3.0.8
-youtube_dl>=2021.3.25
+youtube_dl>=2021.4.1
 PyNaCl~=1.4.0
 youtube-search>=2.1.0
