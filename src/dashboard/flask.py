@@ -8,6 +8,10 @@ from dashboard.routes import home
 from dashboard.routes import panel
 from dashboard.routes import premium
 
+import sys
+cli = sys.modules['flask.cli']
+cli.show_server_banner = lambda *x: None
+
 
 class Dashboard(Flask):
     def __init__(self, bot):
