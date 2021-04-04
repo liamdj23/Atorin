@@ -51,17 +51,17 @@ class Atorin(commands.AutoShardedBot):
 
         @self.event
         async def on_shard_connect(id):
-            print("\033[94m * Shard {} successfully connected to Discord API.".format(id))
+            print("\033[94m * Shard {} successfully connected to Discord API.".format(id), flush=True)
 
         @self.event
         async def on_shard_ready(id):
-            print("\033[96m * Shard {} is ready.".format(id))
+            print("\033[96m * Shard {} is ready.".format(id), flush=True)
             await self.update_status()
 
         @self.event
         async def on_ready():
-            print("\033[92m * Running with {} shards".format(len(self.shards)))
-            print("\033[1m * Atorin is ready.")
+            print("\033[92m * Running with {} shards".format(len(self.shards)), flush=True)
+            print("\033[1m * Atorin is ready.", flush=True)
             self.web.start()
 
     def embed(self, author=None):
