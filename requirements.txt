@@ -10,7 +10,7 @@ Flask~=1.1.2
 distest~=0.4.9
 setuptools~=53.0.0
 discord.py~=1.6.0
-statcord.py==3.0.8
+statcord.py>=3.0.9
 youtube_dl>=2021.4.1
 PyNaCl~=1.4.0
 youtube-search-python>=1.4.3
