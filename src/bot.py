@@ -6,6 +6,7 @@ import discord
 import mongoengine
 from discord.ext import commands
 from loguru import logger
+import asyncpraw
 
 import models
 import utils
@@ -28,6 +29,10 @@ class Atorin(commands.AutoShardedBot):
         self.mongo = models
         with open(os.path.dirname(__file__) + "/../config.json", 'r') as config:
             self.config = json.load(config)
+        self.reddit = asyncpraw.Reddit(
+            client_id=self.config["reddit_id"],
+            client_secret=self.config["reddit_secret"],
+            user_agent="Atorin")
         self.log = logger
         self.utils = utils
         self.web = Dashboard(self)

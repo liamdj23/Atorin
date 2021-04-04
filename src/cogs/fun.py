@@ -350,3 +350,22 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             await ctx.send("❌ Wystąpił błąd w generowaniu obrazka, spróbuj powownie później")
             return
         self.bot.log.error(error)
+
+    @commands.command(description="Wysyła losowego mema z /r/Polska_wpz", aliases=["mem", "memy"])
+    async def meme(self, ctx):
+        subreddit = await self.bot.reddit.subreddit("Polska_wpz")
+        while True:
+            meme = await subreddit.random()
+            if meme.url.endswith(".jpg"):
+                break
+        embed = self.bot.embed(ctx.author)
+        embed.title = meme.title
+        embed.color = 0xF9493E
+        embed.set_image(url=meme.url)
+        await ctx.send(embed=embed)
+
+    @meme.error
+    async def meme_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd w pobieraniu obrazka, spróbuj powownie później")
+            return

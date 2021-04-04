@@ -11,5 +11,7 @@
   "notify_channel": 0,
   "sms_userid": 0,
   "sms_serviceid": 0,
+  "reddit_id": "",
+  "reddit_secret": "",
   "instagram": []
 }

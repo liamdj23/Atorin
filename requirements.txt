@@ -14,3 +14,4 @@ statcord.py>=3.0.9
 youtube_dl>=2021.4.1
 PyNaCl~=1.4.0
 youtube-search-python>=1.4.3
+asyncpraw>=7.2.0
