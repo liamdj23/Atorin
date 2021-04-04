@@ -7,6 +7,7 @@ class StatcordPost(commands.Cog):
         self.bot = bot
         self.key = self.bot.config["statcord"]
         self.api = statcord.Client(self.bot, self.key)
+        self.api.logger.disabled = True
         self.api.start_loop()
 
     @commands.Cog.listener()
