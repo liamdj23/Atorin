@@ -347,7 +347,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             await ctx.send("❌ Poprawne użycie: `&changemymind <tekst>`")
             return
         if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd w generowaniu obrazka, spróbuj powownie później")
+            await ctx.send("❌ Wystąpił błąd w generowaniu obrazka, spróbuj ponownie później")
             return
         self.bot.log.error(error)
 
@@ -367,5 +367,5 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     @meme.error
     async def meme_error(self, ctx, error):
         if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd w pobieraniu obrazka, spróbuj powownie później")
+            await ctx.send("❌ Wystąpił błąd w pobieraniu obrazka, spróbuj ponownie później")
             return
