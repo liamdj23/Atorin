@@ -35,6 +35,8 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Poprawne użycie: &clear <1-100>")
             return
+        if isinstance(error, commands.MessageNotFound):
+            return
         self.bot.log.error(error)
 
     @commands.command(aliases=["ogłoszenie", "ogloszenie"], usage="<tekst>", description="Tworzy ogłoszenie")
@@ -42,11 +44,16 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     @commands.has_guild_permissions(administrator=True)
     async def advert(self, ctx, *, content: str):
         embed = self.bot.embed(ctx.author)
-        embed.title = "📣 Ogłoszenie 📣"
+        embed.title = "Ogłoszenie"
         embed.description = content
         message = await ctx.send(embed=embed)
-        await message.add_reaction("🔼")
-        await message.add_reaction("🔽")
+        await ctx.message.delete()
+        await message.add_reaction("👍")
+        await message.add_reaction("❤")
+        await message.add_reaction("😆")
+        await message.add_reaction("😮")
+        await message.add_reaction("😢")
+        await message.add_reaction("😠")
 
     @advert.error
     async def advert_error(self, ctx, error):
@@ -154,6 +161,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             member.name + "#" + member.discriminator,
             reason
         ))
+        await ctx.message.delete()
         await member.send("🔨 Zostałeś zbanowany na serwerze {} przez {} z powodu `{}`".format(
             ctx.guild.name, ctx.author.mention, reason))
 
@@ -192,6 +200,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             if (user.name, user.discriminator) == (member_name, member_discriminator):
                 await ctx.guild.unban(user)
                 await ctx.send("✅ {} odbanował {}".format(ctx.author.mention, member))
+                await ctx.message.delete()
                 return
         await ctx.send("❌ Nie odnaleziono użytkownika o podanej nazwie.")
 
@@ -224,6 +233,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             member.name + "#" + member.discriminator,
             reason
         ))
+        await ctx.message.delete()
         await member.send("🦶 Zostałeś wyrzucony z serwera {} przez {} z powodu `{}`".format(
             ctx.guild.name, ctx.author.mention, reason))
 
@@ -263,6 +273,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         else:
             await ctx.send("🔇 Wyciszono {}".format(member.mention))
             await member.send("🔇 Wyciszono Cię na serwerze **{}**".format(ctx.guild.name))
+        await ctx.message.delete()
 
     @mute.error
     async def mute_error(self, ctx, error):
@@ -291,6 +302,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         mutedrole = discord.utils.get(ctx.guild.roles, name="Muted")
         await member.remove_roles(mutedrole)
         await ctx.send("🔊 Odciszono **{}**".format(member.mention))
+        await ctx.message.delete()
         await member.send("🔊 Odciszono Cię na serwerze **{}**".format(ctx.guild.name))
 
     @unmute.error
@@ -330,6 +342,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             member.mention, ctx.author.mention, reason)
         embed.color = discord.Color.gold()
         await ctx.send(embed=embed)
+        await ctx.message.delete()
 
     @warn.error
     async def warn_error(self, ctx, error):
