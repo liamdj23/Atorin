@@ -12,10 +12,15 @@ import sys
 cli = sys.modules['flask.cli']
 cli.show_server_banner = lambda *x: None
 
+import logging
+log = logging.getLogger("werkzeug")
+log.disabled = True
+
 
 class Dashboard(Flask):
     def __init__(self, bot):
         super(Dashboard, self).__init__(__name__)
+        self.logger.disabled = True
         self.config["TEMPLATES_AUTO_RELOAD"] = True
         self.jinja_env.auto_reload = True
         self.secret_key = os.urandom(32).hex()
