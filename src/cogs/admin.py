@@ -162,8 +162,11 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             reason
         ))
         await ctx.message.delete()
-        await member.send("🔨 Zostałeś zbanowany na serwerze {} przez {} z powodu `{}`".format(
-            ctx.guild.name, ctx.author.mention, reason))
+        try:
+            await member.send("🔨 Zostałeś zbanowany na serwerze {} przez {} z powodu `{}`".format(
+                ctx.guild.name, ctx.author.mention, reason))
+        except discord.Forbidden:
+            pass
 
     @ban.error
     async def ban_error(self, ctx, error):
@@ -234,8 +237,11 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             reason
         ))
         await ctx.message.delete()
-        await member.send("🦶 Zostałeś wyrzucony z serwera {} przez {} z powodu `{}`".format(
-            ctx.guild.name, ctx.author.mention, reason))
+        try:
+            await member.send("🦶 Zostałeś wyrzucony z serwera {} przez {} z powodu `{}`".format(
+                ctx.guild.name, ctx.author.mention, reason))
+        except discord.Forbidden:
+            pass
 
     @kick.error
     async def kick_error(self, ctx, error):
@@ -269,10 +275,16 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         await member.add_roles(mutedrole, reason=reason)
         if reason:
             await ctx.send("🔇 Wyciszono {} z powodu `{}`".format(member.mention, reason))
-            await member.send("🔇 Wyciszono Cię na serwerze **{}** z powodu `{}`".format(ctx.guild.name, reason))
+            try:
+                await member.send("🔇 Wyciszono Cię na serwerze **{}** z powodu `{}`".format(ctx.guild.name, reason))
+            except discord.Forbidden:
+                pass
         else:
             await ctx.send("🔇 Wyciszono {}".format(member.mention))
-            await member.send("🔇 Wyciszono Cię na serwerze **{}**".format(ctx.guild.name))
+            try:
+                await member.send("🔇 Wyciszono Cię na serwerze **{}**".format(ctx.guild.name))
+            except discord.Forbidden:
+                pass
         await ctx.message.delete()
 
     @mute.error
@@ -303,7 +315,10 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         await member.remove_roles(mutedrole)
         await ctx.send("🔊 Odciszono **{}**".format(member.mention))
         await ctx.message.delete()
-        await member.send("🔊 Odciszono Cię na serwerze **{}**".format(ctx.guild.name))
+        try:
+            await member.send("🔊 Odciszono Cię na serwerze **{}**".format(ctx.guild.name))
+        except discord.Forbidden:
+            pass
 
     @unmute.error
     async def unmute_error(self, ctx, error):
