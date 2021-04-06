@@ -8,6 +8,15 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         self.bool_to_state = bot.utils.bool_to_state
         self.state_to_bool = bot.utils.state_to_bool
 
+    async def get_logs_channel(self, guild):
+        server = self.bot.mongo.Server.objects(id=guild.id).first()
+        if server and server.logs.enabled:
+            channel = guild.get_channel(server.logs.channel)
+            if not channel:
+                server.logs.enabled = False
+                server.save()
+            return channel
+
     @commands.command(aliases=["delmsg", "purge"],
                       usage="<1-100>",
                       description="Wpisz aby usunąć dużą ilość wiadomości\n\nPrzykład użycia: &clear 34")
@@ -17,6 +26,14 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def clear(self, ctx, count: int):
         messages = await ctx.channel.purge(limit=count)
         await ctx.send("🗑 {} usunął **{}** wiadomości ✅".format(ctx.message.author.mention, len(messages)))
+        logs_channel = await self.get_logs_channel(ctx.guild)
+        if logs_channel:
+            embed = self.bot.embed()
+            embed.title = "Czyszczenie kanału"
+            embed.add_field(name="🧑 Wykonane przez", value=ctx.author.mention, inline=False)
+            embed.add_field(name="🔢 Ilość", value=f"{len(messages)}", inline=False)
+            embed.add_field(name="🔤 Kanał", value=ctx.channel.mention, inline=False)
+            await logs_channel.send(embed=embed)
 
     @clear.error
     async def clear_error(self, ctx, error):
@@ -117,37 +134,27 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def on_message_delete(self, message):
         if message.author.bot:
             return
-        server = self.bot.mongo.Server.objects(id=message.guild.id).first()
-        if server and server.logs.enabled:
-            channel = message.guild.get_channel(server.logs.channel)
-            if channel:
-                embed = self.bot.embed()
-                embed.title = "Usunięta wiadomość"
-                embed.add_field(name="🧑 Autor", value=message.author, inline=False)
-                embed.add_field(name="✍️Treść", value="```{}```".format(message.clean_content), inline=False)
-                await message.guild.get_channel(server.logs.channel).send(embed=embed)
-            else:
-                server.logs.enabled = False
-                server.save()
+        logs_channel = await self.get_logs_channel(message.guild)
+        if logs_channel:
+            embed = self.bot.embed()
+            embed.title = "Usunięta wiadomość"
+            embed.add_field(name="🧑 Autor", value=message.author.mention, inline=False)
+            embed.add_field(name="✍️Treść", value="```{}```".format(message.clean_content), inline=False)
+            await logs_channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_message_edit(self, old, new):
         if old.author.bot:
             return
         if old.content != new.content:
-            server = self.bot.mongo.Server.objects(id=old.guild.id).first()
-            if server and server.logs.enabled:
-                channel = old.guild.get_channel(server.logs.channel)
-                if channel:
-                    embed = self.bot.embed()
-                    embed.title = "Edytowana wiadomość"
-                    embed.add_field(name="🧑 Autor", value=old.author, inline=False)
-                    embed.add_field(name="❎ Poprzednia treść", value="```{}```".format(old.clean_content), inline=False)
-                    embed.add_field(name="✅ Aktualna treść", value="```{}```".format(new.clean_content), inline=False)
-                    await old.guild.get_channel(server.logs.channel).send(embed=embed)
-                else:
-                    server.logs.enabled = False
-                    server.save()
+            logs_channel = await self.get_logs_channel(old.guild)
+            if logs_channel:
+                embed = self.bot.embed()
+                embed.title = "Edytowana wiadomość"
+                embed.add_field(name="🧑 Autor", value=old.author.mention, inline=False)
+                embed.add_field(name="❎ Poprzednia treść", value="```{}```".format(old.clean_content), inline=False)
+                embed.add_field(name="✅ Aktualna treść", value="```{}```".format(new.clean_content), inline=False)
+                await logs_channel.send(embed=embed)
 
     @commands.command(description="Zbanuj użytkownika",
                       usage="@uzytkownik <powód>")
@@ -167,6 +174,14 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
                 ctx.guild.name, ctx.author.mention, reason))
         except discord.Forbidden:
             pass
+        logs_channel = await self.get_logs_channel(ctx.guild)
+        if logs_channel:
+            embed = self.bot.embed()
+            embed.title = "Zbanowanie użytkownika"
+            embed.add_field(name="🧑 Przez", value=ctx.author.mention, inline=False)
+            embed.add_field(name="🧍 Zbanowany", value=member.mention, inline=False)
+            embed.add_field(name="🔤 Powód", value=reason, inline=False)
+            await logs_channel.send(embed=embed)
 
     @ban.error
     async def ban_error(self, ctx, error):
@@ -204,6 +219,13 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
                 await ctx.guild.unban(user)
                 await ctx.send("✅ {} odbanował {}".format(ctx.author.mention, member))
                 await ctx.message.delete()
+                logs_channel = await self.get_logs_channel(ctx.guild)
+                if logs_channel:
+                    embed = self.bot.embed()
+                    embed.title = "Odbanowanie użytkownika"
+                    embed.add_field(name="🧑 Przez", value=ctx.author.mention, inline=False)
+                    embed.add_field(name="🧍 Odbanowany", value=member.mention, inline=False)
+                    await logs_channel.send(embed=embed)
                 return
         await ctx.send("❌ Nie odnaleziono użytkownika o podanej nazwie.")
 
@@ -242,6 +264,14 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
                 ctx.guild.name, ctx.author.mention, reason))
         except discord.Forbidden:
             pass
+        logs_channel = await self.get_logs_channel(ctx.guild)
+        if logs_channel:
+            embed = self.bot.embed()
+            embed.title = "Wyrzucenie użytkownika"
+            embed.add_field(name="🧑 Przez", value=ctx.author.mention, inline=False)
+            embed.add_field(name="🧍 Wyrzucony", value=member.mention, inline=False)
+            embed.add_field(name="🔤 Powód", value=reason, inline=False)
+            await logs_channel.send(embed=embed)
 
     @kick.error
     async def kick_error(self, ctx, error):
@@ -274,18 +304,26 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
                     await channel.set_permissions(mutedrole, speak=False, send_messages=False)
         await member.add_roles(mutedrole, reason=reason)
         if reason:
-            await ctx.send("🔇 Wyciszono {} z powodu `{}`".format(member.mention, reason))
+            await ctx.send("🔇 {} wyciszył {} z powodu `{}`".format(ctx.author.mention, member.mention, reason))
             try:
-                await member.send("🔇 Wyciszono Cię na serwerze **{}** z powodu `{}`".format(ctx.guild.name, reason))
+                await member.send("🔇 {} wyciszył Cię na serwerze **{}** z powodu `{}`".format(ctx.author.mention, ctx.guild.name, reason))
             except discord.Forbidden:
                 pass
         else:
-            await ctx.send("🔇 Wyciszono {}".format(member.mention))
+            await ctx.send("🔇 {} wyciszył {}".format(ctx.author.mention, member.mention))
             try:
-                await member.send("🔇 Wyciszono Cię na serwerze **{}**".format(ctx.guild.name))
+                await member.send("🔇 {} wyciszył Cię na serwerze **{}**".format(ctx.author.mention, ctx.guild.name))
             except discord.Forbidden:
                 pass
         await ctx.message.delete()
+        logs_channel = await self.get_logs_channel(ctx.guild)
+        if logs_channel:
+            embed = self.bot.embed()
+            embed.title = "Wyciszenie użytkownika"
+            embed.add_field(name="🧑 Przez", value=ctx.author.mention, inline=False)
+            embed.add_field(name="🧍 Wyciszony", value=member.mention, inline=False)
+            embed.add_field(name="🔤 Powód", value=reason, inline=False) if reason else None
+            await logs_channel.send(embed=embed)
 
     @mute.error
     async def mute_error(self, ctx, error):
@@ -313,12 +351,19 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def unmute(self, ctx, member: discord.Member):
         mutedrole = discord.utils.get(ctx.guild.roles, name="Muted")
         await member.remove_roles(mutedrole)
-        await ctx.send("🔊 Odciszono **{}**".format(member.mention))
+        await ctx.send("🔊 {} odciszył **{}**".format(ctx.author.mention, member.mention))
         await ctx.message.delete()
         try:
-            await member.send("🔊 Odciszono Cię na serwerze **{}**".format(ctx.guild.name))
+            await member.send("🔊 {} odciszył Cię na serwerze **{}**".format(ctx.author.mention, ctx.guild.name))
         except discord.Forbidden:
             pass
+        logs_channel = await self.get_logs_channel(ctx.guild)
+        if logs_channel:
+            embed = self.bot.embed()
+            embed.title = "Odciszenie użytkownika"
+            embed.add_field(name="🧑 Przez", value=ctx.author.mention, inline=False)
+            embed.add_field(name="🧍 Odciszony", value=member.mention, inline=False)
+            await logs_channel.send(embed=embed)
 
     @unmute.error
     async def unmute_error(self, ctx, error):
@@ -358,6 +403,14 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         embed.color = discord.Color.gold()
         await ctx.send(embed=embed)
         await ctx.message.delete()
+        logs_channel = await self.get_logs_channel(ctx.guild)
+        if logs_channel:
+            embed = self.bot.embed()
+            embed.title = "Nadanie ostrzeżenie"
+            embed.add_field(name="🧑 Przez", value=ctx.author.mention, inline=False)
+            embed.add_field(name="🧍 Ostrzeżony", value=member.mention, inline=False)
+            embed.add_field(name="🔤 Powód", value=reason, inline=False)
+            await logs_channel.send(embed=embed)
 
     @warn.error
     async def warn_error(self, ctx, error):
