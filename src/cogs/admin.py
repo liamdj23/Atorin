@@ -128,6 +128,9 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         if isinstance(error, commands.BadArgument):
             await ctx.send("❌ Poprawne użycie: `&logs on #nazwa_kanału` lub `&logs off`")
             return
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send("❌ Nie posiadasz uprawnień do tej komendy! Wymagane uprawnienie `Administrator`.")
+            return
         self.bot.log.error(error)
 
     @commands.Cog.listener()
