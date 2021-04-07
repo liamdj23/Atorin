@@ -2,6 +2,7 @@ import base64
 import re
 from io import BytesIO
 from urllib.parse import quote, urlparse
+import requests
 
 import aiohttp
 import discord
@@ -123,13 +124,16 @@ class Games(commands.Cog, name="🕹 Gry"):
 
     @minecraft.command()
     async def skin(self, ctx, nick: is_minecraft_nick):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(f"https://minotar.net/body/{nick}") as r:
-                if r.status == 200:
-                    image = await r.content.read()
-                    await ctx.send(file=discord.File(BytesIO(image), filename="skin.png"))
-                else:
-                    raise commands.CommandError
+        mojang = requests.get(f"https://api.mojang.com/users/profiles/minecraft/{nick}")
+        if mojang.status_code == 200:
+            data = mojang.json()
+            skin = requests.get(f"https://crafatar.com/renders/body/{data['id']}")
+            if skin.status_code == 200:
+                await ctx.send(file=discord.File(BytesIO(skin.content), filename="skin.png"))
+            else:
+                raise commands.CommandError
+        else:
+            raise commands.CommandError
 
     @skin.error
     async def skin_error(self, ctx, error):
@@ -141,8 +145,8 @@ class Games(commands.Cog, name="🕹 Gry"):
             return
         if isinstance(error, commands.CommandError):
             await ctx.send("❌ Wystąpił błąd przy pobieraniu danych, spróbuj ponownie")
+            self.bot.log.error(error)
             return
-        self.bot.log.error(error)
 
     @commands.command(description="Statystyki w grze Fortnite\n\nPrzykład użycia: &fortnite epic liamdj23",
                       usage="<epic/psn/xbl> <nick>")
