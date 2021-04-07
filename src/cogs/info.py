@@ -30,8 +30,8 @@ class Info(commands.Cog, name="ℹ Informacje"):
             return
         if isinstance(error, discord.HTTPException):
             await ctx.send("❌ Wystąpił błąd przy pobieraniu avatara, spróbuj ponownie.")
+            self.bot.log.error(error)
             return
-        self.bot.log.error(error)
 
     @commands.command(description="Wpisz aby zaprosić Atorina na swój serwer lub uzyskać wsparcie")
     async def invite(self, ctx):
@@ -51,6 +51,16 @@ class Info(commands.Cog, name="ℹ Informacje"):
         embed.add_field(name="👶 Data utworzenia", value=guild.created_at.replace(microsecond=0))
         embed.set_thumbnail(url=guild.icon_url)
         await ctx.send(embed=embed)
+
+    @server.error
+    async def server_error(self, ctx, error):
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
+            return
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
+            self.bot.log.error(error)
+            return
 
     @commands.command(description="Informacje o użytkowniku\n\nPrzykład użycia:\n&user\n&user @Atorin")
     @commands.guild_only()
@@ -77,14 +87,10 @@ class Info(commands.Cog, name="ℹ Informacje"):
         if isinstance(error, commands.BadArgument):
             await ctx.send("❌ Nie znaleziono użytkownika na tym serwerze!")
             return
-        self.bot.log.error(error)
-
-    @server.error
-    async def server_error(self, ctx, error):
-        if isinstance(error, commands.NoPrivateMessage):
-            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
+            self.bot.log.error(error)
             return
-        self.bot.log.error(error)
 
     @commands.command(aliases=["pogoda"],
                       description="Wpisz aby otrzymać aktualną pogodę w Twojej miejscowości\n\nPrzykład użycia: &pogoda Kraków",
@@ -120,8 +126,8 @@ class Info(commands.Cog, name="ℹ Informacje"):
             return
         if isinstance(error, commands.CommandError):
             await ctx.send("❌ Wystąpił błąd, spróbuj ponownie później.")
+            self.bot.log.error(error)
             return
-        self.bot.log.error(error)
 
     @commands.command(description="Wpisz aby otrzymać informacje o Atorinie")
     async def bot(self, ctx):

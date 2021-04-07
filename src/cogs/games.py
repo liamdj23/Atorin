@@ -114,13 +114,13 @@ class Games(commands.Cog, name="🕹 Gry"):
         if isinstance(error, commands.BadArgument):
             await ctx.send("❌ Poprawne użycie: `&mc server <adres>`")
             return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd przy pobieraniu danych lub serwer jest offline!")
-            return
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Poprawne użycie: `&mc server <adres>`")
             return
-        self.bot.log.error(error)
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd przy pobieraniu danych lub serwer jest offline!")
+            self.bot.log.error(error)
+            return
 
     @minecraft.command()
     async def skin(self, ctx, nick: is_minecraft_nick):
@@ -180,8 +180,8 @@ class Games(commands.Cog, name="🕹 Gry"):
             return
         if isinstance(error, commands.CommandError):
             await ctx.send("❌ Wystąpił błąd przy pobieraniu danych, spróbuj ponownie")
+            self.bot.log.error(error)
             return
-        self.bot.log.error(error)
 
     @commands.command(description="Statystyki w grze CS:GO\n\nPrzykład użycia:\n&csgo https://steamcommunity.com/id/liamxdev/",
                       usage="<link do profilu steam>", aliases=["cs"])
@@ -217,5 +217,5 @@ class Games(commands.Cog, name="🕹 Gry"):
         if isinstance(error, commands.CommandError):
             await ctx.send("❌ Wystąpił błąd przy pobieraniu danych, spróbuj ponownie."
                            " Sprawdź czy twój profil jest publiczny.")
+            self.bot.log.error(error)
             return
-        self.bot.log.error(error)

@@ -52,9 +52,10 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Poprawne użycie: &clear <1-100>")
             return
-        if isinstance(error, commands.MessageNotFound):
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
+            self.bot.log.error(error)
             return
-        self.bot.log.error(error)
 
     @commands.command(aliases=["ogłoszenie", "ogloszenie"], usage="<tekst>", description="Tworzy ogłoszenie")
     @commands.guild_only()
@@ -86,7 +87,10 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("❌ Poprawne użycie: &advert <tekst>")
             return
-        self.bot.log.error(error)
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
+            self.bot.log.error(error)
+            return
 
     @commands.command(description="Otrzymywanie powiadomień o usuniętych i edytowanych wiadomościach")
     @commands.has_guild_permissions(administrator=True)
@@ -131,7 +135,10 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Nie posiadasz uprawnień do tej komendy! Wymagane uprawnienie `Administrator`.")
             return
-        self.bot.log.error(error)
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
+            self.bot.log.error(error)
+            return
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
@@ -203,6 +210,10 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send("❌ Atorin nie ma uprawnień do banowania użytkowników")
             return
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
+            self.bot.log.error(error)
+            return
 
     @commands.command(
         description="Odbanuj użytkownika",
@@ -249,6 +260,10 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send("❌ Atorin nie ma uprawnień do banowania użytkowników")
             return
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
+            self.bot.log.error(error)
+            return
 
     @commands.command(description="Wyrzuć użytkownika", usage="@użytkownik <powód>")
     @commands.has_guild_permissions(kick_members=True)
@@ -292,6 +307,10 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             return
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send("❌ Atorin nie ma uprawnień do wyrzucania użytkowników")
+            return
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
+            self.bot.log.error(error)
             return
 
     @commands.command(description="Wycisza podanego użytkownika", aliases=["wycisz"], usage="@uzytkownik <powód>")
@@ -345,7 +364,10 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send("❌ Atorin nie ma uprawnień do tworzenia ról")
             return
-        self.bot.log.error(error)
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
+            self.bot.log.error(error)
+            return
 
     @commands.command(description="Odcisza podanego użytkownika", aliases=["odcisz"], usage="@uzytkownik")
     @commands.has_permissions(manage_messages=True)
@@ -384,6 +406,10 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             return
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send("❌ Atorin nie ma uprawnień do tworzenia ról")
+            return
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
+            self.bot.log.error(error)
             return
 
     @commands.command(description="Przyznaje ostrzeżenie użytkownikowi",
@@ -429,6 +455,10 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Musisz być administratorem tego serwera!")
             return
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
+            self.bot.log.error(error)
+            return
 
     @commands.command(description="Pokazuje przyznane ostrzeżenia podanemu użytkownikowi",
                       aliases=["ostrzeżenia", "ostrzezenia"], usage="@użytkownik")
@@ -465,4 +495,8 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             return
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Musisz być administratorem tego serwera!")
+            return
+        if isinstance(error, commands.CommandError):
+            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
+            self.bot.log.error(error)
             return
