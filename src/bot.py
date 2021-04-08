@@ -61,6 +61,32 @@ class Atorin(commands.AutoShardedBot):
                 return
             elif isinstance(error, commands.CommandNotFound):
                 return
+            elif isinstance(error, commands.MissingPermissions):
+                if "ban_members" in error.missing_perms:
+                    await ctx.send("❌ Nie masz uprawnień do banowania użytkowników.")
+                elif "manage_messages" in error.missing_perms:
+                    await ctx.send("❌ Nie masz uprawnień do zarządzania wiadomościami.")
+                elif "administrator" in error.missing_perms:
+                    await ctx.send("❌ Nie jesteś administratorem tego serwera.")
+                elif "kick_members" in error.missing_perms:
+                    await ctx.send("❌ Nie masz uprawnień do wyrzucania użytkowników.")
+                else:
+                    await ctx.send("❌ Nie masz odpowiednich uprawnień do wykonania tej komendy."
+                                   f"Wymagane uprawnienia: `{','.join(error.missing_perms)}`")
+                    self.log.error(error.missing_perms)
+            elif isinstance(error, commands.BotMissingPermissions):
+                if "ban_members" in error.missing_perms:
+                    await ctx.send("❌ Atorin nie ma uprawnień do banowania użytkowników.")
+                elif "manage_messages" in error.missing_perms:
+                    await ctx.send("❌ Atorin nie ma uprawnień do zarządzania wiadomościami.")
+                elif "kick_members" in error.missing_perms:
+                    await ctx.send("❌ Atorin nie ma uprawnień do wyrzucania użytkowników.")
+                elif "manage_roles" in error.missing_perms:
+                    await ctx.send("❌ Atorin nie ma uprawnień do zarządzania rolami.")
+                else:
+                    await ctx.send("❌ Bot nie ma odpowiednich uprawnień do wykonania tej komendy."
+                                   f"Wymagane uprawnienia: `{','.join(error.missing_perms)}`")
+                    self.log.error(error.missing_perms)
             else:
                 await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później."
                                " Jeśli błąd się powtarza, skontaktuj się z autorem na serwerze Discord "

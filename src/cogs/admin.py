@@ -35,15 +35,6 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             embed.add_field(name="🔤 Kanał", value=ctx.channel.mention, inline=False)
             await logs_channel.send(embed=embed)
 
-    @clear.error
-    async def clear_error(self, ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ Nie masz uprawnień do zarządzania wiadomościami.")
-            return
-        if isinstance(error, commands.BotMissingPermissions):
-            await ctx.send("❌ Bot nie ma uprawnień do zarządzania wiadomościami.")
-            return
-
     @commands.command(aliases=["ogłoszenie", "ogloszenie"], usage="<tekst>", description="Tworzy ogłoszenie")
     @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
@@ -59,12 +50,6 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         await message.add_reaction("😮")
         await message.add_reaction("😢")
         await message.add_reaction("😠")
-
-    @advert.error
-    async def advert_error(self, ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ Nie jesteś administratorem tego serwera!")
-            return
 
     @commands.command(description="Otrzymywanie powiadomień o usuniętych i edytowanych wiadomościach")
     @commands.has_guild_permissions(administrator=True)
@@ -100,12 +85,6 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         server.logs.enabled = state_bool
         server.save()
         await ctx.send("Powiadomienia o usuniętych i edytowanych wiadomościach: " + self.bool_to_state(state_bool))
-
-    @logs.error
-    async def logs_error(self, ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ Nie posiadasz uprawnień do tej komendy! Wymagane uprawnienie `Administrator`.")
-            return
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
@@ -160,15 +139,6 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             embed.add_field(name="🔤 Powód", value=reason, inline=False)
             await logs_channel.send(embed=embed)
 
-    @ban.error
-    async def ban_error(self, ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ Nie masz uprawnień do banowania użytkowników")
-            return
-        if isinstance(error, commands.BotMissingPermissions):
-            await ctx.send("❌ Atorin nie ma uprawnień do banowania użytkowników")
-            return
-
     @commands.command(
         description="Odbanuj użytkownika",
         usage="<nick#0000>")
@@ -197,15 +167,6 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
                 return
         await ctx.send("❌ Nie odnaleziono użytkownika o podanej nazwie.")
 
-    @unban.error
-    async def unban_error(self, ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ Nie masz uprawnień do banowania użytkowników")
-            return
-        if isinstance(error, commands.BotMissingPermissions):
-            await ctx.send("❌ Atorin nie ma uprawnień do banowania użytkowników")
-            return
-
     @commands.command(description="Wyrzuć użytkownika", usage="@użytkownik <powód>")
     @commands.has_guild_permissions(kick_members=True)
     @commands.bot_has_guild_permissions(kick_members=True)
@@ -231,15 +192,6 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             embed.add_field(name="🧍 Wyrzucony", value=member.mention, inline=False)
             embed.add_field(name="🔤 Powód", value=reason, inline=False)
             await logs_channel.send(embed=embed)
-
-    @kick.error
-    async def kick_error(self, ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ Nie masz uprawnień do wyrzucania użytkowników")
-            return
-        if isinstance(error, commands.BotMissingPermissions):
-            await ctx.send("❌ Atorin nie ma uprawnień do wyrzucania użytkowników")
-            return
 
     @commands.command(description="Wycisza podanego użytkownika", aliases=["wycisz"], usage="@uzytkownik <powód>")
     @commands.has_permissions(manage_messages=True)
@@ -275,15 +227,6 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             embed.add_field(name="🔤 Powód", value=reason, inline=False) if reason else None
             await logs_channel.send(embed=embed)
 
-    @mute.error
-    async def mute_error(self, ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ Nie masz uprawnień do zarządzania wiadomościami")
-            return
-        if isinstance(error, commands.BotMissingPermissions):
-            await ctx.send("❌ Atorin nie ma uprawnień do tworzenia ról")
-            return
-
     @commands.command(description="Odcisza podanego użytkownika", aliases=["odcisz"], usage="@uzytkownik")
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
@@ -304,15 +247,6 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             embed.add_field(name="🧑 Przez", value=ctx.author.mention, inline=False)
             embed.add_field(name="🧍 Odciszony", value=member.mention, inline=False)
             await logs_channel.send(embed=embed)
-
-    @unmute.error
-    async def unmute_error(self, ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ Nie masz uprawnień do zarządzania wiadomościami")
-            return
-        if isinstance(error, commands.BotMissingPermissions):
-            await ctx.send("❌ Atorin nie ma uprawnień do tworzenia ról")
-            return
 
     @commands.command(description="Przyznaje ostrzeżenie użytkownikowi",
                       aliases=["ostrzeżenie", "ostrzezenie"],
@@ -343,12 +277,6 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             embed.add_field(name="🔤 Powód", value=reason, inline=False)
             await logs_channel.send(embed=embed)
 
-    @warn.error
-    async def warn_error(self, ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ Musisz być administratorem tego serwera!")
-            return
-
     @commands.command(description="Pokazuje przyznane ostrzeżenia podanemu użytkownikowi",
                       aliases=["ostrzeżenia", "ostrzezenia"], usage="@użytkownik")
     @commands.has_permissions(administrator=True)
@@ -370,9 +298,3 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             )
         embed.color = discord.Color.gold()
         await ctx.send(embed=embed)
-
-    @warns.error
-    async def warns_error(self, ctx, error):
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ Musisz być administratorem tego serwera!")
-            return
