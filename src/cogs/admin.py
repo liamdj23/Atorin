@@ -18,13 +18,15 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             return channel
 
     @commands.command(aliases=["delmsg", "purge"],
-                      usage="<1-100>",
+                      usage="<3-100>",
                       description="Wpisz aby usunąć dużą ilość wiadomości\n\nPrzykład użycia: &clear 34")
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_guild_permissions(manage_messages=True)
     @commands.bot_has_guild_permissions(read_message_history=True)
     @commands.guild_only()
     async def clear(self, ctx, limit: int):
+        if limit <= 3 or limit >= 100:
+            raise commands.BadArgument
         messages = []
         async for message in ctx.channel.history(limit=limit):
             messages.append(message)
