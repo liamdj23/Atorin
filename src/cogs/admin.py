@@ -43,19 +43,6 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send("❌ Bot nie ma uprawnień do zarządzania wiadomościami.")
             return
-        if isinstance(error, commands.NoPrivateMessage):
-            await ctx.send("❌ Tę komendę możesz użyć tylko na serwerze.")
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: &clear <1-100>")
-            return
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: &clear <1-100>")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
-            self.bot.log.error(error)
-            return
 
     @commands.command(aliases=["ogłoszenie", "ogloszenie"], usage="<tekst>", description="Tworzy ogłoszenie")
     @commands.guild_only()
@@ -77,19 +64,6 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def advert_error(self, ctx, error):
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Nie jesteś administratorem tego serwera!")
-            return
-        if isinstance(error, commands.NoPrivateMessage):
-            await ctx.send("❌ Tę komendę możesz użyć tylko na serwerze.")
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: &advert <tekst>")
-            return
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: &advert <tekst>")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
-            self.bot.log.error(error)
             return
 
     @commands.command(description="Otrzymywanie powiadomień o usuniętych i edytowanych wiadomościach")
@@ -129,15 +103,8 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @logs.error
     async def logs_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: `&logs on #nazwa_kanału` lub `&logs off`")
-            return
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Nie posiadasz uprawnień do tej komendy! Wymagane uprawnienie `Administrator`.")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
-            self.bot.log.error(error)
             return
 
     @commands.Cog.listener()
@@ -195,24 +162,11 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @ban.error
     async def ban_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: `&ban @użytkownik <powód>`")
-            return
-        if isinstance(error, commands.NoPrivateMessage):
-            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
-            return
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&ban @użytkownik <powód>`")
-            return
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Nie masz uprawnień do banowania użytkowników")
             return
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send("❌ Atorin nie ma uprawnień do banowania użytkowników")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
-            self.bot.log.error(error)
             return
 
     @commands.command(
@@ -245,24 +199,11 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @unban.error
     async def unban_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: `&unban <użytkownik>`")
-            return
-        if isinstance(error, commands.NoPrivateMessage):
-            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
-            return
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&unban <użytkownik>`")
-            return
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Nie masz uprawnień do banowania użytkowników")
             return
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send("❌ Atorin nie ma uprawnień do banowania użytkowników")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
-            self.bot.log.error(error)
             return
 
     @commands.command(description="Wyrzuć użytkownika", usage="@użytkownik <powód>")
@@ -293,24 +234,11 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @kick.error
     async def kick_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: `&kick @użytkownik <powód>`")
-            return
-        if isinstance(error, commands.NoPrivateMessage):
-            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
-            return
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&kick @użytkownik <powód>`")
-            return
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Nie masz uprawnień do wyrzucania użytkowników")
             return
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send("❌ Atorin nie ma uprawnień do wyrzucania użytkowników")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
-            self.bot.log.error(error)
             return
 
     @commands.command(description="Wycisza podanego użytkownika", aliases=["wycisz"], usage="@uzytkownik <powód>")
@@ -349,24 +277,11 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @mute.error
     async def mute_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: `&mute @użytkownik <powód>`")
-            return
-        if isinstance(error, commands.NoPrivateMessage):
-            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
-            return
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&mute @użytkownik <powód>`")
-            return
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Nie masz uprawnień do zarządzania wiadomościami")
             return
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send("❌ Atorin nie ma uprawnień do tworzenia ról")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
-            self.bot.log.error(error)
             return
 
     @commands.command(description="Odcisza podanego użytkownika", aliases=["odcisz"], usage="@uzytkownik")
@@ -392,24 +307,11 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @unmute.error
     async def unmute_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: `&unmute @użytkownik`")
-            return
-        if isinstance(error, commands.NoPrivateMessage):
-            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
-            return
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&unmute @użytkownik`")
-            return
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Nie masz uprawnień do zarządzania wiadomościami")
             return
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send("❌ Atorin nie ma uprawnień do tworzenia ról")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
-            self.bot.log.error(error)
             return
 
     @commands.command(description="Przyznaje ostrzeżenie użytkownikowi",
@@ -443,21 +345,8 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @warn.error
     async def warn_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: `&warn @użytkownik <powód>`")
-            return
-        if isinstance(error, commands.NoPrivateMessage):
-            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
-            return
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&warn @użytkownik <powód>`")
-            return
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Musisz być administratorem tego serwera!")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
-            self.bot.log.error(error)
             return
 
     @commands.command(description="Pokazuje przyznane ostrzeżenia podanemu użytkownikowi",
@@ -484,19 +373,6 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @warns.error
     async def warns_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: `&warns @użytkownik`")
-            return
-        if isinstance(error, commands.NoPrivateMessage):
-            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
-            return
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&warns @użytkownik`")
-            return
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("❌ Musisz być administratorem tego serwera!")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
-            self.bot.log.error(error)
             return

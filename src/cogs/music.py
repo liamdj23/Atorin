@@ -178,15 +178,6 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         else:
             await info_message.delete()
 
-    @play.error
-    async def play_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&play <tytuł lub link do Youtube>`")
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: `&play <tytuł lub link do Youtube>`")
-            return
-
     @commands.command(
         description="Wstrzymuje odtwarzanie muzyki",
         aliases=["zatrzymaj"]
@@ -254,15 +245,6 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         else:
             await ctx.send("🙊 Atorin nie odtwarza muzyki.")
         return
-
-    @volume.error
-    async def volume_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&volume <0-100>`")
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: `&volume <0-100>`")
-            return
 
     @commands.command(
         description="Wyświetla kolejkę utworów do odtworzenia",

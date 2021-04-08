@@ -24,16 +24,9 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                     data = await r.json()
                     await ctx.send(data[0])
                 else:
-                    raise commands.CommandError
+                    raise commands.CommandError(r.text())
 
-    @shiba.error
-    async def shiba_error(self, ctx, error):
-        if isinstance(error, commands.CommandError):
-            await ctx.send("Nie udało się uzyskać obrazka. Spróbuj ponownie za chwilę.")
-            self.bot.log.error(error)
-            return
-
-    @commands.command(usage="<tekst>",
+    @commands.command(usage="<tekst> (max.48 znaków)",
                       description="Stwórz pasek z wiadomości z własnym tekstem\n\nPrzykład użycia: &tvp Atorin jest super!")
     async def tvp(self, ctx, *, text):
         if len(text) > 48:
@@ -44,20 +37,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                     image = await r.content.read()
                     await ctx.send(file=discord.File(BytesIO(image), filename="tvp.png"))
                 else:
-                    raise commands.CommandError
-
-    @tvp.error
-    async def tvp_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&tvp <tekst>`")
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Zbyt duża ilość znaków, limit to 48 znaków.")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("Nie udało się wygenerować obrazka. Spróbuj ponownie za chwilę.")
-            self.bot.log.error(error)
-            return
+                    raise commands.CommandError(r.text())
 
     @commands.command(description="Wpisz aby otrzymać losowe zdjęcie kotka", aliases=["kot"])
     async def cat(self, ctx):
@@ -67,14 +47,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                     data = await r.json()
                     await ctx.send(data[0]['url'])
                 else:
-                    raise commands.CommandError
-
-    @cat.error
-    async def cat_error(self, ctx, error):
-        if isinstance(error, commands.CommandError):
-            await ctx.send("Nie udało się uzyskać obrazka. Spróbuj ponownie za chwilę.")
-            self.bot.log.error(error)
-            return
+                    raise commands.CommandError(r.text())
 
     @commands.command(description="Wpisz aby otrzymać losowe zdjęcie lisa", aliases=["lis"])
     async def fox(self, ctx):
@@ -84,32 +57,13 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                     data = await r.json()
                     await ctx.send(data['image'])
                 else:
-                    raise commands.CommandError
-
-    @fox.error
-    async def fox_error(self, ctx, error):
-        if isinstance(error, commands.CommandError):
-            await ctx.send("Nie udało się uzyskać obrazka. Spróbuj ponownie za chwilę.")
-            self.bot.log.error(error)
-            return
+                    raise commands.CommandError(r.text())
 
     @commands.command(usage="<tekst>",
                       description="Wpisz aby otrzymać napis stworzony z mniejszych znaków.\n\nPrzykład użycia: &figlet Atorin")
     async def figlet(self, ctx, *, text):
-        if not text:
-            raise commands.MissingRequiredArgument
         f = Figlet()
         await ctx.send(f"```{f.renderText(text)}```")
-
-    @figlet.error
-    async def figlet_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&figlet <tekst>`")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("Wystąpił błąd wewnętrzny. Spróbuj ponownie za chwilę.")
-            self.bot.log.error(error)
-            return
 
     @commands.command(description="Jeśli nie masz pomysłu na tytuł commita, skorzystaj z tej komendy")
     async def commit(self, ctx):
@@ -119,16 +73,9 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                     text = await r.text()
                     await ctx.send("git commit -m '{0}'".format(text.replace("\n", "")))
                 else:
-                    raise commands.CommandError
+                    raise commands.CommandError(r.text())
 
-    @commit.error
-    async def commit_error(self, ctx, error):
-        if isinstance(error, commands.CommandError):
-            await ctx.send("Nie udało się uzyskać commita. Spróbuj ponownie za chwilę.")
-            self.bot.log.error(error)
-            return
-
-    @commands.command(usage="<tekst>",
+    @commands.command(usage="<tekst> (max.25 znaków)",
                       description="Stwórz osiągniecie z własnym tekstem\n\nPrzykład użycia: &achievement Jesteś super!",
                       aliases=["achieve", "osiągniecie"])
     async def achievement(self, ctx, *, text):
@@ -144,19 +91,6 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         template.save(img, "PNG")
         img.seek(0)
         await ctx.send(file=discord.File(img, filename="achievement.png"))
-
-    @achievement.error
-    async def achievement_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&achievement <tekst>`")
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Zbyt duża ilość znaków, limit to 25 znaków.")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("Nie udało się wygenerować obrazka. Spróbuj ponownie za chwilę.")
-            self.bot.log.error(error)
-            return
 
     @commands.command(usage="<tekst górny | tekst dolny>",
                       description="Stwórz własnego mema z Drake\n\nPrzykład użycia: &drake hawajska | salami")
@@ -182,19 +116,6 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         img.seek(0)
         await ctx.send(file=discord.File(img, filename="drake.png"))
 
-    @drake.error
-    async def drake_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&drake <tekst górny | tekst dolny>`")
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: `&drake <tekst górny | tekst dolny>`")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("Nie udało się wygenerować obrazka. Spróbuj ponownie za chwilę.")
-            self.bot.log.error(error)
-            return
-
     @commands.command(usage="<tekst lub link>",
                       description="Utwórz własny kod QR z tekstem lub linkiem\n\nPrzykład użycia: &qr liamdj23.ovh/addbot",
                       aliases=["kodqr", "qr"])
@@ -212,19 +133,6 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         img.seek(0)
         await ctx.send(file=discord.File(img, filename="qr.png"))
 
-    @codeqr.error
-    async def codeqr_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&qr <tekst lub link>`")
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: `&qr <tekst lub link>`")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("Nie udało się wygenerować kodu QR. Spróbuj ponownie za chwilę.")
-            self.bot.log.error(error)
-            return
-
     @commands.command(usage="<nazwa>",
                       description="Pokazuje profil z Instagrama",
                       aliases=["ig"])
@@ -240,7 +148,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             return
         data = r.json()
         if not data["graphql"]:
-            raise commands.CommandError
+            raise commands.CommandError(r.text)
         embed = self.bot.embed(ctx.author)
         user = data["graphql"]["user"]
         embed.title = "Profil {} na Instagramie".format(user["username"])
@@ -259,16 +167,6 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             embed.set_thumbnail(url=user["profile_pic_url_hd"])
         await ctx.send(embed=embed)
 
-    @instagram.error
-    async def instagram_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie `&ig <nazwa>`")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
-            self.bot.log.error(error)
-            return
-
     @commands.command(usage="@poszukiwany",
                       description="Oznacz kogoś aby stał się poszukiwany\n\nPrzykład użycia: &wanted @liamdj23",
                       aliases=["poszukiwany"])
@@ -283,22 +181,6 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         img.seek(0)
         await ctx.send(file=discord.File(img, filename="wanted.png"))
 
-    @wanted.error
-    async def wanted_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&wanted @poszukiwany`")
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: `&wanted @poszukiwany`")
-            return
-        if isinstance(error, commands.UserNotFound):
-            await ctx.send("❌ Nie znaleziono podanego użytkownika.")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("Nie udało się wygenerować obrazka. Spróbuj ponownie za chwilę.")
-            self.bot.log.error(error)
-            return
-
     @commands.command(description="Wpisz aby otrzymać losowe zdjęcie pieska", aliases=["pies", "piesek"])
     async def dog(self, ctx):
         async with aiohttp.ClientSession() as session:
@@ -307,13 +189,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                     data = await r.json()
                     await ctx.send(data['message'])
                 else:
-                    raise commands.CommandError
-
-    @dog.error
-    async def dog_error(self, ctx, error):
-        if isinstance(error, commands.CommandError):
-            await ctx.send("Nie udało się uzyskać obrazka. Spróbuj ponownie za chwilę.")
-            return
+                    raise commands.CommandError(r.text())
 
     @commands.command(description="Rzut monetą", aliases=["moneta"])
     async def flip(self, ctx):
@@ -342,19 +218,6 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         img.seek(0)
         await ctx.send(file=discord.File(img, filename="changemymind.png"))
 
-    @changemymind.error
-    async def changemymind_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&changemymind <tekst>`")
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: `&changemymind <tekst>`")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd w generowaniu obrazka, spróbuj ponownie później")
-            self.bot.log.error(error)
-            return
-
     @commands.command(description="Wysyła losowego mema z /r/Polska_wpz", aliases=["mem", "memy"])
     async def meme(self, ctx):
         subreddit = await self.bot.reddit.subreddit("Polska_wpz")
@@ -367,10 +230,3 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         embed.color = 0xF9493E
         embed.set_image(url=meme.url)
         await ctx.send(embed=embed)
-
-    @meme.error
-    async def meme_error(self, ctx, error):
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd w pobieraniu obrazka, spróbuj ponownie później")
-            self.bot.log.error(error)
-            return

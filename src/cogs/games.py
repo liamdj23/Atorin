@@ -105,22 +105,9 @@ class Games(commands.Cog, name="🕹 Gry"):
                         else:
                             await ctx.send(embed=embed)
                     else:
-                        raise commands.CommandError
+                        await ctx.send("❌ Podany serwer nie istnieje lub jest offline!")
                 else:
-                    raise commands.CommandError
-
-    @server.error
-    async def server_error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: `&mc server <adres>`")
-            return
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&mc server <adres>`")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd przy pobieraniu danych lub serwer jest offline!")
-            self.bot.log.error(error)
-            return
+                    raise commands.CommandError(r.text())
 
     @minecraft.command()
     async def skin(self, ctx, nick: is_minecraft_nick):
@@ -131,22 +118,11 @@ class Games(commands.Cog, name="🕹 Gry"):
             if skin.status_code == 200:
                 await ctx.send(file=discord.File(BytesIO(skin.content), filename="skin.png"))
             else:
-                raise commands.CommandError
+                raise commands.CommandError(skin.text)
+        elif mojang.status_code == 204:
+            await ctx.send("❌ Podany gracz nie został odnaleziony.")
         else:
-            raise commands.CommandError
-
-    @skin.error
-    async def skin_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&mc skin <nick>`")
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: `&mc skin <nick>`")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd przy pobieraniu danych, spróbuj ponownie")
-            self.bot.log.error(error)
-            return
+            raise commands.CommandError(mojang.text)
 
     @commands.command(description="Statystyki w grze Fortnite\n\nPrzykład użycia: &fortnite epic liamdj23",
                       usage="<epic/psn/xbl> <nick>")
@@ -155,8 +131,7 @@ class Games(commands.Cog, name="🕹 Gry"):
             async with session.get(f"https://fortnite-api.com/v1/stats/br/v2?name={quote(nick)}&accountType={platform}") as r:
                 if r.status == 404:
                     await ctx.send("❌ Gracz **{}** nie istnieje lub nie grał w Fortnite!".format(nick))
-                    return
-                if r.status == 200:
+                elif r.status == 200:
                     json = await r.json()
                     data = json["data"]["stats"]["all"]["overall"]
                     embed = self.bot.embed(ctx.author)
@@ -168,30 +143,20 @@ class Games(commands.Cog, name="🕹 Gry"):
                     embed.add_field(name="🕹Rozegranych meczy", value=data["matches"])
                     await ctx.send(embed=embed)
                 else:
-                    raise commands.CommandError
-
-    @fortnite.error
-    async def fortnite_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&fortnite <epic/psn/xbl> <nick>`")
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Poprawne użycie: `&fortnite <epic/psn/xbl> <nick>`")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd przy pobieraniu danych, spróbuj ponownie")
-            self.bot.log.error(error)
-            return
+                    raise commands.CommandError(r.text())
 
     @commands.command(description="Statystyki w grze CS:GO\n\nPrzykład użycia:\n&csgo https://steamcommunity.com/id/liamxdev/",
                       usage="<link do profilu steam>", aliases=["cs"])
     async def csgo(self, ctx, url: str):
         steam_id, nick = await steam_resolve_url(url, self.bot.config["steam"])
         if not steam_id:
-            raise commands.BadArgument
+            await ctx.send("❌ Nie odnaleziono podanego gracza.")
+            return
         stats = await steam_get_stats(730, self.bot.config["steam"], steam_id)
         if not stats:
-            raise commands.CommandError
+            await ctx.send("❌ Wystąpił błąd przy pobieraniu informacji. Sprawdź czy podany profil jest publiczny"
+                           " i spróbuj ponownie.")
+            return
         embed = self.bot.embed(ctx.author)
         embed.title = "Statystyki w grze CS:GO"
         embed.description = "🧑 Gracz: **{}**".format(nick)
@@ -205,17 +170,3 @@ class Games(commands.Cog, name="🕹 Gry"):
             elif i['name'] == 'total_matches_won':
                 embed.add_field(name="🏆 Wygranych meczy", value=i["value"], inline=False)
         await ctx.send(embed=embed)
-
-    @csgo.error
-    async def csgo_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&csgo <link do profilu steam>`")
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Nie znaleziono gracza")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd przy pobieraniu danych, spróbuj ponownie."
-                           " Sprawdź czy twój profil jest publiczny.")
-            self.bot.log.error(error)
-            return

@@ -20,19 +20,6 @@ class Info(commands.Cog, name="ℹ Informacje"):
         avatar = await user.avatar_url.read()
         await ctx.send(file=discord.File(BytesIO(avatar), filename=user.name + ".png"))
 
-    @avatar.error
-    async def avatar_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&avatar @użytkownik`")
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Nie znaleziono użytkownika o podanej nazwie.")
-            return
-        if isinstance(error, discord.HTTPException):
-            await ctx.send("❌ Wystąpił błąd przy pobieraniu avatara, spróbuj ponownie.")
-            self.bot.log.error(error)
-            return
-
     @commands.command(description="Wpisz aby zaprosić Atorina na swój serwer lub uzyskać wsparcie")
     async def invite(self, ctx):
         await ctx.send("🔹 Dodaj Atorina na swój serwer, korzystając z tego linku: https://liamdj23.ovh/addbot\n"
@@ -52,16 +39,6 @@ class Info(commands.Cog, name="ℹ Informacje"):
         embed.set_thumbnail(url=guild.icon_url)
         await ctx.send(embed=embed)
 
-    @server.error
-    async def server_error(self, ctx, error):
-        if isinstance(error, commands.NoPrivateMessage):
-            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
-            self.bot.log.error(error)
-            return
-
     @commands.command(description="Informacje o użytkowniku\n\nPrzykład użycia:\n&user\n&user @Atorin")
     @commands.guild_only()
     async def user(self, ctx, member: discord.Member = None):
@@ -78,19 +55,6 @@ class Info(commands.Cog, name="ℹ Informacje"):
         embed.add_field(name="🏅 Role", value=roles)
         embed.set_thumbnail(url=member.avatar_url)
         await ctx.send(embed=embed)
-
-    @user.error
-    async def user_error(self, ctx, error):
-        if isinstance(error, commands.NoPrivateMessage):
-            await ctx.send("❌ Tej komendy można użyć tylko na serwerze!")
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Nie znaleziono użytkownika na tym serwerze!")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później.")
-            self.bot.log.error(error)
-            return
 
     @commands.command(aliases=["pogoda"],
                       description="Wpisz aby otrzymać aktualną pogodę w Twojej miejscowości\n\nPrzykład użycia: &pogoda Kraków",
@@ -112,22 +76,9 @@ class Info(commands.Cog, name="ℹ Informacje"):
                     embed.add_field(name="💨 Wiatr", value=str(data["wind"]["speed"]) + "m/s")
                     await ctx.send(embed=embed)
                 elif r.status == 404:
-                    raise commands.BadArgument
+                    await ctx.send("❌ Nie odnaleziono podanej miejscowości.")
                 else:
-                    raise commands.CommandError
-
-    @weather.error
-    async def weather_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send("❌ Poprawne użycie: `&pogoda <miejscowość>`")
-            return
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("❌ Nie znaleziono podanej miejscowości.")
-            return
-        if isinstance(error, commands.CommandError):
-            await ctx.send("❌ Wystąpił błąd, spróbuj ponownie później.")
-            self.bot.log.error(error)
-            return
+                    raise commands.CommandError(r.text())
 
     @commands.command(description="Wpisz aby otrzymać informacje o Atorinie")
     async def bot(self, ctx):
@@ -193,5 +144,6 @@ class Info(commands.Cog, name="ℹ Informacje"):
             )
         else:
             embed.description = "💎 Wesprzyj bota kupując Atorin Premium, w zamian otrzymasz dostęp do eksluzywnych" \
-                                " funkcji. Więcej informacji znajdziesz [na stronie bota](https://liamdj23.ovh/premium)."
+                                " funkcji. Więcej informacji" \
+                                " znajdziesz [na stronie bota](https://liamdj23.ovh/premium)."
         await ctx.send(embed=embed)

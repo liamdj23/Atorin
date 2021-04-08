@@ -45,14 +45,26 @@ class Atorin(commands.AutoShardedBot):
         self.add_cog(Music(self))
 
         @self.event
-        async def on_message(message):
-            ctx = await self.get_context(message)
-            if ctx.author.bot and ctx.author.id == 742076835549937805:
-                pass
-            elif ctx.author.bot:
+        async def on_command_error(ctx, error):
+            command = ctx.command
+            if isinstance(error, commands.NoPrivateMessage):
+                await ctx.send("❌ Tę komendę możesz użyć tylko na serwerze.")
                 return
-            if ctx.command:
-                await self.invoke(ctx)
+            elif isinstance(error, commands.BadArgument):
+                await ctx.send(f"❌ Poprawne użycie: `&{command.name} {command.usage}`")
+                return
+            elif isinstance(error, commands.MissingRequiredArgument):
+                await ctx.send(f"❌ Poprawne użycie: `&{command.name} {command.usage}`")
+                return
+            elif isinstance(error, commands.UserNotFound):
+                await ctx.send("❌ Nie znaleziono podanego użytkownika.")
+                return
+            else:
+                await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później."
+                               " Jeśli błąd się powtarza, skontaktuj się z autorem na serwerze Discord "
+                               "https://liamdj23.ovh/discord")
+                self.log.error(error)
+                return
 
         @self.event
         async def on_shard_connect(id):
