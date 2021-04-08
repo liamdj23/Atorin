@@ -93,26 +93,22 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         if guild_check:
             should_connect = ctx.command.name in ('play',)
             if not ctx.author.voice or not ctx.author.voice.channel:
-                raise commands.CommandInvokeError('❌ Musisz być połączony do kanału głosowego!')
+                await ctx.send('❌ Musisz być połączony do kanału głosowego!')
 
             if not ctx.guild.voice_client:
                 if not should_connect:
-                    raise commands.CommandInvokeError('🙊 Atorin nie jest połączony do kanału głosowego!')
+                    await ctx.send('🙊 Atorin nie jest połączony do kanału głosowego!')
 
                 permissions = ctx.author.voice.channel.permissions_for(ctx.me)
 
                 if not permissions.connect or not permissions.speak:
-                    raise commands.CommandInvokeError('🚫 Atorin nie ma uprawnień potrzebych do odtwarzania muzyki.'
-                                                      ' Daj roli `Atorin` uprawnienia `Łączenie` oraz `Mówienie`'
-                                                      ' i spróbuj ponownie.')
+                    await ctx.send('🚫 Atorin nie ma uprawnień potrzebych do odtwarzania muzyki.'
+                                   ' Daj roli `Atorin` uprawnienia `Łączenie` oraz `Mówienie`'
+                                   ' i spróbuj ponownie.')
             else:
                 if int(ctx.guild.voice_client.channel.id) != ctx.author.voice.channel.id:
-                    raise commands.CommandInvokeError('❌ Nie jesteś połączony do kanału na którym jest Atorin!')
+                    await ctx.send('❌ Nie jesteś połączony do kanału na którym jest Atorin!')
         return guild_check
-
-    async def cog_command_error(self, ctx, error):
-        if isinstance(error, commands.CommandInvokeError):
-            await ctx.send(error.original)
 
     @commands.command(
         description="Odtwarza muzykę na kanale głosowym\n\nPrzykłady użycia:"
@@ -240,7 +236,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         if voice and voice.is_playing():
             player = self.get_player(ctx)
             source = player.source
-            source.volume = float(vol/100)
+            source.volume = float(vol / 100)
             await ctx.send("🔉 Ustawiono glośność na {}%.".format(vol))
         else:
             await ctx.send("🙊 Atorin nie odtwarza muzyki.")
@@ -259,7 +255,8 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
 
             upcoming = list(itertools.islice(player.queue._queue, 0, 5))
 
-            fmt = '\n'.join(f'**{_["title"]}** ({time.strftime("%H:%M:%S", time.gmtime(_["duration"]))})' for _ in upcoming)
+            fmt = '\n'.join(
+                f'**{_["title"]}** ({time.strftime("%H:%M:%S", time.gmtime(_["duration"]))})' for _ in upcoming)
             embed = self.bot.embed(ctx.author)
             embed.title = f"Utwory w kolejce: {len(upcoming)}"
             embed.description = fmt

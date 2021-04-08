@@ -59,10 +59,12 @@ class Atorin(commands.AutoShardedBot):
             elif isinstance(error, commands.UserNotFound):
                 await ctx.send("❌ Nie znaleziono podanego użytkownika.")
                 return
+            elif isinstance(error, commands.CommandNotFound):
+                return
             else:
                 await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później."
                                " Jeśli błąd się powtarza, skontaktuj się z autorem na serwerze Discord "
-                               "https://liamdj23.ovh/discord")
+                               "https://discord.gg/Ygr5wAZbsZ")
                 self.log.error(error)
                 return
 
