@@ -144,10 +144,10 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             "cookie": "; ".join(cookies)
         })
         if r.status_code == 404:
-            await ctx.send("❌ Nie znaleziono użytkownika o podanej nazwie")
+            await ctx.send("❌ Nie znaleziono użytkownika o podanej nazwie.")
             return
         data = r.json()
-        if not data["graphql"]:
+        if "graphql" not in data:
             raise commands.CommandError(r.text)
         embed = self.bot.embed(ctx.author)
         user = data["graphql"]["user"]
