@@ -70,6 +70,11 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         self.bot = bot
         self.players = {}
 
+    class MusicException(commands.CommandError):
+        def __init__(self, message=None, *args):
+            super().__init__(message, args)
+            self.original = message
+
     async def cleanup(self, guild):
         try:
             await guild.voice_client.disconnect()
@@ -92,23 +97,27 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         guild_check = ctx.guild is not None
         if guild_check:
             should_connect = ctx.command.name in ('play',)
-            if not ctx.author.voice or not ctx.author.voice.channel:
-                await ctx.send('❌ Musisz być połączony do kanału głosowego!')
+            if not ctx.author.voice:
+                raise self.MusicException('❌ Musisz być połączony do kanału głosowego!')
 
             if not ctx.guild.voice_client:
                 if not should_connect:
-                    await ctx.send('🙊 Atorin nie jest połączony do kanału głosowego!')
+                    raise self.MusicException('🙊 Atorin nie jest połączony do kanału głosowego!')
 
                 permissions = ctx.author.voice.channel.permissions_for(ctx.me)
 
                 if not permissions.connect or not permissions.speak:
-                    await ctx.send('🚫 Atorin nie ma uprawnień potrzebych do odtwarzania muzyki.'
-                                   ' Daj roli `Atorin` uprawnienia `Łączenie` oraz `Mówienie`'
-                                   ' i spróbuj ponownie.')
+                    raise self.MusicException('🚫 Atorin nie ma uprawnień potrzebych do odtwarzania muzyki.'
+                                                      ' Daj roli `Atorin` uprawnienia `Łączenie` oraz `Mówienie`'
+                                                      ' i spróbuj ponownie.')
             else:
                 if int(ctx.guild.voice_client.channel.id) != ctx.author.voice.channel.id:
-                    await ctx.send('❌ Nie jesteś połączony do kanału na którym jest Atorin!')
+                    raise self.MusicException('❌ Nie jesteś połączony do kanału na którym jest Atorin!')
         return guild_check
+
+    async def cog_command_error(self, ctx, error):
+        if isinstance(error, self.MusicException):
+            await ctx.send(error.original)
 
     @commands.command(
         description="Odtwarza muzykę na kanale głosowym\n\nPrzykłady użycia:"
