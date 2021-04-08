@@ -22,9 +22,13 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
                       description="Wpisz aby usunąć dużą ilość wiadomości\n\nPrzykład użycia: &clear 34")
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_guild_permissions(manage_messages=True)
+    @commands.bot_has_guild_permissions(read_message_history=True)
     @commands.guild_only()
-    async def clear(self, ctx, count: int):
-        messages = await ctx.channel.purge(limit=count)
+    async def clear(self, ctx, limit: int):
+        messages = []
+        async for message in ctx.channel.history(limit=limit):
+            messages.append(message)
+        await ctx.channel.delete_messages(messages)
         await ctx.send("🗑 {} usunął **{}** wiadomości ✅".format(ctx.message.author.mention, len(messages)))
         logs_channel = await self.get_logs_channel(ctx.guild)
         if logs_channel:
