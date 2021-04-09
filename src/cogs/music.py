@@ -14,7 +14,8 @@ from datetime import datetime
 
 ytdl_options = {
     "format": "bestaudio[ext=m4a]",
-    "outtmpl": "../songs/%(id)s.%(ext)s"
+    "outtmpl": "../songs/%(id)s.%(ext)s",
+    "quiet": True
 }
 
 ytdl = youtube_dl.YoutubeDL(ytdl_options)
