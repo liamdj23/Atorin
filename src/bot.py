@@ -87,6 +87,10 @@ class Atorin(commands.AutoShardedBot):
                     await ctx.send("❌ Bot nie ma odpowiednich uprawnień do wykonania tej komendy."
                                    f"Wymagane uprawnienia: `{','.join(error.missing_perms)}`")
                     self.log.error(error.missing_perms)
+            elif isinstance(error, discord.Forbidden):
+                await ctx.send("❌ Bot nie ma odpowiednich uprawnień do wykonania tej komendy."
+                               " Przenieś wyżej rolę `Atorin` w ustawieniach serwera"
+                               " i spróbuj ponownie.")
             elif isinstance(error, Music.MusicException):
                 return
             else:
