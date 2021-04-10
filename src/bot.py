@@ -97,7 +97,7 @@ class Atorin(commands.AutoShardedBot):
                 await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później."
                                " Jeśli błąd się powtarza, skontaktuj się z autorem na serwerze Discord "
                                "https://discord.gg/Ygr5wAZbsZ")
-                self.log.error(f"{error.__module__} | {error.original}")
+                raise error
                 return
 
         @self.event

@@ -109,8 +109,8 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
 
                 if not permissions.connect or not permissions.speak:
                     raise self.MusicException('🚫 Atorin nie ma uprawnień potrzebych do odtwarzania muzyki.'
-                                                      ' Daj roli `Atorin` uprawnienia `Łączenie` oraz `Mówienie`'
-                                                      ' i spróbuj ponownie.')
+                                              ' Daj roli `Atorin` uprawnienia `Łączenie` oraz `Mówienie`'
+                                              ' i spróbuj ponownie.')
             else:
                 if int(ctx.guild.voice_client.channel.id) != ctx.author.voice.channel.id:
                     raise self.MusicException('❌ Nie jesteś połączony do kanału na którym jest Atorin!')
