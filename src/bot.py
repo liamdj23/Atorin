@@ -98,7 +98,6 @@ class Atorin(commands.AutoShardedBot):
                                " Jeśli błąd się powtarza, skontaktuj się z autorem na serwerze Discord "
                                "https://discord.gg/Ygr5wAZbsZ")
                 raise error
-                return
 
         @self.event
         async def on_shard_connect(id):

@@ -107,7 +107,7 @@ class Games(commands.Cog, name="🕹 Gry"):
                     else:
                         await ctx.send("❌ Podany serwer nie istnieje lub jest offline!")
                 else:
-                    raise commands.CommandError(r.text())
+                    raise commands.CommandError(await r.text())
 
     @minecraft.command()
     async def skin(self, ctx, nick: is_minecraft_nick):

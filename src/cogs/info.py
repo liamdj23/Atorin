@@ -78,7 +78,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
                 elif r.status == 404:
                     await ctx.send("❌ Nie odnaleziono podanej miejscowości.")
                 else:
-                    raise commands.CommandError(r.text())
+                    raise commands.CommandError(await r.text())
 
     @commands.command(description="Wpisz aby otrzymać informacje o Atorinie")
     async def bot(self, ctx):

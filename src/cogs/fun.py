@@ -220,13 +220,27 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
 
     @commands.command(description="Wysyła losowego mema z /r/Polska_wpz", aliases=["mem", "memy"])
     async def meme(self, ctx):
-        subreddit = await self.bot.reddit.subreddit("Polska_wpz")
         while True:
-            meme = await subreddit.random()
-            if meme.url.endswith(".jpg"):
+            r = requests.get("https://reddit.com/r/Polska_wpz/random/.json", headers={"User-agent": "Atorin"})
+            meme = r.json()[0]["data"]["children"][0]["data"]
+            if not meme["is_video"] and "v.redd.it" not in meme["url"]:
                 break
         embed = self.bot.embed(ctx.author)
-        embed.title = meme.title
+        embed.title = meme["title"]
         embed.color = 0xF9493E
-        embed.set_image(url=meme.url)
+        embed.set_image(url=meme["url"])
+        await ctx.send(embed=embed)
+
+    @commands.command(description="Wysyła losowy post z /r/aww")
+    async def aww(self, ctx):
+        while True:
+            r = requests.get("https://reddit.com/r/aww/random/.json", headers={"User-agent": "Atorin"})
+            post = r.json()[0]["data"]["children"][0]["data"]
+            print(post)
+            if not post["is_video"] and "v.redd.it" not in post["url"]:
+                break
+        embed = self.bot.embed(ctx.author)
+        embed.title = post["title"]
+        embed.color = 0xF9493E
+        embed.set_image(url=post["url"])
         await ctx.send(embed=embed)
