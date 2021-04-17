@@ -1,3 +1,5 @@
+import datetime
+
 import discord
 from discord.ext import commands
 
@@ -17,6 +19,16 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
                 server.save()
             return channel
 
+    async def save_to_event_logs(self, guild, action, by, on, reason):
+        self.bot.mongo.EventLogs(
+            server=guild,
+            action_name=action,
+            action_by=by,
+            action_on=on,
+            reason=reason,
+            date=datetime.datetime.now()
+        ).save()
+
     @commands.command(aliases=["delmsg", "purge"],
                       usage="<3-100>",
                       description="Wpisz aby usunąć dużą ilość wiadomości\n\nPrzykład użycia: &clear 34")
@@ -31,6 +43,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         async for message in ctx.channel.history(limit=limit):
             messages.append(message)
         await ctx.channel.delete_messages(messages)
+        await self.save_to_event_logs(ctx.guild.id, "clear", ctx.author.id, ctx.channel.id, None)
         await ctx.send("🗑 {} usunął **{}** wiadomości ✅".format(ctx.message.author.mention, len(messages)))
         logs_channel = await self.get_logs_channel(ctx.guild)
         if logs_channel:
@@ -125,6 +138,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     @commands.guild_only()
     async def ban(self, ctx, member: discord.Member, *, reason: str):
         await member.ban(delete_message_days=0)
+        await self.save_to_event_logs(ctx.guild.id, "ban", ctx.author.id, member.id, reason)
         await ctx.send("🔨 {} **zbanował** {} z powodu `{}`".format(
             ctx.author.mention,
             member.name + "#" + member.discriminator,
@@ -161,6 +175,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             user = ban_entry.user
             if (user.name, user.discriminator) == (member_name, member_discriminator):
                 await ctx.guild.unban(user)
+                await self.save_to_event_logs(ctx.guild.id, "unban", ctx.author.id, user.id, None)
                 await ctx.send("✅ {} odbanował {}".format(ctx.author.mention, member))
                 await ctx.message.delete()
                 logs_channel = await self.get_logs_channel(ctx.guild)
@@ -179,6 +194,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     @commands.guild_only()
     async def kick(self, ctx, member: discord.Member, *, reason: str):
         await member.kick(reason=reason)
+        await self.save_to_event_logs(ctx.guild.id, "kick", ctx.author.id, member.id, reason)
         await ctx.send("🦶 {} wyrzucił {} z powodu {}".format(
             ctx.author.mention,
             member.name + "#" + member.discriminator,
@@ -211,6 +227,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
                 if channel.permissions_for(ctx.guild.get_member(self.bot.user.id)).manage_roles:
                     await channel.set_permissions(mutedrole, speak=False, send_messages=False)
         await member.add_roles(mutedrole, reason=reason)
+        await self.save_to_event_logs(ctx.guild.id, "mute", ctx.author.id, member.id, reason if reason else None)
         if reason:
             await ctx.send("🔇 {} wyciszył {} z powodu `{}`".format(ctx.author.mention, member.mention, reason))
             try:
@@ -240,6 +257,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def unmute(self, ctx, member: discord.Member):
         mutedrole = discord.utils.get(ctx.guild.roles, name="Muted")
         await member.remove_roles(mutedrole)
+        await self.save_to_event_logs(ctx.guild.id, "unmute", ctx.author.id, member.id, None)
         await ctx.send("🔊 {} odciszył **{}**".format(ctx.author.mention, member.mention))
         await ctx.message.delete()
         try:
@@ -264,9 +282,11 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             server=ctx.guild.id,
             member=member.id,
             given_by=ctx.author.id,
-            reason=reason
+            reason=reason,
+            date=datetime.datetime.now()
         )
         warning.save()
+        await self.save_to_event_logs(ctx.guild.id, "warn", ctx.author.id, member.id, reason)
         embed = self.bot.embed(ctx.author)
         embed.title = "Ostrzeżenie"
         embed.description = "⚠️{} został ostrzeżony przez {} z powodu `{}`".format(

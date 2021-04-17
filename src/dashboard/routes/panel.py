@@ -48,13 +48,15 @@ def server(server_id, setting):
                 if not server_db:
                     server_db = bot.mongo.Server(id=guild.id, logs=bot.mongo.Logs())
                     server_db.save()
+                event_logs = bot.mongo.EventLogs.objects(server=guild.id).order_by("-date")[:10]
                 if request.method == "GET":
                     return render_template(
                         "server.html",
                         avatar=bot.user.avatar_url,
                         user=discord.get_user(session.get("access_token")),
                         guild=guild,
-                        logs=server_db.logs
+                        logs=server_db.logs,
+                        event_logs=event_logs
                     )
                 else:
                     if setting:

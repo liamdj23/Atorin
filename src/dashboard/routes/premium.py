@@ -3,7 +3,7 @@ import hashlib
 import re
 
 import requests
-from flask import render_template, session, current_app, redirect, url_for, request, flash
+from flask import render_template, session, current_app, redirect, url_for, request
 
 
 def premium():
@@ -63,7 +63,7 @@ def buy():
         data["signature"] = signature
         r = requests.post("https://secure.pbl.pl/api/v1/transfer/generate", json=data)
         response = r.json()
-        payment = bot.mongo.Payments(id=response["transactionId"], user=user["id"])
+        payment = bot.mongo.Payments(id=response["transactionId"], user=user["id"], date=datetime.datetime.now())
         payment.save()
         session["transactionSuccess"] = True
         return redirect(response["url"])
@@ -89,8 +89,8 @@ def payments():
         payment.paid = True
         premium = bot.mongo.Premium.objects(id=payment["user"]).first()
         if not premium:
-            premium = bot.mongo.Premium(id=payment["user"])
-        premium.expire = premium.expire + datetime.timedelta(days=30)
+            premium = bot.mongo.Premium(id=payment["user"], created=datetime.datetime.now())
+        premium.expire = datetime.datetime.now() + datetime.timedelta(days=30)
         premium.save()
         payment.save()
         return "OK", 200
@@ -120,8 +120,8 @@ def sms():
                 elif json["data"]["status"] == 1:
                     premium = bot.mongo.Premium.objects(id=user["id"]).first()
                     if not premium:
-                        premium = bot.mongo.Premium(id=user["id"])
-                    premium.expire = premium.expire + datetime.timedelta(days=30)
+                        premium = bot.mongo.Premium(id=user["id"], created=datetime.datetime.now())
+                    premium.expire = datetime.datetime.now() + datetime.timedelta(days=30)
                     premium.save()
                     session["transactionSuccess"] = True
                     return url_for("thanks")

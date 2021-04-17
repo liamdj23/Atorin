@@ -20,12 +20,13 @@
         Wybierz sekcje
       </p>
       <ul class="menu-list">
-        <li><a href="#logs">Zdarzenia</a></li>
+        <li><a href="#events">Zdarzenia</a></li>
+        <li><a href="#logs">Dziennik zdarzeń</a></li>
       </ul>
     </aside>
   </div>
   <div class="column">
-    <article id="logs">
+    <article id="events">
         <p class="title">Zdarzenia</p>
         <p class="subtitle">Włącz lub wyłącz wiadomości o zdarzeniach</p>
         <div class="notification is-link" style="display: none">
@@ -49,6 +50,34 @@
             </select>
         </div>
     </article>
+    <article class="mt-5" id="logs">
+        <p class="title">Dziennik zdarzeń</p>
+        <p class="subtitle">Oto 10 ostatnich czynności wykonanych przez Atorina</p>
+        <table class="table is-fullwidth">
+            <thead>
+                <tr>
+                    <th>Lp.</th>
+                    <th>Czynność</th>
+                    <th>Przez</th>
+                    <th>Osoba/Kanał</th>
+                    <th>Powód</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for log in event_logs %}
+                <tr>
+                <th>{{ loop.index }}</th>
+                <td>{{ log.action_name }}</td>
+                <td>{{ log.action_by }}</td>
+                <td>{{ log.action_on }}</td>
+                <td>{{ log.reason }}</td>
+                <td>{{ log.date.replace(microsecond=0) }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </article>
   </div>
 </div>
 {% endblock %}
@@ -60,7 +89,7 @@
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({"state": $(this).is(":checked")})
         }).then(res => res.text()).then(data => {
-            $("#logs .notification").text(data).show();
+            $("#events .notification").text(data).show();
             if ($("#switchLogs").is(":checked")) {
                 $("#switchLogsText").text("Włączone");
             } else {

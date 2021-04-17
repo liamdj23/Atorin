@@ -22,13 +22,13 @@ class Payments(mongoengine.Document):
     id = mongoengine.StringField(primary_key=True)
     user = mongoengine.IntField()
     paid = mongoengine.BooleanField(default=False)
-    created = mongoengine.DateTimeField(default=datetime.datetime.utcnow())
+    created = mongoengine.DateTimeField(default=datetime.datetime.now())
 
 
 class Premium(mongoengine.Document):
     id = mongoengine.IntField(primary_key=True)
-    created = mongoengine.DateTimeField(default=datetime.datetime.utcnow())
-    expire = mongoengine.DateTimeField(default=datetime.datetime.utcnow())
+    created = mongoengine.DateTimeField(default=datetime.datetime.now())
+    expire = mongoengine.DateTimeField(default=datetime.datetime.now())
 
 
 class Warns(mongoengine.Document):
@@ -36,4 +36,13 @@ class Warns(mongoengine.Document):
     member = mongoengine.IntField()
     given_by = mongoengine.IntField()
     reason = mongoengine.StringField()
-    date = mongoengine.DateTimeField(default=datetime.datetime.utcnow())
+    date = mongoengine.DateTimeField(default=datetime.datetime.now())
+
+
+class EventLogs(mongoengine.Document):
+    server = mongoengine.IntField()
+    action_by = mongoengine.IntField()
+    action_on = mongoengine.IntField()
+    action_name = mongoengine.StringField()
+    reason = mongoengine.StringField()
+    date = mongoengine.DateTimeField(default=datetime.datetime.now())
