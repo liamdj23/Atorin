@@ -32,13 +32,10 @@ def is_platform(argument: str):
 
 
 async def steam_resolve_url(url: str, key: str):
-    if "steamcommunity.com" in url:
-        parsed = urlparse(url)
-        if not parsed.netloc:
-            parsed = urlparse("https://" + url)
-        nick = parsed.path.split("/")[2]
-    else:
-        return None
+    parsed = urlparse(url)
+    if not parsed.netloc:
+        parsed = urlparse("https://" + url)
+    nick = parsed.path.split("/")[2]
     try:
         int(nick)
         return nick, nick
@@ -148,10 +145,14 @@ class Games(commands.Cog, name="🕹 Gry"):
     @commands.command(description="Statystyki w grze CS:GO\n\nPrzykład użycia:\n&csgo https://steamcommunity.com/id/liamxdev/",
                       usage="<link do profilu steam>", aliases=["cs"])
     async def csgo(self, ctx, url: str):
-        steam_id, nick = await steam_resolve_url(url, self.bot.config["steam"])
-        if not steam_id:
-            await ctx.send("❌ Nie odnaleziono podanego gracza.")
-            return
+        if "steamcommunity.com/id/" in url or "steamcommunity.com/profiles/" in url:
+            try:
+                steam_id, nick = await steam_resolve_url(url, self.bot.config["steam"])
+            except TypeError:
+                await ctx.send("❌ Nie odnaleziono podanego gracza.")
+                return
+        else:
+            raise commands.BadArgument
         stats = await steam_get_stats(730, self.bot.config["steam"], steam_id)
         if not stats:
             await ctx.send("❌ Wystąpił błąd przy pobieraniu informacji. Sprawdź czy podany profil jest publiczny"
