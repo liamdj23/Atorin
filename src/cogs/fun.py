@@ -223,7 +223,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         while True:
             r = requests.get("https://reddit.com/r/Polska_wpz/random/.json", headers={"User-agent": "Atorin"})
             meme = r.json()[0]["data"]["children"][0]["data"]
-            if not meme["is_video"] and "v.redd.it" not in meme["url"]:
+            if meme["url"].endswith(".jpg") or meme["url"].endswith(".png"):
                 break
         embed = self.bot.embed(ctx.author)
         embed.title = meme["title"]
@@ -236,7 +236,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         while True:
             r = requests.get("https://reddit.com/r/aww/random/.json", headers={"User-agent": "Atorin"})
             post = r.json()[0]["data"]["children"][0]["data"]
-            if not post["is_video"] and "v.redd.it" not in post["url"]:
+            if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
                 break
         embed = self.bot.embed(ctx.author)
         embed.title = post["title"]
