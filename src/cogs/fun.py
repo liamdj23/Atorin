@@ -236,7 +236,6 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         while True:
             r = requests.get("https://reddit.com/r/aww/random/.json", headers={"User-agent": "Atorin"})
             post = r.json()[0]["data"]["children"][0]["data"]
-            print(post)
             if not post["is_video"] and "v.redd.it" not in post["url"]:
                 break
         embed = self.bot.embed(ctx.author)
