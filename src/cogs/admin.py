@@ -42,7 +42,12 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         messages = []
         async for message in ctx.channel.history(limit=limit):
             messages.append(message)
-        await ctx.channel.delete_messages(messages)
+        try:
+            deleted = await ctx.channel.purge(limit=limit)
+        except discord.HTTPException:
+            to_delete = [message for message in messages if message not in deleted]
+            async for message in to_delete:
+                await message.delete()
         await self.save_to_event_logs(ctx.guild.id, "clear", ctx.author.id, ctx.channel.id, None)
         await ctx.send("🗑 {} usunął **{}** wiadomości ✅".format(ctx.message.author.mention, len(messages)))
         logs_channel = await self.get_logs_channel(ctx.guild)
