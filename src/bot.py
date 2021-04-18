@@ -87,17 +87,19 @@ class Atorin(commands.AutoShardedBot):
                     await ctx.send("❌ Bot nie ma odpowiednich uprawnień do wykonania tej komendy."
                                    f"Wymagane uprawnienia: `{','.join(error.missing_perms)}`")
                     self.log.error(error.missing_perms)
-            elif isinstance(error, discord.Forbidden):
-                await ctx.send("❌ Bot nie ma odpowiednich uprawnień do wykonania tej komendy."
-                               " Przenieś wyżej rolę `Atorin` w ustawieniach serwera"
-                               " i spróbuj ponownie.")
+            elif isinstance(error, commands.CommandInvokeError):
+                if isinstance(error.original, discord.Forbidden):
+                    await ctx.send("❌ Bot nie ma odpowiednich uprawnień do wykonania tej komendy."
+                                   " Przenieś wyżej rolę `Atorin` w ustawieniach serwera"
+                                   " i spróbuj ponownie.")
+                self.log.error(error.original)
             elif isinstance(error, Music.MusicException):
                 return
             else:
-                await ctx.send("❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później."
+                self.log.error(error)
+                await ctx.send(f"❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później. Treść błędu: `{error}`"
                                " Jeśli błąd się powtarza, skontaktuj się z autorem na serwerze Discord "
                                "https://discord.gg/Ygr5wAZbsZ")
-                raise error
 
         @self.event
         async def on_shard_connect(id):
