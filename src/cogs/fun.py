@@ -81,7 +81,8 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     async def achievement(self, ctx, *, text):
         if len(text) > 25:
             raise commands.BadArgument
-        text = unicodedata.normalize('NFKD', text).replace("ł", "l").replace("Ł", "L").encode('ASCII', 'ignore').decode("UTF-8")
+        text = unicodedata.normalize('NFKD', text).replace("ł", "l").replace("Ł", "L").encode('ASCII', 'ignore').decode(
+            "UTF-8")
         template = Image.open("assets/achievement/{0}.png".format(randrange(39)))
         d1 = ImageDraw.Draw(template)
         font = ImageFont.truetype("assets/achievement/font.ttf", 16)
@@ -126,7 +127,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         code = qr.make_image(fill_color="black", back_color="white").convert("RGB")
         logo = Image.open("assets/qrcode/logo.png")
         logo.thumbnail((60, 60))
-        logo_pos = ((code.size[0] - logo.size[0]) // 2, (code.size[1] - logo.size[1]) //2)
+        logo_pos = ((code.size[0] - logo.size[0]) // 2, (code.size[1] - logo.size[1]) // 2)
         code.paste(logo, logo_pos)
         img = BytesIO()
         code.save(img, "PNG")
@@ -139,7 +140,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     async def instagram(self, ctx, name: str):
         cookies = []
         for cookie in self.bot.config["instagram"]:
-            cookies.append(cookie["name"]+"="+cookie["value"])
+            cookies.append(cookie["name"] + "=" + cookie["value"])
         r = requests.get("https://www.instagram.com/{}/?__a=1".format(name.replace("@", "")), headers={
             "cookie": "; ".join(cookies)
         })
@@ -175,7 +176,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         avatar = Image.open(BytesIO(await user.avatar_url.read()))
         avatar_resized = avatar.resize((320, 320))
         w, h = avatar_resized.size
-        template.paste(avatar_resized, (44, 123, 44+w, 123+h))
+        template.paste(avatar_resized, (44, 123, 44 + w, 123 + h))
         img = BytesIO()
         template.save(img, "PNG")
         img.seek(0)
@@ -261,6 +262,19 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     async def alpaca(self, ctx):
         while True:
             r = requests.get("https://reddit.com/r/alpaca/random/.json", headers={"User-agent": "Atorin"})
+            post = r.json()[0]["data"]["children"][0]["data"]
+            if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
+                break
+        embed = self.bot.embed(ctx.author)
+        embed.title = post["title"]
+        embed.color = 0xF9493E
+        embed.set_image(url=post["url"])
+        await ctx.send(embed=embed)
+
+    @commands.command(description="Wysyła losowe zdjęcie żaby", aliases=["żaba", "zaba"])
+    async def frog(self, ctx):
+        while True:
+            r = requests.get("https://reddit.com/r/frogs/random/.json", headers={"User-agent": "Atorin"})
             post = r.json()[0]["data"]["children"][0]["data"]
             if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
                 break
