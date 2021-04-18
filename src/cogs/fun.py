@@ -256,3 +256,16 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         embed.color = 0xF9493E
         embed.set_image(url=post["url"])
         await ctx.send(embed=embed)
+
+    @commands.command(description="Wysyła losowe zdjęcie alpaki", aliases=["alpaka"])
+    async def alpaca(self, ctx):
+        while True:
+            r = requests.get("https://reddit.com/r/alpaca/random/.json", headers={"User-agent": "Atorin"})
+            post = r.json()[0]["data"]["children"][0]["data"]
+            if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
+                break
+        embed = self.bot.embed(ctx.author)
+        embed.title = post["title"]
+        embed.color = 0xF9493E
+        embed.set_image(url=post["url"])
+        await ctx.send(embed=embed)
