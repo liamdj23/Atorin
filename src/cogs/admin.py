@@ -175,7 +175,10 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         if not banned_users:
             await ctx.send("❌ Lista zbanowanych użytkowników jest pusta")
             return
-        member_name, member_discriminator = member.split('#')
+        try:
+            member_name, member_discriminator = member.split('#')
+        except ValueError:
+            raise commands.BadArgument
         for ban_entry in banned_users:
             user = ban_entry.user
             if (user.name, user.discriminator) == (member_name, member_discriminator):
@@ -188,7 +191,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
                     embed = self.bot.embed()
                     embed.title = "Odbanowanie użytkownika"
                     embed.add_field(name="🧑 Przez", value=ctx.author.mention, inline=False)
-                    embed.add_field(name="🧍 Odbanowany", value=member.mention, inline=False)
+                    embed.add_field(name="🧍 Odbanowany", value=member, inline=False)
                     await logs_channel.send(embed=embed)
                 return
         await ctx.send("❌ Nie odnaleziono użytkownika o podanej nazwie.")
