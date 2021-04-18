@@ -42,6 +42,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         messages = []
         async for message in ctx.channel.history(limit=limit):
             messages.append(message)
+        deleted = []
         try:
             deleted = await ctx.channel.purge(limit=limit)
         except discord.HTTPException:
