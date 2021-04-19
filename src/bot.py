@@ -47,60 +47,70 @@ class Atorin(commands.AutoShardedBot):
         @self.event
         async def on_command_error(ctx, error):
             command = ctx.command
+            embed = self.embed(ctx.author)
+            embed.colour = 0xFF0000
             if isinstance(error, commands.NoPrivateMessage):
-                await ctx.send("❌ Tę komendę możesz użyć tylko na serwerze.")
+                embed.description = "❌ Tę komendę możesz użyć tylko na serwerze."
+                await ctx.send(embed=embed)
                 return
             elif isinstance(error, commands.BadArgument):
-                await ctx.send(f"❌ Poprawne użycie: `&{command.name} {command.usage}`")
+                embed.description = f"❌ Poprawne użycie: `&{command.name} {command.usage}`"
+                await ctx.send(embed=embed)
                 return
             elif isinstance(error, commands.MissingRequiredArgument):
-                await ctx.send(f"❌ Poprawne użycie: `&{command.name} {command.usage}`")
+                embed.description = f"❌ Poprawne użycie: `&{command.name} {command.usage}`"
+                await ctx.send(embed=embed)
                 return
             elif isinstance(error, commands.UserNotFound):
-                await ctx.send("❌ Nie znaleziono podanego użytkownika.")
+                embed.description = "❌ Nie znaleziono podanego użytkownika."
+                await ctx.send(embed=embed)
                 return
             elif isinstance(error, commands.CommandNotFound):
                 return
             elif isinstance(error, commands.MissingPermissions):
                 if "ban_members" in error.missing_perms:
-                    await ctx.send("❌ Nie masz uprawnień do banowania użytkowników.")
+                    embed.description = "❌ Nie masz uprawnień do banowania użytkowników."
                 elif "manage_messages" in error.missing_perms:
-                    await ctx.send("❌ Nie masz uprawnień do zarządzania wiadomościami.")
+                    embed.description = "❌ Nie masz uprawnień do zarządzania wiadomościami."
                 elif "administrator" in error.missing_perms:
-                    await ctx.send("❌ Nie jesteś administratorem tego serwera.")
+                    embed.description = "❌ Nie jesteś administratorem tego serwera."
                 elif "kick_members" in error.missing_perms:
-                    await ctx.send("❌ Nie masz uprawnień do wyrzucania użytkowników.")
+                    embed.description = "❌ Nie masz uprawnień do wyrzucania użytkowników."
                 else:
-                    await ctx.send("❌ Nie masz odpowiednich uprawnień do wykonania tej komendy."
-                                   f"Wymagane uprawnienia: `{','.join(error.missing_perms)}`")
+                    embed.description = "❌ Nie masz odpowiednich uprawnień do wykonania tej komendy. Wymagane " \
+                                        f"uprawnienia: `{','.join(error.missing_perms)}` "
                     self.log.error(error.missing_perms)
+                await ctx.send(embed=embed)
             elif isinstance(error, commands.BotMissingPermissions):
                 if "ban_members" in error.missing_perms:
-                    await ctx.send("❌ Atorin nie ma uprawnień do banowania użytkowników.")
+                    embed.description = "❌ Atorin nie ma uprawnień do banowania użytkowników."
                 elif "manage_messages" in error.missing_perms:
-                    await ctx.send("❌ Atorin nie ma uprawnień do zarządzania wiadomościami.")
+                    embed.description = "❌ Atorin nie ma uprawnień do zarządzania wiadomościami."
                 elif "kick_members" in error.missing_perms:
-                    await ctx.send("❌ Atorin nie ma uprawnień do wyrzucania użytkowników.")
+                    embed.description = "❌ Atorin nie ma uprawnień do wyrzucania użytkowników."
                 elif "manage_roles" in error.missing_perms:
-                    await ctx.send("❌ Atorin nie ma uprawnień do zarządzania rolami.")
+                    embed.description = "❌ Atorin nie ma uprawnień do zarządzania rolami."
                 else:
-                    await ctx.send("❌ Bot nie ma odpowiednich uprawnień do wykonania tej komendy."
-                                   f"Wymagane uprawnienia: `{','.join(error.missing_perms)}`")
+                    embed.description = "❌ Bot nie ma odpowiednich uprawnień do wykonania tej komendy." \
+                                        f" Wymagane uprawnienia: `{','.join(error.missing_perms)}`"
                     self.log.error(error.missing_perms)
+                await ctx.send(embed=embed)
             elif isinstance(error, commands.CommandInvokeError):
                 if isinstance(error.original, discord.Forbidden):
-                    await ctx.send("❌ Bot nie ma odpowiednich uprawnień do wykonania tej komendy."
-                                   " Przenieś wyżej rolę `Atorin` w ustawieniach serwera"
-                                   " i spróbuj ponownie.")
+                    embed.description = "❌ Bot nie ma odpowiednich uprawnień do wykonania tej komendy." \
+                                        " Przenieś wyżej rolę `Atorin` w ustawieniach serwera" \
+                                        " i spróbuj ponownie."
+                    await ctx.send(embed=embed)
                     return
                 self.log.error(error.original)
             elif isinstance(error, Music.MusicException):
                 return
             else:
                 self.log.error(error)
-                await ctx.send(f"❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później. Treść błędu: `{error}`"
-                               " Jeśli błąd się powtarza, skontaktuj się z autorem na serwerze Discord "
-                               "https://discord.gg/Ygr5wAZbsZ")
+                embed.description = f"❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później. Treść błędu: `{error}`" \
+                                    " Jeśli błąd się powtarza, skontaktuj się z autorem na serwerze Discord " \
+                                    "https://discord.gg/Ygr5wAZbsZ"
+                await ctx.send(embed=embed)
 
         @self.event
         async def on_shard_connect(id):
@@ -131,8 +141,8 @@ class Atorin(commands.AutoShardedBot):
         return self.avatar()
 
     async def update_status(self):
-        await self.change_presence(activity=discord.Game(name="z {} serwerami | &help | Dołącz do serwera Discord!".format(len(self.guilds))))
+        await self.change_presence(
+            activity=discord.Game(name="z {} serwerami | &help | Dołącz do serwera Discord!".format(len(self.guilds))))
 
     def run(self, *args, **kwargs):
         super(Atorin, self).run(self.config["bot"])
-
