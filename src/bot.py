@@ -102,15 +102,16 @@ class Atorin(commands.AutoShardedBot):
                                         " i spróbuj ponownie."
                     await ctx.send(embed=embed)
                     return
-                self.log.error(error.original)
+                self.log.error(f"{command.name}: {error.original}")
             elif isinstance(error, Music.MusicException):
                 return
             else:
-                self.log.error(error)
+                self.log.error(f"{command.name}: {error}")
                 embed.description = f"❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później. Treść błędu: `{error}`" \
                                     " Jeśli błąd się powtarza, skontaktuj się z autorem na serwerze Discord " \
                                     "https://discord.gg/Ygr5wAZbsZ"
                 await ctx.send(embed=embed)
+
 
         @self.event
         async def on_shard_connect(id):
