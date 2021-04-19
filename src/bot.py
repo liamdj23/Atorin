@@ -92,6 +92,7 @@ class Atorin(commands.AutoShardedBot):
                     await ctx.send("❌ Bot nie ma odpowiednich uprawnień do wykonania tej komendy."
                                    " Przenieś wyżej rolę `Atorin` w ustawieniach serwera"
                                    " i spróbuj ponownie.")
+                    return
                 self.log.error(error.original)
             elif isinstance(error, Music.MusicException):
                 return
