@@ -115,6 +115,8 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def on_message_delete(self, message):
         if message.author.bot:
             return
+        if not message.guild:
+            return
         logs_channel = await self.get_logs_channel(message.guild)
         if logs_channel:
             embed = self.bot.embed()
@@ -126,6 +128,8 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     @commands.Cog.listener()
     async def on_message_edit(self, old, new):
         if old.author.bot:
+            return
+        if not old.guild:
             return
         if old.content != new.content:
             logs_channel = await self.get_logs_channel(old.guild)
