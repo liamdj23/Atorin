@@ -47,7 +47,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             deleted = await ctx.channel.purge(limit=limit)
         except discord.HTTPException:
             to_delete = [message for message in messages if message not in deleted]
-            async for message in to_delete:
+            for message in to_delete:
                 await message.delete()
         await self.save_to_event_logs(ctx.guild.id, "clear", ctx.author.id, ctx.channel.id, None)
         await ctx.send("🗑 {} usunął **{}** wiadomości ✅".format(ctx.message.author.mention, len(messages)))
