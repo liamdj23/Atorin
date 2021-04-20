@@ -139,10 +139,10 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         embed.title = "Wyniki wyszukiwania"
         embed.description = "❓ **Napisz cyfrę odpowiadającą utworowi, którego szukasz.**\n\n"
         i = 0
-        for result in results["result"]:
+        for result in results["result"][:5]:
             i = i + 1
             embed.description += "**#{}**. {} ({})\n".format(
-                i, result["title"], result["duration"]
+                i, (result["title"][:50] + "...") if len(result["title"]) > 53 else result["title"], result["duration"]
             )
         await searching.edit(content=None, embed=embed)
 
