@@ -165,7 +165,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             duration = datetime.strptime(metadata["duration"], "%H:%M:%S")
         except ValueError:
             duration = datetime.strptime(metadata["duration"], "%M:%S")
-        if duration.minute > 10:
+        if duration.hour > 0 or duration.minute > 10:
             await info_message.edit(content="❌ Podany utwór jest za długi, limit to 10 minut.")
             return
         if not os.path.isfile("../songs/" + metadata["id"] + ".m4a"):
