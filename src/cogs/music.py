@@ -137,7 +137,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             return
         embed = self.bot.embed(ctx.author)
         embed.title = "Wyniki wyszukiwania"
-        embed.description = "❓ **Napisz cyfrę odpowiadającą utworowi, którego szukasz.**\n\n"
+        embed.description = "❓ **Wybierz utwór, którego szukasz.**\n\n"
         i = 0
         for result in results["result"][:5]:
             i = i + 1
@@ -145,17 +145,25 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
                 i, (result["title"][:50] + "...") if len(result["title"]) > 53 else result["title"], result["duration"]
             )
         await searching.edit(content=None, embed=embed)
+        reactions = {"1️⃣": 1, "2️⃣": 2, "3️⃣": 3, "4️⃣": 4, "5️⃣": 5, "❌": 0}
+        for reaction in reactions.keys():
+            await searching.add_reaction(reaction)
 
-        def check(message):
-            return message.author == ctx.author and message.content.isdigit() \
-                   and not int(message.content) > len(results["result"])
+        def check(reaction, user):
+            return user == ctx.author and str(reaction.emoji) in reactions
 
         try:
-            choice = await self.bot.wait_for("message", check=check, timeout=60)
+            reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=60)
         except TimeoutError:
             await searching.edit(embed=None, content="🔇 Nie wybrano utworu.")
+            await searching.clear_reactions()
             return
-        choice = int(choice.content) - 1
+        if reactions[str(reaction.emoji)] == 0:
+            await searching.edit(embed=None, content="🔇 Nie wybrano utworu.")
+            await searching.clear_reactions()
+            return
+        await searching.clear_reactions()
+        choice = reactions[str(reaction.emoji)] - 1
         metadata = results["result"][choice]
         await searching.edit(content="✅ Wybrano **#{}**. **{}** ({}).".format(
             choice + 1, metadata["title"], metadata["duration"]
