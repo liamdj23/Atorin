@@ -174,7 +174,11 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             await info_message.edit(content="✅ Pobrano.")
         if not voice:
             await info_message.edit(content="🎙️ Dołączanie do kanału...")
-            voice = await voice_channel.connect()
+            try:
+                voice = await voice_channel.connect()
+            except discord.ClientException:
+                await info_message.edit(content="❌ Atorin jest już podłączony do kanału głosowego!")
+                return
             await info_message.edit(content="✅ Dołączono.")
         player = self.get_player(ctx)
         metadata["requester"] = ctx.author
