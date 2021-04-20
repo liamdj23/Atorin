@@ -5,7 +5,6 @@ import itertools
 import discord
 from discord.ext import commands
 import youtube_dl
-import time
 from asyncio import TimeoutError
 from async_timeout import timeout
 import asyncio
@@ -153,7 +152,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
                 await searching.add_reaction(reaction)
 
             def check(reaction, user):
-                return user == ctx.author and str(reaction.emoji) in reactions
+                return user == ctx.author and str(reaction.emoji) in reactions and searching.id == reaction.message.id
 
             try:
                 reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=60)
@@ -281,7 +280,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             upcoming = list(itertools.islice(player.queue._queue, 0, 5))
 
             fmt = '\n'.join(
-                f'**{_["title"]}** ({time.strftime("%H:%M:%S", time.gmtime(_["duration"]))})' for _ in upcoming)
+                f'**{_["title"]}** ({_["duration"]})' for _ in upcoming)
             embed = self.bot.embed(ctx.author)
             embed.title = f"Utwory w kolejce: {len(upcoming)}"
             embed.description = fmt
@@ -302,9 +301,9 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             embed = ctx.bot.embed(ctx.author)
             embed.title = "Teraz odtwarzane"
             embed.add_field(name="🎧 Utwór", value=song["title"], inline=False)
-            embed.add_field(name="🛤️ Długość", value=time.strftime("%H:%M:%S", time.gmtime(song["duration"])))
-            embed.add_field(name="💃 Zaproponowany przez", value=ctx.author.mention)
-            embed.set_thumbnail(url=song["thumbnail"])
+            embed.add_field(name="🛤️ Długość", value=song["duration"])
+            embed.add_field(name="💃 Zaproponowany przez", value=song["requester"].mention)
+            embed.set_thumbnail(url=song["thumbnails"][0]["url"])
             await ctx.send(embed=embed)
         else:
             await ctx.send("🙊 Atorin nie odtwarza muzyki.")
