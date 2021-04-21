@@ -63,7 +63,7 @@ def buy():
         data["signature"] = signature
         r = requests.post("https://secure.pbl.pl/api/v1/transfer/generate", json=data)
         response = r.json()
-        payment = bot.mongo.Payments(id=response["transactionId"], user=user["id"], date=datetime.datetime.now())
+        payment = bot.mongo.Payments(id=response["transactionId"], user=user["id"], created=datetime.datetime.now())
         payment.save()
         session["transactionSuccess"] = True
         return redirect(response["url"])
