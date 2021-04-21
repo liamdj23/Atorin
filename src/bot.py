@@ -16,6 +16,7 @@ from cogs.games import Games
 from cogs.info import Info
 from cogs.statcord import StatcordPost
 from cogs.music import Music
+from cogs.premium import Premium
 from dashboard.flask import Dashboard
 from events.guild import GuildEvents
 
@@ -43,6 +44,7 @@ class Atorin(commands.AutoShardedBot):
         self.add_cog(Games(self))
         self.add_cog(StatcordPost(self))
         self.add_cog(Music(self))
+        self.add_cog(Premium(self))
 
         @self.event
         async def on_command_error(ctx, error):
