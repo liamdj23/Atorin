@@ -46,3 +46,25 @@ class EventLogs(mongoengine.Document):
     action_name = mongoengine.StringField()
     reason = mongoengine.StringField()
     date = mongoengine.DateTimeField(default=datetime.datetime.now())
+
+
+class Wallet(mongoengine.Document):
+    id = mongoengine.IntField(primary_key=True)
+    balance = mongoengine.IntField(default=0)
+    daily = mongoengine.DateTimeField()
+
+
+class Bank(mongoengine.Document):
+    id = mongoengine.IntField(primary_key=True)
+    balance = mongoengine.IntField(default=0)
+
+
+class Shop(mongoengine.Document):
+    name = mongoengine.StringField()
+    cost = mongoengine.IntField()
+    description = mongoengine.StringField()
+
+
+class Inventory(mongoengine.Document):
+    id = mongoengine.IntField(primary_key=True)
+    items = mongoengine.ListField()

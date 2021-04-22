@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime
+import time
 
 import discord
 import mongoengine
@@ -17,6 +18,7 @@ from cogs.info import Info
 from cogs.statcord import StatcordPost
 from cogs.music import Music
 from cogs.premium import Premium
+from cogs.currency import Currency
 from dashboard.flask import Dashboard
 from events.guild import GuildEvents
 
@@ -45,6 +47,7 @@ class Atorin(commands.AutoShardedBot):
         self.add_cog(StatcordPost(self))
         self.add_cog(Music(self))
         self.add_cog(Premium(self))
+        self.add_cog(Currency(self))
 
         @self.event
         async def on_command_error(ctx, error):
@@ -105,6 +108,10 @@ class Atorin(commands.AutoShardedBot):
                     await ctx.send(embed=embed)
                     return
                 self.log.error(f"{command.name}: {error.original}")
+            elif isinstance(error, commands.CommandOnCooldown):
+                formatted_time = time.strftime('%M minut i %S sekund', time.gmtime(error.retry_after))
+                embed.description = f"❌ Możesz użyć tej komendy za {formatted_time}"
+                await ctx.send(embed=embed)
             elif isinstance(error, Music.MusicException):
                 return
             else:
