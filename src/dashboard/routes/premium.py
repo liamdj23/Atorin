@@ -87,12 +87,17 @@ def payments():
     if signature == data["signature"]:
         payment = bot.mongo.Payments.objects(id=data["transactionId"]).first()
         payment.paid = True
+        payment.save()
         premium = bot.mongo.Premium.objects(id=payment["user"]).first()
         if not premium:
             premium = bot.mongo.Premium(id=payment["user"], created=datetime.datetime.now())
         premium.expire = datetime.datetime.now() + datetime.timedelta(days=30)
         premium.save()
-        payment.save()
+        wallet = bot.mongo.Wallet.objects(id=payment["user"]).first()
+        if not wallet:
+            wallet = bot.mongo.Wallet(id=payment["user"])
+        wallet.balance += 10000
+        wallet.save()
         return "OK", 200
     else:
         return "NOT OK", 400
@@ -123,6 +128,11 @@ def sms():
                         premium = bot.mongo.Premium(id=user["id"], created=datetime.datetime.now())
                     premium.expire = datetime.datetime.now() + datetime.timedelta(days=30)
                     premium.save()
+                    wallet = bot.mongo.Wallet.objects(id=user["id"]).first()
+                    if not wallet:
+                        wallet = bot.mongo.Wallet(id=user["id"])
+                    wallet.balance += 10000
+                    wallet.save()
                     session["transactionSuccess"] = True
                     return url_for("thanks")
                 else:
