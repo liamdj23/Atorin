@@ -8,7 +8,7 @@ class Premium(commands.Cog, name="💎 Premium"):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.guild.id == 408960275933429760:
+        if message.guild and message.guild.id == 408960275933429760:
             if self.bot.mongo.Premium.objects(id=message.author.id).first():
                 supporting_role = discord.utils.get(message.guild.roles, id=807643329067876383)
                 await message.author.add_roles(supporting_role)
