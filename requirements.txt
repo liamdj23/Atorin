@@ -1,6 +1,6 @@
 aiohttp~=3.6.2
 qrcode~=6.1
-requests~=2.24.0
+requests~=2.25.1
 Pillow~=8.0.1
 pyfiglet~=0.8.post1
 psutil~=5.8.0
