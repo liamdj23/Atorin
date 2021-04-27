@@ -6,7 +6,7 @@ import discord
 from discord.ext import commands
 
 
-class Currency(commands.Cog, name="<:atorincoin:834410470492078091> Ekonomia"):
+class Currency(commands.Cog, name="🪙 Ekonomia"):
     def __init__(self, bot):
         self.bot = bot
         self.currency_icon = "<:atorincoin:834410470492078091>"
