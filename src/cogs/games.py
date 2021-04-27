@@ -140,7 +140,7 @@ class Games(commands.Cog, name="🕹 Gry"):
                     embed.add_field(name="🕹Rozegranych meczy", value=data["matches"])
                     await ctx.send(embed=embed)
                 else:
-                    raise commands.CommandError(r.text())
+                    raise commands.CommandError(await r.text())
 
     @commands.command(description="Statystyki w grze CS:GO\n\nPrzykład użycia:\n&csgo https://steamcommunity.com/id/liamxdev/",
                       usage="<link do profilu steam>", aliases=["cs"])

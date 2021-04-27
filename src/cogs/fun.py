@@ -63,7 +63,11 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                       description="Wpisz aby otrzymać napis stworzony z mniejszych znaków.\n\nPrzykład użycia: &figlet Atorin")
     async def figlet(self, ctx, *, text):
         f = Figlet()
-        await ctx.send(f"```{f.renderText(text)}```")
+        figlet = f.renderText(text)
+        if len(figlet) > 1990:
+            await ctx.send("❌ Wygenerowany figlet jest za długi. Wybierz inny tekst i spróbuj ponownie.")
+            return
+        await ctx.send(f"```{figlet}```")
 
     @commands.command(description="Jeśli nie masz pomysłu na tytuł commita, skorzystaj z tej komendy")
     async def commit(self, ctx):
@@ -83,7 +87,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             raise commands.BadArgument
         text = unicodedata.normalize('NFKD', text).replace("ł", "l").replace("Ł", "L").encode('ASCII', 'ignore').decode(
             "UTF-8")
-        template = Image.open("assets/achievement/{0}.png".format(randrange(39)))
+        template = Image.open("assets/achievement/{0}.png".format(randrange(1, 39)))
         d1 = ImageDraw.Draw(template)
         font = ImageFont.truetype("assets/achievement/font.ttf", 16)
         d1.text((60, 7), "Osiagniecie zdobyte!", font=font, fill=(255, 255, 0))
@@ -221,65 +225,70 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
 
     @commands.command(description="Wysyła losowego mema z /r/Polska_wpz", aliases=["mem", "memy"])
     async def meme(self, ctx):
+        message = await ctx.send("🔎 Szukam mema...")
         while True:
             r = requests.get("https://reddit.com/r/Polska_wpz/random/.json", headers={"User-agent": "Atorin"})
             meme = r.json()[0]["data"]["children"][0]["data"]
             if meme["url"].endswith(".jpg") or meme["url"].endswith(".png"):
                 break
         embed = self.bot.embed(ctx.author)
-        embed.title = meme["title"]
+        embed.title = (meme["title"][:200] + "...") if len(meme["title"]) > 203 else meme["title"]
         embed.color = 0xF9493E
         embed.set_image(url=meme["url"])
-        await ctx.send(embed=embed)
+        await message.edit(content=None, embed=embed)
 
     @commands.command(description="Wysyła losowy post z /r/aww")
     async def aww(self, ctx):
+        message = await ctx.send("🔎 Szukam słodkiego zdjęcia...")
         while True:
             r = requests.get("https://reddit.com/r/aww/random/.json", headers={"User-agent": "Atorin"})
             post = r.json()[0]["data"]["children"][0]["data"]
             if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
                 break
         embed = self.bot.embed(ctx.author)
-        embed.title = post["title"]
+        embed.title = (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
         embed.color = 0xF9493E
         embed.set_image(url=post["url"])
-        await ctx.send(embed=embed)
+        await message.edit(content=None, embed=embed)
 
     @commands.command(description="Wysyła losowe zdjęcie żółwia", aliases=["zółw", "zolw"])
     async def turtle(self, ctx):
+        message = await ctx.send("🔎 Szukam zdjęcia żółwia...")
         while True:
             r = requests.get("https://reddit.com/r/turtle/random/.json", headers={"User-agent": "Atorin"})
             post = r.json()[0]["data"]["children"][0]["data"]
             if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
                 break
         embed = self.bot.embed(ctx.author)
-        embed.title = post["title"]
+        embed.title = (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
         embed.color = 0xF9493E
         embed.set_image(url=post["url"])
-        await ctx.send(embed=embed)
+        await message.edit(content=None, embed=embed)
 
     @commands.command(description="Wysyła losowe zdjęcie alpaki", aliases=["alpaka"])
     async def alpaca(self, ctx):
+        message = await ctx.send("🔎 Szukam zdjęcia alpaki...")
         while True:
             r = requests.get("https://reddit.com/r/alpaca/random/.json", headers={"User-agent": "Atorin"})
             post = r.json()[0]["data"]["children"][0]["data"]
             if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
                 break
         embed = self.bot.embed(ctx.author)
-        embed.title = post["title"]
+        embed.title = (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
         embed.color = 0xF9493E
         embed.set_image(url=post["url"])
-        await ctx.send(embed=embed)
+        await message.edit(content=None, embed=embed)
 
     @commands.command(description="Wysyła losowe zdjęcie żaby", aliases=["żaba", "zaba"])
     async def frog(self, ctx):
+        message = await ctx.send("🔎 Szukam zdjęcia żaby...")
         while True:
             r = requests.get("https://reddit.com/r/frogs/random/.json", headers={"User-agent": "Atorin"})
             post = r.json()[0]["data"]["children"][0]["data"]
             if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
                 break
         embed = self.bot.embed(ctx.author)
-        embed.title = post["title"]
+        embed.title = (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
         embed.color = 0xF9493E
         embed.set_image(url=post["url"])
-        await ctx.send(embed=embed)
+        await message.edit(content=None, embed=embed)

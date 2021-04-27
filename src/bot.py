@@ -112,6 +112,9 @@ class Atorin(commands.AutoShardedBot):
                 formatted_time = time.strftime('%M minut i %S sekund', time.gmtime(error.retry_after))
                 embed.description = f"❌ Możesz użyć tej komendy za {formatted_time}"
                 await ctx.send(embed=embed)
+            elif isinstance(error, discord.NotFound):
+                embed.description = "❌ Podany zasób nie został odnaleziony."
+                await ctx.send(embed=embed)
             elif isinstance(error, Music.MusicException):
                 return
             else:
