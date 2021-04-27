@@ -237,7 +237,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
 
     @commands.command(
         description="Pomija aktualnie odtwarzany utwór",
-        aliases=["pomiń", "pomin"]
+        aliases=["pomiń", "pomin", "s"]
     )
     async def skip(self, ctx):
         voice = ctx.guild.voice_client
@@ -250,7 +250,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
 
     @commands.command(
         description="Ustawia głośność aktualnie odtwarzanego utworu",
-        aliases=["głośność", "glosnosc"],
+        aliases=["głośność", "glosnosc", "vol"],
         usage="<0-100>"
     )
     async def volume(self, ctx, vol: int):
