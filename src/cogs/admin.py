@@ -76,7 +76,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         await message.add_reaction("😢")
         await message.add_reaction("😠")
 
-    @commands.command(description="Otrzymywanie powiadomień o usuniętych i edytowanych wiadomościach")
+    @commands.command(description="Otrzymywanie powiadomień o usuniętych i edytowanych wiadomościach", usage="<on/off>")
     @commands.has_guild_permissions(administrator=True)
     @commands.guild_only()
     async def logs(self, ctx, state: str = None, channel: discord.TextChannel = None):
