@@ -128,73 +128,38 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
     async def play(self, ctx, *, song):
         voice_channel = ctx.author.voice.channel
         voice = ctx.guild.voice_client
-        searching = await ctx.send("🔎 Trwa wyszukiwanie utworu...")
-        videos_search = VideosSearch(song, limit=5, region="PL")
+        if not voice:
+            voice_message = await ctx.send(f"🎙️ **Dołączanie do kanału `{voice_channel.name}`...**")
+            try:
+                voice = await voice_channel.connect()
+            except discord.ClientException:
+                await voice_message.edit(content="🎙️ Atorin jest już połączony do kanału głosowego na tym serwerze! ❌")
+                return
+            await voice_message.edit(content=f"🎙️ **Dołączono do kanału `{voice_channel.name}`** ✅")
+        await ctx.send(f"<:youtube:853286549629566987> **Trwa wyszukiwanie `{song}`...** 🔎")
+        videos_search = VideosSearch(song, limit=1, region="PL")
         results = await videos_search.next()
         if not results:
-            await ctx.send("❌ Nie znaleziono utworów o podanej nazwie.")
+            await ctx.send("<:youtube:853286549629566987> Nie znaleziono utworu o podanej nazwie. ❌")
             return
-        if len(results["result"]) == 1:
-            choice = 0
-        else:
-            embed = self.bot.embed(ctx.author)
-            embed.title = "Wyniki wyszukiwania"
-            embed.description = "❓ **Wybierz utwór, którego szukasz.**\n\n"
-            i = 0
-            for result in results["result"][:5]:
-                i = i + 1
-                embed.description += "**#{}**. {} ({})\n".format(
-                    i, (result["title"][:50] + "...") if len(result["title"]) > 53 else result["title"], result["duration"]
-                )
-            await searching.edit(content=None, embed=embed)
-            reactions = {"1️⃣": 1, "2️⃣": 2, "3️⃣": 3, "4️⃣": 4, "5️⃣": 5, "❌": 0}
-            for reaction in reactions.keys():
-                await searching.add_reaction(reaction)
-
-            def check(reaction, user):
-                return user == ctx.author and str(reaction.emoji) in reactions and searching.id == reaction.message.id
-
-            try:
-                reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=60)
-            except TimeoutError:
-                await searching.edit(embed=None, content="🔇 Nie wybrano utworu.")
-                await searching.clear_reactions()
-                return
-            if reactions[str(reaction.emoji)] == 0:
-                await searching.edit(embed=None, content="🔇 Nie wybrano utworu.")
-                await searching.clear_reactions()
-                return
-            await searching.clear_reactions()
-            choice = reactions[str(reaction.emoji)] - 1
-        metadata = results["result"][choice]
-        await searching.edit(content="✅ Wybrano **#{}**. **{}** ({}).".format(
-            choice + 1, metadata["title"], metadata["duration"]
-        ), embed=None)
-        info_message = await ctx.send("💿 Trwa przygotowywanie utworu...")
+        metadata = results["result"][0]
+        info_message = await ctx.send(f"💿 **Trwa przygotowywanie `{metadata['title']}`...**")
         try:
             duration = datetime.strptime(metadata["duration"], "%H:%M:%S")
         except ValueError:
             duration = datetime.strptime(metadata["duration"], "%M:%S")
         if duration.hour > 0 or duration.minute > 10:
-            await info_message.edit(content="❌ Podany utwór jest za długi, limit to 10 minut.")
+            await info_message.edit(content=f"▶️ **`{metadata['title']}` jest za długi, limit to 10 minut.** ❌")
             return
         if not os.path.isfile("../songs/" + metadata["id"] + ".m4a"):
-            await info_message.edit(content="💾 Pobieranie utworu...")
+            await info_message.edit(content=f"💾 **Pobieranie `{metadata['title']}`...**")
             ytdl.download(["https://www.youtube.com/watch?v=" + metadata["id"]])
-            await info_message.edit(content="✅ Pobrano.")
-        if not voice:
-            await info_message.edit(content="🎙️ Dołączanie do kanału...")
-            try:
-                voice = await voice_channel.connect()
-            except discord.ClientException:
-                await info_message.edit(content="❌ Atorin jest już podłączony do kanału głosowego!")
-                return
-            await info_message.edit(content="✅ Dołączono.")
+            await info_message.edit(content=f"💾 **Pobrano `{metadata['title']}`.** ✅")
         player = self.get_player(ctx)
         metadata["requester"] = ctx.author
         await player.queue.put(metadata)
         if voice.is_playing():
-            await info_message.edit(content="📩 Utwór **{}** został dodany do kolejki.".format(metadata["title"]))
+            await info_message.edit(content="📩 Utwór **{}** został **dodany do kolejki**.".format(metadata["title"]))
         else:
             await info_message.delete()
 
