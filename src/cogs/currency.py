@@ -58,7 +58,6 @@ class Currency(commands.Cog, name="🪙 Ekonomia"):
         await ctx.send(f"🧑‍🏭 {ctx.author.mention} był w pracy i zarobił **{payment}**{self.currency_icon}!")
 
     @commands.command(description="Jednoręki bandyta\nKoszt: 100 AtorinCoinów")
-    @commands.cooldown(1, 60, commands.BucketType.user)
     async def slots(self, ctx):
         wallet = await self.get_wallet(ctx.author)
         if wallet.balance < 100:
