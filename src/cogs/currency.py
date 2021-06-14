@@ -41,12 +41,12 @@ class Currency(commands.Cog, name="🪙 Ekonomia"):
         now = datetime.datetime.now()
         if wallet.daily:
             if wallet.daily.date() == now.date():
-                await ctx.send("❌ Odebrałeś już daily!")
+                await ctx.send("❌ Odebrałeś już daily! Następne możesz odebrać jutro 😴")
                 return
         wallet.daily = now
         wallet.save()
         await self.add_coins(ctx.author, 500)
-        await ctx.send(f"Pomyślnie przyznano **500**{self.currency_icon}!")
+        await ctx.send(f"Pomyślnie przyznano **500**{self.currency_icon}! Następne możesz odebrać jutro 😴")
 
     @commands.command(description="Pracuj aby powiększyć stan konta")
     @commands.cooldown(1, 600, commands.BucketType.user)
@@ -55,7 +55,7 @@ class Currency(commands.Cog, name="🪙 Ekonomia"):
         wallet = await self.get_wallet(ctx.author)
         wallet.balance += payment
         wallet.save()
-        await ctx.send(f"{ctx.author.mention} był w pracy i zarobił **{payment}**{self.currency_icon}!")
+        await ctx.send(f"🧑‍🏭 {ctx.author.mention} był w pracy i zarobił **{payment}**{self.currency_icon}!")
 
     @commands.command(description="Jednoręki bandyta\nKoszt: 100 AtorinCoinów")
     @commands.cooldown(1, 60, commands.BucketType.user)
@@ -153,4 +153,4 @@ class Currency(commands.Cog, name="🪙 Ekonomia"):
         wallet2.balance += amount
         wallet.save()
         wallet2.save()
-        await ctx.send(f"Przekazano {amount}{self.currency_icon} użytkownikowi {member.mention}")
+        await ctx.send(f"✅ Przekazano {amount}{self.currency_icon} użytkownikowi {member.mention}")
