@@ -1,4 +1,5 @@
 from flask import render_template, session, current_app
+from utils import user_counter
 
 
 def home():
@@ -10,7 +11,7 @@ def home():
         avatar=bot.user.avatar_url,
         servers=len(bot.guilds),
         channels=len(list(bot.get_all_channels())),
-        users=len(bot.users),
+        users=sum(user_counter(bot)),
         user=discord.get_user(session.get("access_token"))
     )
 

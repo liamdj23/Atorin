@@ -1,3 +1,4 @@
+import contextlib
 import math
 
 
@@ -67,3 +68,9 @@ def convert_size(size_bytes):
     p = math.pow(1024, i)
     s = round(size_bytes / p)
     return "%s %s" % (s, size_name[i])
+
+
+def user_counter(bot):
+    for g in bot.guilds:
+        with contextlib.suppress(AttributeError):
+            yield g.member_count
