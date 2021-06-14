@@ -8,6 +8,7 @@ import mongoengine
 from discord.ext import commands
 from loguru import logger
 import asyncpraw
+from pyfiglet import Figlet
 
 import models
 import utils
@@ -25,10 +26,14 @@ from events.guild import GuildEvents
 
 class Atorin(commands.AutoShardedBot):
     def __init__(self, **kwargs):
+        f = Figlet()
+        print(f.renderText("ATORIN"), flush=True)
+        print("\033[95m * Starting Atorin...", flush=True)
         intents = discord.Intents.default()
         intents.members = False
         super(Atorin, self).__init__(command_prefix="&", help_command=None, intents=intents, **kwargs)
         mongoengine.connect('atorin', host="mongo")
+        print("\033[92m * Connected to MongoDB.", flush=True)
         self.mongo = models
         with open(os.path.dirname(__file__) + "/../config.json", 'r') as config:
             self.config = json.load(config)
