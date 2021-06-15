@@ -117,6 +117,22 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             return
         if not message.guild:
             return
+        if message.clean_content.startswith('&ban'):
+            return
+        if message.clean_content.startswith("&kick"):
+            return
+        if message.clean_content.startswith("&advert") or message.clean_content.startswith("&og"):
+            return
+        if message.clean_content.startswith("&unban"):
+            return
+        if message.clean_content.startswith("&mute") or message.clean_content.startswith("&wycisz"):
+            return
+        if message.clean_content.startswith("&unmute") or message.clean_content.startswith("&odcisz"):
+            return
+        if message.clean_content.startswith("&warn") or message.clean_content.startswith("&ostrze"):
+            return
+        if message.clean_content.startswith("&say") or message.clean_content.startswith("&echo"):
+            return
         logs_channel = await self.get_logs_channel(message.guild)
         if logs_channel:
             embed = self.bot.embed()
