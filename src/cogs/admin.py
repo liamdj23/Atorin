@@ -122,6 +122,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             embed = self.bot.embed()
             embed.title = "Usunięta wiadomość"
             embed.add_field(name="🧑 Autor", value=message.author.mention, inline=False)
+            embed.add_field(name="🔤 Kanał", value=message.channel.mention, inline=False)
             embed.add_field(name="✍️Treść", value="```{}```".format(message.clean_content), inline=False)
             await logs_channel.send(embed=embed)
 
@@ -137,6 +138,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
                 embed = self.bot.embed()
                 embed.title = "Edytowana wiadomość"
                 embed.add_field(name="🧑 Autor", value=old.author.mention, inline=False)
+                embed.add_field(name="🔤 Kanał", value=old.channel.mention, inline=False)
                 embed.add_field(name="❎ Poprzednia treść", value="```{}```".format(old.clean_content), inline=False)
                 embed.add_field(name="✅ Aktualna treść", value="```{}```".format(new.clean_content), inline=False)
                 await logs_channel.send(embed=embed)
