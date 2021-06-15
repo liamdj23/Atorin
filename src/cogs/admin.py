@@ -133,6 +133,11 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             return
         if message.clean_content.startswith("&say") or message.clean_content.startswith("&echo"):
             return
+        if message.clean_content.startswith("&reactionrole") or message.clean_content.startswith("&rr"):
+            return
+        reaction_role_message = self.bot.mongo.ReactionRole.objects(message_id=message.id).first()
+        if reaction_role_message:
+            reaction_role_message.delete()
         logs_channel = await self.get_logs_channel(message.guild)
         if logs_channel:
             embed = self.bot.embed()
@@ -355,3 +360,31 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             )
         embed.color = discord.Color.gold()
         await ctx.send(embed=embed)
+
+    @commands.command(description="Przynaje rolę po kliknięciu w reakcję",
+                      aliases=["rr"], usage="@rola :emoji: wiadomość")
+    @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_guild_permissions(manage_roles=True)
+    @commands.guild_only()
+    async def reactionrole(self, ctx, role: discord.Role, emoji, *, message: str):
+        embed = self.bot.embed(ctx.author)
+        embed.title = "Reaction Role"
+        embed.description = message
+        msg = await ctx.send(embed=embed)
+        try:
+            await msg.add_reaction(emoji)
+        except discord.HTTPException:
+            await ctx.send("❌ Nie możesz użyć tej emoji jako reakcji! Wybierz taką, która jest dostępna na tym serwerze.")
+            await msg.delete()
+            return
+        self.bot.mongo.ReactionRole(message_id=msg.id, role_id=role.id, emoji=emoji).save()
+        await ctx.message.delete()
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        if payload.member.bot:
+            return
+        reaction_role_message = self.bot.mongo.ReactionRole.objects(message_id=payload.message_id, emoji=str(payload.emoji)).first()
+        if reaction_role_message:
+            role = discord.utils.get(self.bot.get_guild(payload.guild_id).roles, id=reaction_role_message.role_id)
+            await payload.member.add_roles(role)

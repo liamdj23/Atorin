@@ -68,3 +68,9 @@ class Shop(mongoengine.Document):
 class Inventory(mongoengine.Document):
     id = mongoengine.IntField(primary_key=True)
     items = mongoengine.ListField()
+
+
+class ReactionRole(mongoengine.Document):
+    message_id = mongoengine.IntField()
+    role_id = mongoengine.IntField()
+    emoji = mongoengine.StringField()
