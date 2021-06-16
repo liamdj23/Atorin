@@ -267,7 +267,9 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         if reason:
             await ctx.send("🔇 {} wyciszył {} z powodu `{}`".format(ctx.author.mention, member.mention, reason))
             try:
-                await member.send("🔇 {} wyciszył Cię na serwerze **{}** z powodu `{}`".format(ctx.author.mention, ctx.guild.name, reason))
+                await member.send(
+                    "🔇 {} wyciszył Cię na serwerze **{}** z powodu `{}`".format(ctx.author.mention, ctx.guild.name,
+                                                                                 reason))
             except discord.Forbidden:
                 pass
         else:
@@ -362,29 +364,71 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         await ctx.send(embed=embed)
 
     @commands.command(description="Przynaje rolę po kliknięciu w reakcję",
-                      aliases=["rr"], usage="@rola :emoji: wiadomość")
+                      aliases=["rr"])
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_guild_permissions(manage_roles=True)
     @commands.guild_only()
-    async def reactionrole(self, ctx, role: discord.Role, emoji, *, message: str):
+    async def reactionrole(self, ctx):
+        roles = {}
+
+        def check(m):
+            return m.author == ctx.author and m.channel == ctx.channel
+
+        await ctx.send("📃 **Podaj kanał na którym ma zostać wysłana wiadomość.** Wpisz nazwę lub oznacz kanał"
+                       " np. `#ogólny`.")
+        channel_name = await self.bot.wait_for('message', check=check)
+        channel = discord.utils.get(self.bot.get_guild(ctx.guild.id).text_channels,
+                                    name=channel_name.clean_content.replace("#", ""))
+        if not channel:
+            await ctx.send("❌ **Nie znaleziono kanału.** Upewnij się, że nazwa kanału jest prawidłowa "
+                           "i wpisz komendę jeszcze raz. Dla ułatwienia "
+                           "skorzystaj z oznaczenia kanału np. `#ogólny`.")
+            return
+        if not channel.permissions_for(ctx.guild.me).send_messages:
+            await ctx.send("❌ Atorin nie ma uprawnień do **wysyłania wiadomości** na podanym kanale. "
+                           "Zmień uprawnienia i wpisz komendę jeszcze raz.")
+            return
+        if not channel.permissions_for(ctx.guild.me).add_reactions:
+            await ctx.send("❌ Atorin nie ma uprawnień do **dodawania reakcji** do wiadomości na podanym kanale. "
+                           "Zmień uprawnienia i wpisz komendę jeszcze raz.")
+            return
+        await channel_name.add_reaction("✅")
+        await ctx.send("✍️ **Podaj opis który ma wyświetlać się w wiadomości:**")
+        message = await self.bot.wait_for('message', check=check)
+        await message.add_reaction("✅")
         embed = self.bot.embed(ctx.author)
         embed.title = "Reaction Role"
-        embed.description = message
-        msg = await ctx.send(embed=embed)
-        try:
-            await msg.add_reaction(emoji)
-        except discord.HTTPException:
-            await ctx.send("❌ Nie możesz użyć tej emoji jako reakcji! Wybierz taką, która jest dostępna na tym serwerze.")
-            await msg.delete()
-            return
-        self.bot.mongo.ReactionRole(message_id=msg.id, role_id=role.id, emoji=emoji).save()
-        await ctx.message.delete()
+        embed.description = message.content
+        await ctx.send(content="✨ Tak będzie wyglądać wiadomość, która zostanie wysłana na podanym kanale. "
+                               "**Teraz dodaj reakcje wysyłając wiadomości "
+                               "podając najpierw emoji a potem nazwę roli** na przykład: "
+                               "`:snake: nowa rola`. Jeśli chcesz zakończyć dodawanie reakcji, "
+                               "napisz `koniec`.", embed=embed)
+        while True:
+            role_and_reaction = await self.bot.wait_for('message', check=check)
+            if role_and_reaction.content == "koniec":
+                break
+            splited = role_and_reaction.clean_content.split(" ", 1)
+            emoji = splited[0]
+            role = discord.utils.get(self.bot.get_guild(ctx.guild.id).roles, name=splited[1].replace("@", ""))
+            if not role:
+                await ctx.send("❌ **Nie znaleziono roli.** Upewnij się, że "
+                               "podałeś odpowiednią nazwę (wielkość liter ma znaczenie) i spróbuj jeszcze raz.")
+            roles[emoji] = role.id
+            await role_and_reaction.add_reaction("✅")
+        result = await channel.send(embed=embed)
+        for i in roles:
+            await result.add_reaction(i)
+        self.bot.mongo.ReactionRole(message_id=result.id, roles=roles).save()
+        await ctx.send("✅ **Gotowe!** Wiadomość zostałą wysłana na podanym przez Ciebie kanale. "
+                       "Teraz użytkownicy mogą reagować i dostawać role automatycznie! 😎")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         if payload.member.bot:
             return
-        reaction_role_message = self.bot.mongo.ReactionRole.objects(message_id=payload.message_id, emoji=str(payload.emoji)).first()
+        reaction_role_message = self.bot.mongo.ReactionRole.objects(message_id=payload.message_id).first()
         if reaction_role_message:
-            role = discord.utils.get(self.bot.get_guild(payload.guild_id).roles, id=reaction_role_message.role_id)
+            roles = reaction_role_message.roles
+            role = discord.utils.get(self.bot.get_guild(payload.guild_id).roles, id=roles[str(payload.emoji)])
             await payload.member.add_roles(role)

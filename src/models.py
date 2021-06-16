@@ -72,5 +72,4 @@ class Inventory(mongoengine.Document):
 
 class ReactionRole(mongoengine.Document):
     message_id = mongoengine.IntField()
-    role_id = mongoengine.IntField()
-    emoji = mongoengine.StringField()
+    roles = mongoengine.DictField()
