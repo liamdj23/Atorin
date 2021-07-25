@@ -24,7 +24,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                     data = await r.json()
                     await ctx.send(data[0])
                 else:
-                    raise commands.CommandError(r.text())
+                    raise commands.CommandError(await r.text())
 
     @commands.command(usage="<tekst> (max.48 znaków)",
                       description="Stwórz pasek z wiadomości z własnym tekstem\n\nPrzykład użycia: &tvp Atorin jest super!")
@@ -37,7 +37,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                     image = await r.content.read()
                     await ctx.send(file=discord.File(BytesIO(image), filename="tvp.png"))
                 else:
-                    raise commands.CommandError(r.text())
+                    raise commands.CommandError(await r.text())
 
     @commands.command(description="Wpisz aby otrzymać losowe zdjęcie kotka", aliases=["kot"])
     async def cat(self, ctx):
@@ -47,7 +47,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                     data = await r.json()
                     await ctx.send(data[0]['url'])
                 else:
-                    raise commands.CommandError(r.text())
+                    raise commands.CommandError(await r.text())
 
     @commands.command(description="Wpisz aby otrzymać losowe zdjęcie lisa", aliases=["lis"])
     async def fox(self, ctx):
@@ -57,7 +57,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                     data = await r.json()
                     await ctx.send(data['image'])
                 else:
-                    raise commands.CommandError(r.text())
+                    raise commands.CommandError(await r.text())
 
     @commands.command(usage="<tekst>",
                       description="Wpisz aby otrzymać napis stworzony z mniejszych znaków.\n\nPrzykład użycia: &figlet Atorin")
@@ -77,7 +77,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                     text = await r.text()
                     await ctx.send("git commit -m '{0}'".format(text.replace("\n", "")))
                 else:
-                    raise commands.CommandError(r.text())
+                    raise commands.CommandError(await r.text())
 
     @commands.command(usage="<tekst> (max.25 znaków)",
                       description="Stwórz osiągniecie z własnym tekstem\n\nPrzykład użycia: &achievement Jesteś super!",
@@ -194,7 +194,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                     data = await r.json()
                     await ctx.send(data['message'])
                 else:
-                    raise commands.CommandError(r.text())
+                    raise commands.CommandError(await r.text())
 
     @commands.command(description="Rzut monetą", aliases=["moneta"])
     async def flip(self, ctx):
