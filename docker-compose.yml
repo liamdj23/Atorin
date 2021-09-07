@@ -15,7 +15,7 @@ services:
     - "8080:8080"
     restart: always
   mongo:
-    image: mongo
+    image: mongo:4.4-rc
     environment:
       MONGO_INITDB_DATABASE: atorin
     ports:
