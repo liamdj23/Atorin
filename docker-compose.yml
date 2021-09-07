@@ -4,8 +4,10 @@ services:
     image: liamdj23/atorin
     links:
     - mongo
+    - lavalink
     depends_on:
     - mongo
+    - lavalink
     volumes:
     - ./config.json:/app/config.json
     - ../songs:/app/songs/
@@ -18,4 +20,9 @@ services:
       MONGO_INITDB_DATABASE: atorin
     ports:
     - "27017:27017"
+    restart: always
+  lavalink:
+    image: fredboat/lavalink:7ab68938
+    ports:
+    - "2333:2333"
     restart: always

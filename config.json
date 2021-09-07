@@ -13,5 +13,10 @@
   "sms_serviceid": 0,
   "reddit_id": "",
   "reddit_secret": "",
+  "lavalink_address": "",
+  "lavalink_port": "",
+  "lavalink_password": "",
+  "lavalink_region": "",
+  "lavalink_node": "",
   "instagram": []
 }
