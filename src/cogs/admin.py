@@ -432,3 +432,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             roles = reaction_role_message.roles
             role = discord.utils.get(self.bot.get_guild(payload.guild_id).roles, id=roles[str(payload.emoji)])
             await payload.member.add_roles(role)
+
+
+def setup(bot):
+    bot.add_cog(Admin(bot))

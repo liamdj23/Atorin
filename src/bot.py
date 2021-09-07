@@ -12,14 +12,6 @@ from pyfiglet import Figlet
 
 import models
 import utils
-from cogs.admin import Admin
-from cogs.fun import Fun
-from cogs.games import Games
-from cogs.info import Info
-from cogs.statcord import StatcordPost
-from cogs.music import Music
-from cogs.premium import Premium
-from cogs.currency import Currency
 from dashboard.flask import Dashboard
 from events.guild import GuildEvents
 
@@ -45,14 +37,6 @@ class Atorin(commands.AutoShardedBot):
         self.utils = utils
         self.web = Dashboard(self)
         self.guild_events = GuildEvents(self)
-        self.add_cog(Fun(self))
-        self.add_cog(Admin(self))
-        self.add_cog(Info(self))
-        self.add_cog(Games(self))
-        self.add_cog(StatcordPost(self))
-        self.add_cog(Music(self))
-        self.add_cog(Premium(self))
-        self.add_cog(Currency(self))
 
         @self.event
         async def on_command_error(ctx, error):
@@ -120,8 +104,6 @@ class Atorin(commands.AutoShardedBot):
             elif isinstance(error, discord.NotFound):
                 embed.description = "❌ Podany zasób nie został odnaleziony."
                 await ctx.send(embed=embed)
-            elif isinstance(error, Music.MusicException):
-                return
             else:
                 self.log.error(f"{command.name}: {error}")
                 embed.description = f"❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później. Treść błędu: `{error}`" \
@@ -142,6 +124,11 @@ class Atorin(commands.AutoShardedBot):
         @self.event
         async def on_ready():
             print("\033[92m * Running with {} shards".format(len(self.shards)), flush=True)
+            for file in os.listdir("cogs"):
+                if file.endswith(".py"):
+                    name = file[:-3]
+                    self.load_extension(f"cogs.{name}")
+                    print(f"\033[95m * Loaded extension: {name}", flush=True)
             print("\033[1m * Atorin is ready.", flush=True)
             self.web.start()
 

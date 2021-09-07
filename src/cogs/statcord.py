@@ -13,3 +13,7 @@ class StatcordPost(commands.Cog):
     @commands.Cog.listener()
     async def on_command(self, ctx):
         self.api.command_run(ctx)
+
+
+def setup(bot):
+    bot.add_cog(StatcordPost(bot))

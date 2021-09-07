@@ -171,3 +171,7 @@ class Games(commands.Cog, name="🕹 Gry"):
             elif i['name'] == 'total_matches_won':
                 embed.add_field(name="🏆 Wygranych meczy", value=i["value"], inline=False)
         await ctx.send(embed=embed)
+
+
+def setup(bot):
+    bot.add_cog(Games(bot))

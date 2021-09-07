@@ -153,3 +153,7 @@ class Currency(commands.Cog, name="🪙 Ekonomia"):
         wallet.save()
         wallet2.save()
         await ctx.send(f"✅ Przekazano {amount}{self.currency_icon} użytkownikowi {member.mention}")
+
+
+def setup(bot):
+    bot.add_cog(Currency(bot))

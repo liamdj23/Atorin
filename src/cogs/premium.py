@@ -23,3 +23,7 @@ class Premium(commands.Cog, name="💎 Premium"):
         except discord.Forbidden:
             pass
         await ctx.send(content)
+
+
+def setup(bot):
+    bot.add_cog(Premium(bot))

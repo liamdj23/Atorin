@@ -292,3 +292,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         embed.color = 0xF9493E
         embed.set_image(url=post["url"])
         await message.edit(content=None, embed=embed)
+
+
+def setup(bot):
+    bot.add_cog(Fun(bot))

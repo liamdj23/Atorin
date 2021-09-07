@@ -147,3 +147,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
                                 " funkcji. Więcej informacji" \
                                 " znajdziesz [na stronie bota](https://liamdj23.ovh/premium)."
         await ctx.send(embed=embed)
+
+
+def setup(bot):
+    bot.add_cog(Info(bot))
