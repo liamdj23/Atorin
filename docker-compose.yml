@@ -10,7 +10,6 @@ services:
     - lavalink
     volumes:
     - ./config.json:/app/config.json
-    - ../songs:/app/songs/
     ports:
     - "8080:8080"
     restart: always
