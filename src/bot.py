@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from datetime import datetime
 import time
 
@@ -24,11 +25,16 @@ class Atorin(commands.AutoShardedBot):
         intents = discord.Intents.default()
         intents.members = False
         super(Atorin, self).__init__(command_prefix="&", help_command=None, intents=intents, **kwargs)
-        mongoengine.connect('atorin', host="mongo")
-        print("\033[92m * Connected to MongoDB.", flush=True)
-        self.mongo = models
         with open(os.path.dirname(__file__) + "/../config.json", 'r') as config:
             self.config = json.load(config)
+        try:
+            mongoengine.connect('atorin', host=self.config["mongo_host"])
+            print("\033[92m * Connected to MongoDB.", flush=True)
+        except Exception as e:
+            print("\033[91m * Can't connect to MongoDB, shutting down...", flush=True)
+            print(f"\033[91m :: {e}", flush=True)
+            sys.exit(1)
+        self.mongo = models
         self.reddit = asyncpraw.Reddit(
             client_id=self.config["reddit_id"],
             client_secret=self.config["reddit_secret"],
