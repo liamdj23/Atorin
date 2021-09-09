@@ -79,7 +79,10 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             embed = self.bot.embed()
             embed.title = "Teraz odtwarzane"
             embed.add_field(name="🎧 Utwór", value=song.title, inline=False)
-            embed.add_field(name="🛤️ Długość", value=str(timedelta(milliseconds=song.duration)))
+            if not song.duration == 9223372036854775807:
+                embed.add_field(name="🛤️ Długość", value=str(timedelta(milliseconds=song.duration)).split(".")[0])
+            else:
+                embed.add_field(name="🛤️ Długość", value="🔴 Na żywo")
             embed.add_field(name="💃 Zaproponowany przez", value=f"<@{song.requester}>")
             embed.set_thumbnail(url=f"https://img.youtube.com/vi/{song.identifier}/maxresdefault.jpg")
             await channel.send(embed=embed)
