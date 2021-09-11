@@ -1,5 +1,6 @@
 from io import BytesIO
 from urllib.parse import quote
+import platform
 
 import aiohttp
 import discord
@@ -87,6 +88,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
         embed.add_field(name="🌐 Liczba serwerów", value=len(self.bot.guilds))
         embed.add_field(name="👨‍💻 Autor", value="liamdj23#9081")
         embed.add_field(name="🎭 Discord", value="https://discord.gg/Ygr5wAZbsZ", inline=False)
+        embed.add_field(name="🖥️ Środowisko", value=f"Python {platform.python_version()} • {platform.system()} {platform.version()}")
         ram = psutil.virtual_memory()
         total_ram = convert_size(ram.total)
         used_ram = convert_size(ram.used)
