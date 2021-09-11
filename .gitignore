@@ -142,3 +142,6 @@ cython_debug/
 
 # Atorin config file
 config.json
+
+# VSCode
+.vscode/
