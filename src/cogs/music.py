@@ -87,9 +87,9 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             embed.set_thumbnail(url=f"https://img.youtube.com/vi/{song.identifier}/maxresdefault.jpg")
             await channel.send(embed=embed)
 
-    @commands.command(description="Odtwarza muzykę na kanale głosowym\n\nPrzykłady użycia:"
+    @commands.command(description="Odtwarza utwór lub playlistę z YT/Twitch/MP3 na kanale głosowym\n\nPrzykłady użycia:"
                                   "\n&play despacito\n&play https://www.youtube.com/watch?v=kJQP7kiw5Fk",
-                      usage="<tytuł lub link do Youtube>",
+                      usage="<tytuł lub link do Youtube/Twitch/MP3>",
                       aliases=['p'])
     async def play(self, ctx, *, query: str):
         """ Searches and plays a song from a given query. """
@@ -102,7 +102,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         results = await player.node.get_tracks(query)
 
         if not results or not results['tracks']:
-            return await ctx.send('<:youtube:853286549629566987> ❌ Nie znaleziono utworu o podanej nazwie!')
+            return await ctx.send('❌ Nie znaleziono utworu o podanej nazwie!')
 
         embed = ctx.bot.embed(ctx.author)
 
@@ -250,6 +250,17 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         else:
             await ctx.send("🙊 Atorin nie odtwarza muzyki.")
 
+    @commands.command(
+        description="Ustawia powtarzanie aktualnie odtwarzanego utworu",
+        aliases=["repeat", "powtarzaj"]
+    )
+    async def loop(self, ctx):
+        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        if player.repeat:
+            player.repeat = False
+        else:
+            player.repeat = True
+        await ctx.send(f"🔂 Powtarzanie aktualnego utworu zostało {'włączone' if player.repeat else 'wyłączone'}.")
 
 def setup(bot):
     bot.add_cog(Music(bot))
