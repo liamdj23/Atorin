@@ -133,8 +133,11 @@ class Atorin(commands.AutoShardedBot):
             for file in os.listdir("cogs"):
                 if file.endswith(".py"):
                     name = file[:-3]
-                    self.load_extension(f"cogs.{name}")
-                    print(f"\033[95m * Loaded extension: {name}", flush=True)
+                    try:
+                        self.load_extension(f"cogs.{name}")
+                        print(f"\033[95m * Loaded extension: {name}", flush=True)
+                    except commands.errors.ExtensionAlreadyLoaded:
+                        pass
             print("\033[1m * Atorin is ready.", flush=True)
             self.web.start()
 
