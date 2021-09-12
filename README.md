@@ -13,7 +13,7 @@ Atorin is Discord Bot written in Python 3.8.7 using discord.py. It has simple we
 - ⚒️ Moderation
 - ℹ️ Information
 - 🕹️ Games
-- 🪙Economy
+- 🪙 Economy
 - 🎵 Music
 - 🌐 Website with dashboard
 
