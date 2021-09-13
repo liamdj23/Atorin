@@ -12,7 +12,7 @@ def home():
         servers=len(bot.guilds),
         channels=len(list(bot.get_all_channels())),
         users=sum(user_counter(bot)),
-        user=discord.get_user(session.get("access_token"))
+        user=discord.get_user(session.get("access_token")),
     )
 
 
@@ -24,7 +24,7 @@ def commands():
         "commands.html",
         avatar=bot.user.avatar_url,
         cogs=bot.cogs.items(),
-        user=discord.get_user(session.get("access_token"))
+        user=discord.get_user(session.get("access_token")),
     )
 
 
@@ -35,5 +35,5 @@ def terms():
     return render_template(
         "terms.html",
         avatar=bot.user.avatar_url,
-        user=discord.get_user(session.get("access_token"))
+        user=discord.get_user(session.get("access_token")),
     )

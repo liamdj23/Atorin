@@ -4,7 +4,9 @@ from flask import render_template, session, current_app, redirect, url_for, requ
 def login():
     discord = current_app.discord
     if request.args.get("code"):
-        session["access_token"], session["refresh_token"] = discord.get_token(request.args.get("code"))
+        session["access_token"], session["refresh_token"] = discord.get_token(
+            request.args.get("code")
+        )
         if session.get("redirect"):
             return redirect(url_for(session["redirect"]))
         else:
@@ -30,7 +32,7 @@ def servers():
             "servers.html",
             avatar=bot.user.avatar_url,
             data=servers,
-            user=discord.get_user(session.get("access_token"))
+            user=discord.get_user(session.get("access_token")),
         )
     else:
         session["redirect"] = "servers"
@@ -48,7 +50,9 @@ def server(server_id, setting):
                 if not server_db:
                     server_db = bot.mongo.Server(id=guild.id, logs=bot.mongo.Logs())
                     server_db.save()
-                event_logs = bot.mongo.EventLogs.objects(server=guild.id).order_by("-date")[:10]
+                event_logs = bot.mongo.EventLogs.objects(server=guild.id).order_by(
+                    "-date"
+                )[:10]
                 if request.method == "GET":
                     return render_template(
                         "server.html",
@@ -56,7 +60,7 @@ def server(server_id, setting):
                         user=discord.get_user(session.get("access_token")),
                         guild=guild,
                         logs=server_db.logs,
-                        event_logs=event_logs
+                        event_logs=event_logs,
                     )
                 else:
                     if setting:

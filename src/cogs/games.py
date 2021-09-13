@@ -42,7 +42,9 @@ async def steam_resolve_url(url: str, key: str):
     except ValueError:
         pass
     async with aiohttp.ClientSession() as session:
-        api = "http://api.steampowered.com/ISteamUser/ResolveVanityURL/v1?vanityurl={0}&key={1}".format(quote(nick), key)
+        api = "http://api.steampowered.com/ISteamUser/ResolveVanityURL/v1?vanityurl={0}&key={1}".format(
+            quote(nick), key
+        )
         async with session.get(api) as r:
             if r.status == 200:
                 data = await r.json()
@@ -53,7 +55,9 @@ async def steam_resolve_url(url: str, key: str):
 
 async def steam_get_stats(app_id: int, key: str, steam_id: int):
     async with aiohttp.ClientSession() as session:
-        api = "http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid={0}&key={1}&steamid={2}".format(app_id, key, steam_id)
+        api = "http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid={0}&key={1}&steamid={2}".format(
+            app_id, key, steam_id
+        )
         async with session.get(api) as r:
             if r.status == 200:
                 data = await r.json()
@@ -65,11 +69,14 @@ class Games(commands.Cog, name="🕹 Gry"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group(aliases=["mc"], usage="<srv|skin> <adres|nick>",
-                    description="Wpisz aby otrzymać skina gracza lub sprawdzić status serwera Minecraft\n\n" +
-                                "Przykłady użycia:\n" +
-                                "&mc srv krainamc.pl\n" +
-                                "&mc skin liamdj23")
+    @commands.group(
+        aliases=["mc"],
+        usage="<srv|skin> <adres|nick>",
+        description="Wpisz aby otrzymać skina gracza lub sprawdzić status serwera Minecraft\n\n"
+        + "Przykłady użycia:\n"
+        + "&mc srv krainamc.pl\n"
+        + "&mc skin liamdj23",
+    )
     async def minecraft(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send("❌ Poprawne użycie: `&mc <srv|skin> <adres|nick>`")
@@ -83,22 +90,36 @@ class Games(commands.Cog, name="🕹 Gry"):
                     if data["online"]:
                         embed = self.bot.embed(ctx.author)
                         embed.title = f"Status serwera Minecraft: {domain}"
-                        if 'version' in data:
+                        if "version" in data:
                             embed.add_field(name="🔌 Wersja", value=data["version"])
-                        if 'players' in data:
-                            embed.add_field(name="👥 Liczba graczy",
-                                            value="{0}/{1}".format(data["players"]["online"], data["players"]["max"]))
-                        if 'map' in data:
+                        if "players" in data:
+                            embed.add_field(
+                                name="👥 Liczba graczy",
+                                value="{0}/{1}".format(
+                                    data["players"]["online"], data["players"]["max"]
+                                ),
+                            )
+                        if "map" in data:
                             embed.add_field(name="🌍 Mapa", value=data["map"])
-                        if 'software' in data:
+                        if "software" in data:
                             embed.add_field(name="🗜 Silnik", value=data["software"])
-                        if 'motd' in data:
-                            embed.add_field(name="🔠 MOTD",
-                                            value="```yml\n" + "\n".join(data["motd"]["clean"]) + "\n```", inline=False)
-                        if 'icon' in data:
+                        if "motd" in data:
+                            embed.add_field(
+                                name="🔠 MOTD",
+                                value="```yml\n"
+                                + "\n".join(data["motd"]["clean"])
+                                + "\n```",
+                                inline=False,
+                            )
+                        if "icon" in data:
                             embed.set_thumbnail(url="attachment://logo.png")
-                            image = base64.b64decode(data["icon"].replace("data:image/png;base64,", ""))
-                            await ctx.send(embed=embed, file=discord.File(BytesIO(image), filename="logo.png"))
+                            image = base64.b64decode(
+                                data["icon"].replace("data:image/png;base64,", "")
+                            )
+                            await ctx.send(
+                                embed=embed,
+                                file=discord.File(BytesIO(image), filename="logo.png"),
+                            )
                         else:
                             await ctx.send(embed=embed)
                     else:
@@ -113,7 +134,9 @@ class Games(commands.Cog, name="🕹 Gry"):
             data = mojang.json()
             skin = requests.get(f"https://crafatar.com/renders/body/{data['id']}")
             if skin.status_code == 200:
-                await ctx.send(file=discord.File(BytesIO(skin.content), filename="skin.png"))
+                await ctx.send(
+                    file=discord.File(BytesIO(skin.content), filename="skin.png")
+                )
             else:
                 raise commands.CommandError(skin.text)
         elif mojang.status_code == 204:
@@ -121,13 +144,21 @@ class Games(commands.Cog, name="🕹 Gry"):
         else:
             raise commands.CommandError(mojang.text)
 
-    @commands.command(description="Statystyki w grze Fortnite\n\nPrzykład użycia: &fortnite epic liamdj23",
-                      usage="<epic/psn/xbl> <nick>")
+    @commands.command(
+        description="Statystyki w grze Fortnite\n\nPrzykład użycia: &fortnite epic liamdj23",
+        usage="<epic/psn/xbl> <nick>",
+    )
     async def fortnite(self, ctx, platform: is_platform, *, nick: str):
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"https://fortnite-api.com/v1/stats/br/v2?name={quote(nick)}&accountType={platform}") as r:
+            async with session.get(
+                f"https://fortnite-api.com/v1/stats/br/v2?name={quote(nick)}&accountType={platform}"
+            ) as r:
                 if r.status == 404:
-                    await ctx.send("❌ Gracz **{}** nie istnieje lub nie grał w Fortnite!".format(nick))
+                    await ctx.send(
+                        "❌ Gracz **{}** nie istnieje lub nie grał w Fortnite!".format(
+                            nick
+                        )
+                    )
                 elif r.status == 200:
                     json = await r.json()
                     data = json["data"]["stats"]["all"]["overall"]
@@ -142,8 +173,11 @@ class Games(commands.Cog, name="🕹 Gry"):
                 else:
                     raise commands.CommandError(await r.text())
 
-    @commands.command(description="Statystyki w grze CS:GO\n\nPrzykład użycia:\n&csgo https://steamcommunity.com/id/liamxdev/",
-                      usage="<link do profilu steam>", aliases=["cs"])
+    @commands.command(
+        description="Statystyki w grze CS:GO\n\nPrzykład użycia:\n&csgo https://steamcommunity.com/id/liamxdev/",
+        usage="<link do profilu steam>",
+        aliases=["cs"],
+    )
     async def csgo(self, ctx, url: str):
         if "steamcommunity.com/id/" in url or "steamcommunity.com/profiles/" in url:
             try:
@@ -155,21 +189,25 @@ class Games(commands.Cog, name="🕹 Gry"):
             raise commands.BadArgument
         stats = await steam_get_stats(730, self.bot.config["steam"], steam_id)
         if not stats:
-            await ctx.send("❌ Wystąpił błąd przy pobieraniu informacji. Sprawdź czy podany profil jest publiczny"
-                           " i spróbuj ponownie.")
+            await ctx.send(
+                "❌ Wystąpił błąd przy pobieraniu informacji. Sprawdź czy podany profil jest publiczny"
+                " i spróbuj ponownie."
+            )
             return
         embed = self.bot.embed(ctx.author)
         embed.title = "Statystyki w grze CS:GO"
         embed.description = "🧑 Gracz: **{}**".format(nick)
         for i in stats:
-            if i['name'] == 'total_kills':
+            if i["name"] == "total_kills":
                 embed.add_field(name="🔫 Liczba zabójstw", value=i["value"])
-            elif i['name'] == 'total_deaths':
+            elif i["name"] == "total_deaths":
                 embed.add_field(name="☠ Liczba śmierci", value=i["value"])
-            elif i['name'] == 'total_matches_played':
+            elif i["name"] == "total_matches_played":
                 embed.add_field(name="⚔ Rozegranych meczy", value=i["value"])
-            elif i['name'] == 'total_matches_won':
-                embed.add_field(name="🏆 Wygranych meczy", value=i["value"], inline=False)
+            elif i["name"] == "total_matches_won":
+                embed.add_field(
+                    name="🏆 Wygranych meczy", value=i["value"], inline=False
+                )
         await ctx.send(embed=embed)
 
 

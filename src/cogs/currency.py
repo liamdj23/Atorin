@@ -27,7 +27,9 @@ class Currency(commands.Cog, name="🪙 Ekonomia"):
         wallet.balance = wallet.balance + coins
         wallet.save()
 
-    @commands.command(description="Sprawdź swój stan konta", aliases=["bal", "wallet", "portfel"])
+    @commands.command(
+        description="Sprawdź swój stan konta", aliases=["bal", "wallet", "portfel"]
+    )
     async def balance(self, ctx):
         wallet = await self.get_wallet(ctx.author)
         embed = self.bot.embed(ctx.author)
@@ -46,7 +48,9 @@ class Currency(commands.Cog, name="🪙 Ekonomia"):
         wallet.daily = now
         wallet.save()
         await self.add_coins(ctx.author, 500)
-        await ctx.send(f"Pomyślnie przyznano **500**{self.currency_icon}! Następne możesz odebrać jutro 😴")
+        await ctx.send(
+            f"Pomyślnie przyznano **500**{self.currency_icon}! Następne możesz odebrać jutro 😴"
+        )
 
     @commands.command(description="Pracuj aby powiększyć stan konta")
     @commands.cooldown(1, 600, commands.BucketType.user)
@@ -55,7 +59,9 @@ class Currency(commands.Cog, name="🪙 Ekonomia"):
         wallet = await self.get_wallet(ctx.author)
         wallet.balance += payment
         wallet.save()
-        await ctx.send(f"🧑‍🏭 {ctx.author.mention} był w pracy i zarobił **{payment}**{self.currency_icon}!")
+        await ctx.send(
+            f"🧑‍🏭 {ctx.author.mention} był w pracy i zarobił **{payment}**{self.currency_icon}!"
+        )
 
     @commands.command(description="Jednoręki bandyta\nKoszt: 100 AtorinCoinów")
     async def slots(self, ctx):
@@ -99,8 +105,10 @@ class Currency(commands.Cog, name="🪙 Ekonomia"):
             embed.color = 0xFF0000
         await ctx.send(embed=embed)
 
-    @commands.command(description="Zgadnij czy liczba jest większa lub mniejsza "
-                                  "i zdobądź 25 AtorinCoinów")
+    @commands.command(
+        description="Zgadnij czy liczba jest większa lub mniejsza "
+        "i zdobądź 25 AtorinCoinów"
+    )
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def highlow(self, ctx):
         wallet = await self.get_wallet(ctx.author)
@@ -108,34 +116,47 @@ class Currency(commands.Cog, name="🪙 Ekonomia"):
         result = random.randint(0, 100)
         embed = self.bot.embed(ctx.author)
         embed.title = "Większa czy mniejsza?"
-        embed.description = f"Wylosowana liczba to **{number}**\nnastępna będzie mniejsza czy większa?"
+        embed.description = (
+            f"Wylosowana liczba to **{number}**\nnastępna będzie mniejsza czy większa?"
+        )
         message = await ctx.send(embed=embed)
         await message.add_reaction("⬆")
         await message.add_reaction("⬇")
 
         def check(reaction, user):
-            return user.id == ctx.author.id and (str(reaction.emoji) == "⬆" or str(reaction.emoji) == "⬇") \
-                   and reaction.message.id == message.id
+            return (
+                user.id == ctx.author.id
+                and (str(reaction.emoji) == "⬆" or str(reaction.emoji) == "⬇")
+                and reaction.message.id == message.id
+            )
 
         try:
-            reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=60)
+            reaction, user = await self.bot.wait_for(
+                "reaction_add", check=check, timeout=60
+            )
         except TimeoutError:
             await ctx.send("❌ Nie wybrano odpowiedzi.")
             await message.clear_reactions()
             return
 
         if str(reaction.emoji) == "⬆" and result > number:
-            await ctx.send(f"Następna liczba to **{result}**, wygrywasz **25**{self.currency_icon}")
+            await ctx.send(
+                f"Następna liczba to **{result}**, wygrywasz **25**{self.currency_icon}"
+            )
             wallet.balance += 25
             wallet.save()
         elif str(reaction.emoji) == "⬇" and result < number:
-            await ctx.send(f"Następna liczba to **{result}**, wygrywasz **25**{self.currency_icon}")
+            await ctx.send(
+                f"Następna liczba to **{result}**, wygrywasz **25**{self.currency_icon}"
+            )
             wallet.balance += 25
             wallet.save()
         else:
             await ctx.send(f"Następna liczba to **{result}**, przegrałeś.")
 
-    @commands.command(description="Przekaż swoje AtorinCoiny komuś innemu", usage="<osoba> <ilość>")
+    @commands.command(
+        description="Przekaż swoje AtorinCoiny komuś innemu", usage="<osoba> <ilość>"
+    )
     async def give(self, ctx, member: discord.Member, amount: int):
         if amount < 0:
             await ctx.send("❌ Podana liczba musi być dodatnia!")
@@ -152,7 +173,9 @@ class Currency(commands.Cog, name="🪙 Ekonomia"):
         wallet2.balance += amount
         wallet.save()
         wallet2.save()
-        await ctx.send(f"✅ Przekazano {amount}{self.currency_icon} użytkownikowi {member.mention}")
+        await ctx.send(
+            f"✅ Przekazano {amount}{self.currency_icon} użytkownikowi {member.mention}"
+        )
 
 
 def setup(bot):

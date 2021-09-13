@@ -13,7 +13,7 @@ def premium():
     return render_template(
         "premium.html",
         avatar=bot.user.avatar_url,
-        user=discord.get_user(session.get("access_token"))
+        user=discord.get_user(session.get("access_token")),
     )
 
 
@@ -22,19 +22,25 @@ def thanks():
     discord_api = current_app.discord
     if session.get("access_token") and session.get("transactionSuccess"):
         user_api = discord_api.get_user(session["access_token"])
-        data = {"username": "Atorin", "avatar_url": str(bot.user.avatar_url), "embeds": [{
-            "title": "Atorin Premium 💎",
-            "description": "Użytkownik **{}#{}** zakupił usługę Atorin Premium na 30 dni! Dziękuję! ❤".format(
-                user_api["username"], user_api["discriminator"]
-            ),
-            "color": 2555648
-        }]}
+        data = {
+            "username": "Atorin",
+            "avatar_url": str(bot.user.avatar_url),
+            "embeds": [
+                {
+                    "title": "Atorin Premium 💎",
+                    "description": "Użytkownik **{}#{}** zakupił usługę Atorin Premium na 30 dni! Dziękuję! ❤".format(
+                        user_api["username"], user_api["discriminator"]
+                    ),
+                    "color": 2555648,
+                }
+            ],
+        }
         requests.post(bot.config["notify_channel"], json=data)
         session.pop("transactionSuccess", None)
         return render_template(
-                "thanks.html",
-                avatar=bot.user.avatar_url,
-                user=discord_api.get_user(session.get("access_token"))
+            "thanks.html",
+            avatar=bot.user.avatar_url,
+            user=discord_api.get_user(session.get("access_token")),
         )
     return redirect("/")
 
@@ -50,7 +56,7 @@ def buy():
             "control": user["id"],
             "description": "Atorin Premium " + user["id"],
             "notifyURL": bot.config["discord_oauth2_domain"] + "/payments",
-            "returnUrlSuccess": bot.config["discord_oauth2_domain"] + "/thanks"
+            "returnUrlSuccess": bot.config["discord_oauth2_domain"] + "/thanks",
         }
         data_to_hash = bot.config["paybylink"] + "|"
         data_to_hash += "{}".format(data["shopId"]) + "|"
@@ -63,7 +69,11 @@ def buy():
         data["signature"] = signature
         r = requests.post("https://secure.pbl.pl/api/v1/transfer/generate", json=data)
         response = r.json()
-        payment = bot.mongo.Payments(id=response["transactionId"], user=user["id"], created=datetime.datetime.now())
+        payment = bot.mongo.Payments(
+            id=response["transactionId"],
+            user=user["id"],
+            created=datetime.datetime.now(),
+        )
         payment.save()
         session["transactionSuccess"] = True
         return redirect(response["url"])
@@ -90,7 +100,9 @@ def payments():
         payment.save()
         premium = bot.mongo.Premium.objects(id=payment["user"]).first()
         if not premium:
-            premium = bot.mongo.Premium(id=payment["user"], created=datetime.datetime.now())
+            premium = bot.mongo.Premium(
+                id=payment["user"], created=datetime.datetime.now()
+            )
         premium.expire = datetime.datetime.now() + datetime.timedelta(days=30)
         premium.save()
         wallet = bot.mongo.Wallet.objects(id=payment["user"]).first()
@@ -113,20 +125,27 @@ def sms():
                 discord_api = current_app.discord
                 user = discord_api.get_user(session["access_token"])
                 bot = current_app.bot
-                r = requests.get("https://www.paybylink.pl/api/v2/index.php", params={
-                    "userid": bot.config["sms_userid"],
-                    "serviceid": bot.config["sms_serviceid"],
-                    "code": code,
-                    "number": 76480
-                })
+                r = requests.get(
+                    "https://www.paybylink.pl/api/v2/index.php",
+                    params={
+                        "userid": bot.config["sms_userid"],
+                        "serviceid": bot.config["sms_serviceid"],
+                        "code": code,
+                        "number": 76480,
+                    },
+                )
                 json = r.json()
                 if "error" in json:
                     error = json["error"]["message"]
                 elif json["data"]["status"] == 1:
                     premium = bot.mongo.Premium.objects(id=user["id"]).first()
                     if not premium:
-                        premium = bot.mongo.Premium(id=user["id"], created=datetime.datetime.now())
-                    premium.expire = datetime.datetime.now() + datetime.timedelta(days=30)
+                        premium = bot.mongo.Premium(
+                            id=user["id"], created=datetime.datetime.now()
+                        )
+                    premium.expire = datetime.datetime.now() + datetime.timedelta(
+                        days=30
+                    )
                     premium.save()
                     wallet = bot.mongo.Wallet.objects(id=user["id"]).first()
                     if not wallet:

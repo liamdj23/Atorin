@@ -26,12 +26,14 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             action_by=by,
             action_on=on,
             reason=reason,
-            date=datetime.datetime.now()
+            date=datetime.datetime.now(),
         ).save()
 
-    @commands.command(aliases=["delmsg", "purge"],
-                      usage="<3-100>",
-                      description="Wpisz aby usunąć dużą ilość wiadomości\n\nPrzykład użycia: &clear 34")
+    @commands.command(
+        aliases=["delmsg", "purge"],
+        usage="<3-100>",
+        description="Wpisz aby usunąć dużą ilość wiadomości\n\nPrzykład użycia: &clear 34",
+    )
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_guild_permissions(manage_messages=True)
     @commands.bot_has_guild_permissions(read_message_history=True)
@@ -49,18 +51,30 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             to_delete = [message for message in messages if message not in deleted]
             for message in to_delete:
                 await message.delete()
-        await self.save_to_event_logs(ctx.guild.id, "clear", ctx.author.id, ctx.channel.id, None)
-        await ctx.send("🗑 {} usunął **{}** wiadomości ✅".format(ctx.message.author.mention, len(messages)))
+        await self.save_to_event_logs(
+            ctx.guild.id, "clear", ctx.author.id, ctx.channel.id, None
+        )
+        await ctx.send(
+            "🗑 {} usunął **{}** wiadomości ✅".format(
+                ctx.message.author.mention, len(messages)
+            )
+        )
         logs_channel = await self.get_logs_channel(ctx.guild)
         if logs_channel:
             embed = self.bot.embed()
             embed.title = "Czyszczenie kanału"
-            embed.add_field(name="🧑 Wykonane przez", value=ctx.author.mention, inline=False)
+            embed.add_field(
+                name="🧑 Wykonane przez", value=ctx.author.mention, inline=False
+            )
             embed.add_field(name="🔢 Ilość", value=f"{len(messages)}", inline=False)
             embed.add_field(name="🔤 Kanał", value=ctx.channel.mention, inline=False)
             await logs_channel.send(embed=embed)
 
-    @commands.command(aliases=["ogłoszenie", "ogloszenie"], usage="<tekst>", description="Tworzy ogłoszenie")
+    @commands.command(
+        aliases=["ogłoszenie", "ogloszenie"],
+        usage="<tekst>",
+        description="Tworzy ogłoszenie",
+    )
     @commands.guild_only()
     @commands.has_guild_permissions(administrator=True)
     async def advert(self, ctx, *, content: str):
@@ -76,22 +90,31 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         await message.add_reaction("😢")
         await message.add_reaction("😠")
 
-    @commands.command(description="Otrzymywanie powiadomień o usuniętych i edytowanych wiadomościach", usage="<on/off>")
+    @commands.command(
+        description="Otrzymywanie powiadomień o usuniętych i edytowanych wiadomościach",
+        usage="<on/off>",
+    )
     @commands.has_guild_permissions(administrator=True)
     @commands.guild_only()
     async def logs(self, ctx, state: str = None, channel: discord.TextChannel = None):
         server = self.bot.mongo.Server.objects(id=ctx.guild.id).first()
         if not server:
-            server = self.bot.mongo.Server(id=ctx.guild.id,
-                                           logs=self.bot.mongo.Logs(enabled=False))
+            server = self.bot.mongo.Server(
+                id=ctx.guild.id, logs=self.bot.mongo.Logs(enabled=False)
+            )
         if state is None:
             embed = self.bot.embed(ctx.author)
             embed.title = "Powiadomienia o usuniętych i edytowanych wiadomościach"
             if server.logs.enabled:
                 embed.add_field(name="💬 Powiadomienia", value=self.bool_to_state(True))
                 if server.logs.channel:
-                    embed.add_field(name="📝 Kanał", value=ctx.guild.get_channel(int(server.logs.channel)).mention)
-                embed.description = "💡 Aby wyłączyć powiadomienia o zdarzeniach, wpisz `&logs off`"
+                    embed.add_field(
+                        name="📝 Kanał",
+                        value=ctx.guild.get_channel(int(server.logs.channel)).mention,
+                    )
+                embed.description = (
+                    "💡 Aby wyłączyć powiadomienia o zdarzeniach, wpisz `&logs off`"
+                )
             else:
                 embed.add_field(name="💬 Powiadomienia", value=self.bool_to_state(False))
                 embed.description = "💡 Aby włączyć powiadomenia o zdarzeniach wpisz `&logs on #nazwa_kanału`"
@@ -104,12 +127,18 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
                 raise commands.BadArgument
             server.logs.channel = channel.id
         if channel and not ctx.guild.me.permissions_in(channel).send_messages:
-            await ctx.send("❌ Bot nie posiada uprawnień do wysyłania wiadomości na kanale " + channel.mention)
+            await ctx.send(
+                "❌ Bot nie posiada uprawnień do wysyłania wiadomości na kanale "
+                + channel.mention
+            )
             return
         state_bool = self.state_to_bool(state)
         server.logs.enabled = state_bool
         server.save()
-        await ctx.send("Powiadomienia o usuniętych i edytowanych wiadomościach: " + self.bool_to_state(state_bool))
+        await ctx.send(
+            "Powiadomienia o usuniętych i edytowanych wiadomościach: "
+            + self.bool_to_state(state_bool)
+        )
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
@@ -117,25 +146,39 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             return
         if not message.guild:
             return
-        if message.clean_content.startswith('&ban'):
+        if message.clean_content.startswith("&ban"):
             return
         if message.clean_content.startswith("&kick"):
             return
-        if message.clean_content.startswith("&advert") or message.clean_content.startswith("&og"):
+        if message.clean_content.startswith(
+            "&advert"
+        ) or message.clean_content.startswith("&og"):
             return
         if message.clean_content.startswith("&unban"):
             return
-        if message.clean_content.startswith("&mute") or message.clean_content.startswith("&wycisz"):
+        if message.clean_content.startswith(
+            "&mute"
+        ) or message.clean_content.startswith("&wycisz"):
             return
-        if message.clean_content.startswith("&unmute") or message.clean_content.startswith("&odcisz"):
+        if message.clean_content.startswith(
+            "&unmute"
+        ) or message.clean_content.startswith("&odcisz"):
             return
-        if message.clean_content.startswith("&warn") or message.clean_content.startswith("&ostrze"):
+        if message.clean_content.startswith(
+            "&warn"
+        ) or message.clean_content.startswith("&ostrze"):
             return
-        if message.clean_content.startswith("&say") or message.clean_content.startswith("&echo"):
+        if message.clean_content.startswith("&say") or message.clean_content.startswith(
+            "&echo"
+        ):
             return
-        if message.clean_content.startswith("&reactionrole") or message.clean_content.startswith("&rr"):
+        if message.clean_content.startswith(
+            "&reactionrole"
+        ) or message.clean_content.startswith("&rr"):
             return
-        reaction_role_message = self.bot.mongo.ReactionRole.objects(message_id=message.id).first()
+        reaction_role_message = self.bot.mongo.ReactionRole.objects(
+            message_id=message.id
+        ).first()
         if reaction_role_message:
             reaction_role_message.delete()
         logs_channel = await self.get_logs_channel(message.guild)
@@ -144,7 +187,11 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             embed.title = "Usunięta wiadomość"
             embed.add_field(name="🧑 Autor", value=message.author.mention, inline=False)
             embed.add_field(name="🔤 Kanał", value=message.channel.mention, inline=False)
-            embed.add_field(name="✍️Treść", value="```{}```".format(message.clean_content), inline=False)
+            embed.add_field(
+                name="✍️Treść",
+                value="```{}```".format(message.clean_content),
+                inline=False,
+            )
             await logs_channel.send(embed=embed)
 
     @commands.Cog.listener()
@@ -160,27 +207,39 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
                 embed.title = "Edytowana wiadomość"
                 embed.add_field(name="🧑 Autor", value=old.author.mention, inline=False)
                 embed.add_field(name="🔤 Kanał", value=old.channel.mention, inline=False)
-                embed.add_field(name="❎ Poprzednia treść", value="```{}```".format(old.clean_content), inline=False)
-                embed.add_field(name="✅ Aktualna treść", value="```{}```".format(new.clean_content), inline=False)
+                embed.add_field(
+                    name="❎ Poprzednia treść",
+                    value="```{}```".format(old.clean_content),
+                    inline=False,
+                )
+                embed.add_field(
+                    name="✅ Aktualna treść",
+                    value="```{}```".format(new.clean_content),
+                    inline=False,
+                )
                 await logs_channel.send(embed=embed)
 
-    @commands.command(description="Zbanuj użytkownika",
-                      usage="@uzytkownik <powód>")
+    @commands.command(description="Zbanuj użytkownika", usage="@uzytkownik <powód>")
     @commands.has_guild_permissions(ban_members=True)
     @commands.bot_has_guild_permissions(ban_members=True)
     @commands.guild_only()
     async def ban(self, ctx, member: discord.Member, *, reason: str):
         await member.ban(delete_message_days=0)
-        await self.save_to_event_logs(ctx.guild.id, "ban", ctx.author.id, member.id, reason)
-        await ctx.send("🔨 {} **zbanował** {} z powodu `{}`".format(
-            ctx.author.mention,
-            member.name + "#" + member.discriminator,
-            reason
-        ))
+        await self.save_to_event_logs(
+            ctx.guild.id, "ban", ctx.author.id, member.id, reason
+        )
+        await ctx.send(
+            "🔨 {} **zbanował** {} z powodu `{}`".format(
+                ctx.author.mention, member.name + "#" + member.discriminator, reason
+            )
+        )
         await ctx.message.delete()
         try:
-            await member.send("🔨 Zostałeś zbanowany na serwerze {} przez {} z powodu `{}`".format(
-                ctx.guild.name, ctx.author.mention, reason))
+            await member.send(
+                "🔨 Zostałeś zbanowany na serwerze {} przez {} z powodu `{}`".format(
+                    ctx.guild.name, ctx.author.mention, reason
+                )
+            )
         except discord.Forbidden:
             pass
         logs_channel = await self.get_logs_channel(ctx.guild)
@@ -192,9 +251,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             embed.add_field(name="🔤 Powód", value=reason, inline=False)
             await logs_channel.send(embed=embed)
 
-    @commands.command(
-        description="Odbanuj użytkownika",
-        usage="<nick#0000>")
+    @commands.command(description="Odbanuj użytkownika", usage="<nick#0000>")
     @commands.has_guild_permissions(ban_members=True)
     @commands.bot_has_guild_permissions(ban_members=True)
     @commands.guild_only()
@@ -204,21 +261,25 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             await ctx.send("❌ Lista zbanowanych użytkowników jest pusta")
             return
         try:
-            member_name, member_discriminator = member.split('#')
+            member_name, member_discriminator = member.split("#")
         except ValueError:
             raise commands.BadArgument
         for ban_entry in banned_users:
             user = ban_entry.user
             if (user.name, user.discriminator) == (member_name, member_discriminator):
                 await ctx.guild.unban(user)
-                await self.save_to_event_logs(ctx.guild.id, "unban", ctx.author.id, user.id, None)
+                await self.save_to_event_logs(
+                    ctx.guild.id, "unban", ctx.author.id, user.id, None
+                )
                 await ctx.send("✅ {} odbanował {}".format(ctx.author.mention, member))
                 await ctx.message.delete()
                 logs_channel = await self.get_logs_channel(ctx.guild)
                 if logs_channel:
                     embed = self.bot.embed()
                     embed.title = "Odbanowanie użytkownika"
-                    embed.add_field(name="🧑 Przez", value=ctx.author.mention, inline=False)
+                    embed.add_field(
+                        name="🧑 Przez", value=ctx.author.mention, inline=False
+                    )
                     embed.add_field(name="🧍 Odbanowany", value=member, inline=False)
                     await logs_channel.send(embed=embed)
                 return
@@ -230,16 +291,21 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     @commands.guild_only()
     async def kick(self, ctx, member: discord.Member, *, reason: str):
         await member.kick(reason=reason)
-        await self.save_to_event_logs(ctx.guild.id, "kick", ctx.author.id, member.id, reason)
-        await ctx.send("🦶 {} wyrzucił {} z powodu {}".format(
-            ctx.author.mention,
-            member.name + "#" + member.discriminator,
-            reason
-        ))
+        await self.save_to_event_logs(
+            ctx.guild.id, "kick", ctx.author.id, member.id, reason
+        )
+        await ctx.send(
+            "🦶 {} wyrzucił {} z powodu {}".format(
+                ctx.author.mention, member.name + "#" + member.discriminator, reason
+            )
+        )
         await ctx.message.delete()
         try:
-            await member.send("🦶 Zostałeś wyrzucony z serwera {} przez {} z powodu `{}`".format(
-                ctx.guild.name, ctx.author.mention, reason))
+            await member.send(
+                "🦶 Zostałeś wyrzucony z serwera {} przez {} z powodu `{}`".format(
+                    ctx.guild.name, ctx.author.mention, reason
+                )
+            )
         except discord.Forbidden:
             pass
         logs_channel = await self.get_logs_channel(ctx.guild)
@@ -251,7 +317,11 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             embed.add_field(name="🔤 Powód", value=reason, inline=False)
             await logs_channel.send(embed=embed)
 
-    @commands.command(description="Wycisza podanego użytkownika", aliases=["wycisz"], usage="@uzytkownik <powód>")
+    @commands.command(
+        description="Wycisza podanego użytkownika",
+        aliases=["wycisz"],
+        usage="@uzytkownik <powód>",
+    )
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
@@ -260,22 +330,40 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         if not mutedrole:
             mutedrole = await ctx.guild.create_role(name="Muted")
             for channel in ctx.guild.channels:
-                if channel.permissions_for(ctx.guild.get_member(self.bot.user.id)).manage_roles:
-                    await channel.set_permissions(mutedrole, speak=False, send_messages=False)
+                if channel.permissions_for(
+                    ctx.guild.get_member(self.bot.user.id)
+                ).manage_roles:
+                    await channel.set_permissions(
+                        mutedrole, speak=False, send_messages=False
+                    )
         await member.add_roles(mutedrole, reason=reason)
-        await self.save_to_event_logs(ctx.guild.id, "mute", ctx.author.id, member.id, reason if reason else None)
+        await self.save_to_event_logs(
+            ctx.guild.id, "mute", ctx.author.id, member.id, reason if reason else None
+        )
         if reason:
-            await ctx.send("🔇 {} wyciszył {} z powodu `{}`".format(ctx.author.mention, member.mention, reason))
+            await ctx.send(
+                "🔇 {} wyciszył {} z powodu `{}`".format(
+                    ctx.author.mention, member.mention, reason
+                )
+            )
             try:
                 await member.send(
-                    "🔇 {} wyciszył Cię na serwerze **{}** z powodu `{}`".format(ctx.author.mention, ctx.guild.name,
-                                                                                 reason))
+                    "🔇 {} wyciszył Cię na serwerze **{}** z powodu `{}`".format(
+                        ctx.author.mention, ctx.guild.name, reason
+                    )
+                )
             except discord.Forbidden:
                 pass
         else:
-            await ctx.send("🔇 {} wyciszył {}".format(ctx.author.mention, member.mention))
+            await ctx.send(
+                "🔇 {} wyciszył {}".format(ctx.author.mention, member.mention)
+            )
             try:
-                await member.send("🔇 {} wyciszył Cię na serwerze **{}**".format(ctx.author.mention, ctx.guild.name))
+                await member.send(
+                    "🔇 {} wyciszył Cię na serwerze **{}**".format(
+                        ctx.author.mention, ctx.guild.name
+                    )
+                )
             except discord.Forbidden:
                 pass
         await ctx.message.delete()
@@ -285,21 +373,35 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             embed.title = "Wyciszenie użytkownika"
             embed.add_field(name="🧑 Przez", value=ctx.author.mention, inline=False)
             embed.add_field(name="🧍 Wyciszony", value=member.mention, inline=False)
-            embed.add_field(name="🔤 Powód", value=reason, inline=False) if reason else None
+            embed.add_field(
+                name="🔤 Powód", value=reason, inline=False
+            ) if reason else None
             await logs_channel.send(embed=embed)
 
-    @commands.command(description="Odcisza podanego użytkownika", aliases=["odcisz"], usage="@uzytkownik")
+    @commands.command(
+        description="Odcisza podanego użytkownika",
+        aliases=["odcisz"],
+        usage="@uzytkownik",
+    )
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
     async def unmute(self, ctx, member: discord.Member):
         mutedrole = discord.utils.get(ctx.guild.roles, name="Muted")
         await member.remove_roles(mutedrole)
-        await self.save_to_event_logs(ctx.guild.id, "unmute", ctx.author.id, member.id, None)
-        await ctx.send("🔊 {} odciszył **{}**".format(ctx.author.mention, member.mention))
+        await self.save_to_event_logs(
+            ctx.guild.id, "unmute", ctx.author.id, member.id, None
+        )
+        await ctx.send(
+            "🔊 {} odciszył **{}**".format(ctx.author.mention, member.mention)
+        )
         await ctx.message.delete()
         try:
-            await member.send("🔊 {} odciszył Cię na serwerze **{}**".format(ctx.author.mention, ctx.guild.name))
+            await member.send(
+                "🔊 {} odciszył Cię na serwerze **{}**".format(
+                    ctx.author.mention, ctx.guild.name
+                )
+            )
         except discord.Forbidden:
             pass
         logs_channel = await self.get_logs_channel(ctx.guild)
@@ -310,9 +412,11 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             embed.add_field(name="🧍 Odciszony", value=member.mention, inline=False)
             await logs_channel.send(embed=embed)
 
-    @commands.command(description="Przyznaje ostrzeżenie użytkownikowi",
-                      aliases=["ostrzeżenie", "ostrzezenie"],
-                      usage=["@uzytkownik <powód>"])
+    @commands.command(
+        description="Przyznaje ostrzeżenie użytkownikowi",
+        aliases=["ostrzeżenie", "ostrzezenie"],
+        usage=["@uzytkownik <powód>"],
+    )
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
     async def warn(self, ctx, member: discord.Member, *, reason):
@@ -321,14 +425,17 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             member=member.id,
             given_by=ctx.author.id,
             reason=reason,
-            date=datetime.datetime.now()
+            date=datetime.datetime.now(),
         )
         warning.save()
-        await self.save_to_event_logs(ctx.guild.id, "warn", ctx.author.id, member.id, reason)
+        await self.save_to_event_logs(
+            ctx.guild.id, "warn", ctx.author.id, member.id, reason
+        )
         embed = self.bot.embed(ctx.author)
         embed.title = "Ostrzeżenie"
         embed.description = "⚠️{} został ostrzeżony przez {} z powodu `{}`".format(
-            member.mention, ctx.author.mention, reason)
+            member.mention, ctx.author.mention, reason
+        )
         embed.color = discord.Color.gold()
         await ctx.send(embed=embed)
         await ctx.message.delete()
@@ -341,8 +448,11 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             embed.add_field(name="🔤 Powód", value=reason, inline=False)
             await logs_channel.send(embed=embed)
 
-    @commands.command(description="Pokazuje przyznane ostrzeżenia podanemu użytkownikowi",
-                      aliases=["ostrzeżenia", "ostrzezenia"], usage="@użytkownik")
+    @commands.command(
+        description="Pokazuje przyznane ostrzeżenia podanemu użytkownikowi",
+        aliases=["ostrzeżenia", "ostrzezenia"],
+        usage="@użytkownik",
+    )
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
     async def warns(self, ctx, member: discord.Member):
@@ -353,7 +463,8 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         embed = self.bot.embed(ctx.author)
         embed.title = "Ostrzeżenia"
         embed.description = "**{}** otrzymał/a **{}** {}\n\n".format(
-            member, len(warns), "ostrzeżenie" if len(warns) == 1 else "ostrzeżenia")
+            member, len(warns), "ostrzeżenie" if len(warns) == 1 else "ostrzeżenia"
+        )
         i = 0
         for warn in warns:
             i += 1
@@ -363,8 +474,9 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         embed.color = discord.Color.gold()
         await ctx.send(embed=embed)
 
-    @commands.command(description="Przynaje rolę po kliknięciu w reakcję",
-                      aliases=["rr"])
+    @commands.command(
+        description="Przynaje rolę po kliknięciu w reakcję", aliases=["rr"]
+    )
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_guild_permissions(manage_roles=True)
     @commands.guild_only()
@@ -374,63 +486,86 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel
 
-        await ctx.send("📃 **Podaj kanał na którym ma zostać wysłana wiadomość.** Wpisz nazwę lub oznacz kanał"
-                       " np. `#ogólny`.")
-        channel_name = await self.bot.wait_for('message', check=check)
-        channel = discord.utils.get(self.bot.get_guild(ctx.guild.id).text_channels,
-                                    name=channel_name.clean_content.replace("#", ""))
+        await ctx.send(
+            "📃 **Podaj kanał na którym ma zostać wysłana wiadomość.** Wpisz nazwę lub oznacz kanał"
+            " np. `#ogólny`."
+        )
+        channel_name = await self.bot.wait_for("message", check=check)
+        channel = discord.utils.get(
+            self.bot.get_guild(ctx.guild.id).text_channels,
+            name=channel_name.clean_content.replace("#", ""),
+        )
         if not channel:
-            await ctx.send("❌ **Nie znaleziono kanału.** Upewnij się, że nazwa kanału jest prawidłowa "
-                           "i wpisz komendę jeszcze raz. Dla ułatwienia "
-                           "skorzystaj z oznaczenia kanału np. `#ogólny`.")
+            await ctx.send(
+                "❌ **Nie znaleziono kanału.** Upewnij się, że nazwa kanału jest prawidłowa "
+                "i wpisz komendę jeszcze raz. Dla ułatwienia "
+                "skorzystaj z oznaczenia kanału np. `#ogólny`."
+            )
             return
         if not channel.permissions_for(ctx.guild.me).send_messages:
-            await ctx.send("❌ Atorin nie ma uprawnień do **wysyłania wiadomości** na podanym kanale. "
-                           "Zmień uprawnienia i wpisz komendę jeszcze raz.")
+            await ctx.send(
+                "❌ Atorin nie ma uprawnień do **wysyłania wiadomości** na podanym kanale. "
+                "Zmień uprawnienia i wpisz komendę jeszcze raz."
+            )
             return
         if not channel.permissions_for(ctx.guild.me).add_reactions:
-            await ctx.send("❌ Atorin nie ma uprawnień do **dodawania reakcji** do wiadomości na podanym kanale. "
-                           "Zmień uprawnienia i wpisz komendę jeszcze raz.")
+            await ctx.send(
+                "❌ Atorin nie ma uprawnień do **dodawania reakcji** do wiadomości na podanym kanale. "
+                "Zmień uprawnienia i wpisz komendę jeszcze raz."
+            )
             return
         await channel_name.add_reaction("✅")
         await ctx.send("✍️ **Podaj opis który ma wyświetlać się w wiadomości:**")
-        message = await self.bot.wait_for('message', check=check)
+        message = await self.bot.wait_for("message", check=check)
         await message.add_reaction("✅")
         embed = self.bot.embed(ctx.author)
         embed.title = "Reaction Role"
         embed.description = message.content
-        await ctx.send(content="✨ Tak będzie wyglądać wiadomość, która zostanie wysłana na podanym kanale. "
-                               "**Teraz dodaj reakcje wysyłając wiadomości "
-                               "podając najpierw emoji a potem nazwę roli** na przykład: "
-                               "`:snake: nowa rola`. Jeśli chcesz zakończyć dodawanie reakcji, "
-                               "napisz `koniec`.", embed=embed)
+        await ctx.send(
+            content="✨ Tak będzie wyglądać wiadomość, która zostanie wysłana na podanym kanale. "
+            "**Teraz dodaj reakcje wysyłając wiadomości "
+            "podając najpierw emoji a potem nazwę roli** na przykład: "
+            "`:snake: nowa rola`. Jeśli chcesz zakończyć dodawanie reakcji, "
+            "napisz `koniec`.",
+            embed=embed,
+        )
         while True:
-            role_and_reaction = await self.bot.wait_for('message', check=check)
+            role_and_reaction = await self.bot.wait_for("message", check=check)
             if role_and_reaction.content == "koniec":
                 break
             splited = role_and_reaction.clean_content.split(" ", 1)
             emoji = splited[0]
-            role = discord.utils.get(self.bot.get_guild(ctx.guild.id).roles, name=splited[1].replace("@", ""))
+            role = discord.utils.get(
+                self.bot.get_guild(ctx.guild.id).roles, name=splited[1].replace("@", "")
+            )
             if not role:
-                await ctx.send("❌ **Nie znaleziono roli.** Upewnij się, że "
-                               "podałeś odpowiednią nazwę (wielkość liter ma znaczenie) i spróbuj jeszcze raz.")
+                await ctx.send(
+                    "❌ **Nie znaleziono roli.** Upewnij się, że "
+                    "podałeś odpowiednią nazwę (wielkość liter ma znaczenie) i spróbuj jeszcze raz."
+                )
             roles[emoji] = role.id
             await role_and_reaction.add_reaction("✅")
         result = await channel.send(embed=embed)
         for i in roles:
             await result.add_reaction(i)
         self.bot.mongo.ReactionRole(message_id=result.id, roles=roles).save()
-        await ctx.send("✅ **Gotowe!** Wiadomość zostałą wysłana na podanym przez Ciebie kanale. "
-                       "Teraz użytkownicy mogą reagować i dostawać role automatycznie! 😎")
+        await ctx.send(
+            "✅ **Gotowe!** Wiadomość zostałą wysłana na podanym przez Ciebie kanale. "
+            "Teraz użytkownicy mogą reagować i dostawać role automatycznie! 😎"
+        )
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         if payload.member.bot:
             return
-        reaction_role_message = self.bot.mongo.ReactionRole.objects(message_id=payload.message_id).first()
+        reaction_role_message = self.bot.mongo.ReactionRole.objects(
+            message_id=payload.message_id
+        ).first()
         if reaction_role_message:
             roles = reaction_role_message.roles
-            role = discord.utils.get(self.bot.get_guild(payload.guild_id).roles, id=roles[str(payload.emoji)])
+            role = discord.utils.get(
+                self.bot.get_guild(payload.guild_id).roles, id=roles[str(payload.emoji)]
+            )
             await payload.member.add_roles(role)
 
 

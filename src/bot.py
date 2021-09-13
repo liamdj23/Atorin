@@ -24,11 +24,13 @@ class Atorin(commands.AutoShardedBot):
         print("\033[95m * Starting Atorin...", flush=True)
         intents = discord.Intents.default()
         intents.members = False
-        super(Atorin, self).__init__(command_prefix="&", help_command=None, intents=intents, **kwargs)
-        with open(os.path.dirname(__file__) + "/../config.json", 'r') as config:
+        super(Atorin, self).__init__(
+            command_prefix="&", help_command=None, intents=intents, **kwargs
+        )
+        with open(os.path.dirname(__file__) + "/../config.json", "r") as config:
             self.config = json.load(config)
         try:
-            mongoengine.connect('atorin', host=self.config["mongo_host"])
+            mongoengine.connect("atorin", host=self.config["mongo_host"])
             print("\033[92m * Connected to MongoDB.", flush=True)
         except Exception as e:
             print("\033[91m * Can't connect to MongoDB, shutting down...", flush=True)
@@ -38,7 +40,8 @@ class Atorin(commands.AutoShardedBot):
         self.reddit = asyncpraw.Reddit(
             client_id=self.config["reddit_id"],
             client_secret=self.config["reddit_secret"],
-            user_agent="Atorin")
+            user_agent="Atorin",
+        )
         self.log = logger
         self.utils = utils
         self.web = Dashboard(self)
@@ -54,11 +57,15 @@ class Atorin(commands.AutoShardedBot):
                 await ctx.send(embed=embed)
                 return
             elif isinstance(error, commands.BadArgument):
-                embed.description = f"❌ Poprawne użycie: `&{command.name} {command.usage}`"
+                embed.description = (
+                    f"❌ Poprawne użycie: `&{command.name} {command.usage}`"
+                )
                 await ctx.send(embed=embed)
                 return
             elif isinstance(error, commands.MissingRequiredArgument):
-                embed.description = f"❌ Poprawne użycie: `&{command.name} {command.usage}`"
+                embed.description = (
+                    f"❌ Poprawne użycie: `&{command.name} {command.usage}`"
+                )
                 await ctx.send(embed=embed)
                 return
             elif isinstance(error, commands.UserNotFound):
@@ -69,42 +76,64 @@ class Atorin(commands.AutoShardedBot):
                 return
             elif isinstance(error, commands.MissingPermissions):
                 if "ban_members" in error.missing_perms:
-                    embed.description = "❌ Nie masz uprawnień do banowania użytkowników."
+                    embed.description = (
+                        "❌ Nie masz uprawnień do banowania użytkowników."
+                    )
                 elif "manage_messages" in error.missing_perms:
-                    embed.description = "❌ Nie masz uprawnień do zarządzania wiadomościami."
+                    embed.description = (
+                        "❌ Nie masz uprawnień do zarządzania wiadomościami."
+                    )
                 elif "administrator" in error.missing_perms:
                     embed.description = "❌ Nie jesteś administratorem tego serwera."
                 elif "kick_members" in error.missing_perms:
-                    embed.description = "❌ Nie masz uprawnień do wyrzucania użytkowników."
+                    embed.description = (
+                        "❌ Nie masz uprawnień do wyrzucania użytkowników."
+                    )
                 else:
-                    embed.description = "❌ Nie masz odpowiednich uprawnień do wykonania tej komendy. Wymagane " \
-                                        f"uprawnienia: `{','.join(error.missing_perms)}` "
+                    embed.description = (
+                        "❌ Nie masz odpowiednich uprawnień do wykonania tej komendy. Wymagane "
+                        f"uprawnienia: `{','.join(error.missing_perms)}` "
+                    )
                     self.log.error(error.missing_perms)
                 await ctx.send(embed=embed)
             elif isinstance(error, commands.BotMissingPermissions):
                 if "ban_members" in error.missing_perms:
-                    embed.description = "❌ Atorin nie ma uprawnień do banowania użytkowników."
+                    embed.description = (
+                        "❌ Atorin nie ma uprawnień do banowania użytkowników."
+                    )
                 elif "manage_messages" in error.missing_perms:
-                    embed.description = "❌ Atorin nie ma uprawnień do zarządzania wiadomościami."
+                    embed.description = (
+                        "❌ Atorin nie ma uprawnień do zarządzania wiadomościami."
+                    )
                 elif "kick_members" in error.missing_perms:
-                    embed.description = "❌ Atorin nie ma uprawnień do wyrzucania użytkowników."
+                    embed.description = (
+                        "❌ Atorin nie ma uprawnień do wyrzucania użytkowników."
+                    )
                 elif "manage_roles" in error.missing_perms:
-                    embed.description = "❌ Atorin nie ma uprawnień do zarządzania rolami."
+                    embed.description = (
+                        "❌ Atorin nie ma uprawnień do zarządzania rolami."
+                    )
                 else:
-                    embed.description = "❌ Bot nie ma odpowiednich uprawnień do wykonania tej komendy." \
-                                        f" Wymagane uprawnienia: `{','.join(error.missing_perms)}`"
+                    embed.description = (
+                        "❌ Bot nie ma odpowiednich uprawnień do wykonania tej komendy."
+                        f" Wymagane uprawnienia: `{','.join(error.missing_perms)}`"
+                    )
                     self.log.error(error.missing_perms)
                 await ctx.send(embed=embed)
             elif isinstance(error, commands.CommandInvokeError):
                 if isinstance(error.original, discord.Forbidden):
-                    embed.description = "❌ Bot nie ma odpowiednich uprawnień do wykonania tej komendy." \
-                                        " Przenieś wyżej rolę `Atorin` w ustawieniach serwera" \
-                                        " i spróbuj ponownie."
+                    embed.description = (
+                        "❌ Bot nie ma odpowiednich uprawnień do wykonania tej komendy."
+                        " Przenieś wyżej rolę `Atorin` w ustawieniach serwera"
+                        " i spróbuj ponownie."
+                    )
                     await ctx.send(embed=embed)
                     return
                 self.log.error(f"{command.name}: {error.original}")
             elif isinstance(error, commands.CommandOnCooldown):
-                formatted_time = time.strftime('%M minut i %S sekund', time.gmtime(error.retry_after))
+                formatted_time = time.strftime(
+                    "%M minut i %S sekund", time.gmtime(error.retry_after)
+                )
                 embed.description = f"❌ Możesz użyć tej komendy za {formatted_time}"
                 await ctx.send(embed=embed)
             elif isinstance(error, discord.NotFound):
@@ -112,15 +141,19 @@ class Atorin(commands.AutoShardedBot):
                 await ctx.send(embed=embed)
             else:
                 self.log.error(f"{command.name}: {error}")
-                embed.description = f"❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później. Treść błędu: `{error}`" \
-                                    " Jeśli błąd się powtarza, skontaktuj się z autorem na serwerze Discord " \
-                                    "https://discord.gg/Ygr5wAZbsZ"
+                embed.description = (
+                    f"❌ Wystąpił błąd wewnętrzny, spróbuj ponownie później. Treść błędu: `{error}`"
+                    " Jeśli błąd się powtarza, skontaktuj się z autorem na serwerze Discord "
+                    "https://discord.gg/Ygr5wAZbsZ"
+                )
                 await ctx.send(embed=embed)
-
 
         @self.event
         async def on_shard_connect(id):
-            print("\033[94m * Shard {} successfully connected to Discord API.".format(id), flush=True)
+            print(
+                "\033[94m * Shard {} successfully connected to Discord API.".format(id),
+                flush=True,
+            )
 
         @self.event
         async def on_shard_ready(id):
@@ -129,7 +162,9 @@ class Atorin(commands.AutoShardedBot):
 
         @self.event
         async def on_ready():
-            print("\033[92m * Running with {} shards".format(len(self.shards)), flush=True)
+            print(
+                "\033[92m * Running with {} shards".format(len(self.shards)), flush=True
+            )
             for file in os.listdir("cogs"):
                 if file.endswith(".py"):
                     name = file[:-3]
@@ -145,10 +180,12 @@ class Atorin(commands.AutoShardedBot):
         embed = discord.Embed()
         embed.timestamp = datetime.utcnow()
         if author and self.mongo.Premium.objects(id=author.id).first():
-            embed.set_footer(text="Atorin Premium 💎", icon_url=str(self.user.avatar_url))
+            embed.set_footer(
+                text="Atorin Premium 💎", icon_url=str(self.user.avatar_url)
+            )
         else:
             embed.set_footer(text="Atorin", icon_url=str(self.user.avatar_url))
-        embed.colour = discord.Colour(0xc4c3eb)
+        embed.colour = discord.Colour(0xC4C3EB)
         return embed
 
     def avatar(self):
@@ -156,7 +193,12 @@ class Atorin(commands.AutoShardedBot):
 
     async def update_status(self):
         await self.change_presence(
-            activity=discord.Game(name="z {} serwerami | &help | Dołącz do serwera Discord!".format(len(self.guilds))))
+            activity=discord.Game(
+                name="z {} serwerami | &help | Dołącz do serwera Discord!".format(
+                    len(self.guilds)
+                )
+            )
+        )
 
     def run(self, *args, **kwargs):
         super(Atorin, self).run(self.config["bot"])
