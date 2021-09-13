@@ -124,8 +124,8 @@ class Info(commands.Cog, name="ℹ Informacje"):
             name="🎭 Discord", value="https://discord.gg/Ygr5wAZbsZ", inline=False
         )
         embed.add_field(
-            name="🖥️ Środowisko",
-            value=f"Python {platform.python_version()} • {platform.system()} {platform.version()}",
+            name="⚙️ Środowisko",
+            value=f"Python {platform.python_version()} • {platform.system()}",
         )
         ram = psutil.virtual_memory()
         total_ram = convert_size(ram.total)
