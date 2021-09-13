@@ -4,6 +4,8 @@ from datetime import timedelta
 import lavalink
 from discord.ext import commands
 
+from utils import progress_bar
+
 url_rx = re.compile(r"https?://(?:www\.)?.+")
 
 
@@ -264,9 +266,21 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             embed = ctx.bot.embed(ctx.author)
             embed.title = "Teraz odtwarzane"
             embed.add_field(name="🎧 Utwór", value=song.title, inline=False)
-            embed.add_field(
-                name="🛤️ Długość", value=str(timedelta(milliseconds=song.duration))
-            )
+            if not song.duration == 9223372036854775807:
+                duration = str(timedelta(milliseconds=song.duration))
+                position = str(timedelta(milliseconds=round(player.position))).split(
+                    "."
+                )[0]
+                progress = progress_bar(round(player.position) / song.duration * 100)[
+                    :-5
+                ]
+                embed.add_field(
+                    name="🛤️ Postęp",
+                    value=f"```css\n{progress} {position}/{duration}```",
+                    inline=False,
+                )
+            else:
+                embed.add_field(name="🛤️ Postęp", value="🔴 Na żywo")
             embed.add_field(name="💃 Zaproponowany przez", value=f"<@{song.requester}>")
             embed.set_thumbnail(
                 url=f"https://img.youtube.com/vi/{song.identifier}/maxresdefault.jpg"
