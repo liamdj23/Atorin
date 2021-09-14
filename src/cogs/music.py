@@ -303,6 +303,20 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             f"🔂 Powtarzanie aktualnego utworu zostało {'włączone' if player.repeat else 'wyłączone'}."
         )
 
+    @commands.command(
+        description="Ustawia losowe odtwarzanie kolejki",
+        aliases=["losuj"],
+    )
+    async def shuffle(self, ctx):
+        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        if player.shuffle:
+            player.shuffle = False
+        else:
+            player.shuffle = True
+        await ctx.send(
+            f"🔀 Losowe odtwarzanie kolejki zostało {'włączone' if player.shuffle else 'wyłączone'}."
+        )
+
 
 def setup(bot):
     bot.add_cog(Music(bot))
