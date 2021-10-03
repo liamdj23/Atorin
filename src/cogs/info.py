@@ -6,6 +6,7 @@ import aiohttp
 import discord
 import psutil
 from discord.ext import commands
+import lavalink
 
 from utils import get_weather_emoji, progress_bar, convert_size
 
@@ -126,6 +127,10 @@ class Info(commands.Cog, name="ℹ Informacje"):
         embed.add_field(
             name="⚙️ Środowisko",
             value=f"Python {platform.python_version()} • {platform.system()}",
+        )
+        lavalink_stats = self.bot.lavalink.node_manager.nodes[0].stats
+        embed.add_field(
+            name="🎵 Aktywne odtwarzacze", value=lavalink_stats.playing_players
         )
         ram = psutil.virtual_memory()
         total_ram = convert_size(ram.total)
