@@ -75,7 +75,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
         await ctx.send(embed=embed)
 
     @commands.command(
-        aliases=["pogoda"],
+        aliases=["pogoda", "w"],
         description="Wpisz aby otrzymać aktualną pogodę w Twojej miejscowości\n\nPrzykład użycia: &pogoda Kraków",
         usage="<miejscowość>",
     )
