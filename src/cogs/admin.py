@@ -39,7 +39,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     @commands.bot_has_guild_permissions(read_message_history=True)
     @commands.guild_only()
     async def clear(self, ctx, limit: int):
-        if limit <= 3 or limit >= 100:
+        if limit < 3 or limit > 100:
             raise commands.BadArgument
         messages = []
         async for message in ctx.channel.history(limit=limit):
