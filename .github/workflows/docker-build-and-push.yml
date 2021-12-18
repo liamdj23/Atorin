@@ -10,6 +10,13 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+        with:
+          image: tonistiigi/binfmt:latest
+          platforms: arm64,arm
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
       - name: Log in to Docker Hub
         uses: docker/login-action@v1
         with:
@@ -20,3 +27,5 @@ jobs:
         with:
           push: true
           tags: liamdj23/atorin:latest
+          context: .
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
