@@ -140,8 +140,8 @@ cython_debug/
 # Pycharm 
 .idea/
 
-# Atorin config file
-config.json
-
 # VSCode
 .vscode/
+
+# Atorin config file
+config.yml
