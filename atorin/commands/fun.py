@@ -460,6 +460,19 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         embed.url = r.url
         await ctx.send_followup(embed=embed)
 
+    @slash_command(
+        description="Wysyła podaną wiadomość jako Atorin",
+        guild_ids=[408960275933429760],
+    )
+    async def say(
+        self, ctx: discord.ApplicationContext, content: Option(str, "Treść wiadomości")
+    ):
+        try:
+            await ctx.message.delete()
+        except discord.Forbidden:
+            pass
+        await ctx.respond(content)
+
 
 def setup(bot):
     bot.add_cog(Fun(bot))

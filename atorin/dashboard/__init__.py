@@ -16,10 +16,9 @@ from quart_discord import DiscordOAuth2Session, requires_authorization, Unauthor
 from quart_discord.models import User, Guild
 from discord.ext.commands import Cog
 from .. import commands as cmds
-import requests, hashlib, os
+import os
 from ..config import config
 from .. import database
-import datetime
 
 
 app = Quart(__name__)
@@ -154,102 +153,3 @@ async def server(server_id: int, setting: str):
             case _:
                 return "Nie znaleziono podanego ustawienia."
     
-
-
-@app.route("/premium/")
-async def premium():
-    user: User = await discord.fetch_user()
-    return await render_template(
-        "premium.html",
-        user=user,
-    )
-
-
-@app.route("/thanks/")
-@requires_authorization
-async def thanks():
-    user: User = await discord.fetch_user()
-    bot: dict = await discord.bot_request("/users/@me")
-    if session.get("transactionSuccess"):
-        data = {
-            "username": "Atorin",
-            "avatar.url": f"https://cdn.discordapp.com/avatars/{bot['id']}/{bot['avatar']}.png",
-            "embeds": [
-                {
-                    "title": "Atorin Premium 💎",
-                    "description": f"Użytkownik **{user}** zakupił usługę Atorin Premium na 30 dni! Dziękuję! ❤",
-                    "color": 2555648,
-                }
-            ],
-        }
-        requests.post(config["shop"]["webhook"], json=data)
-        session.pop("transactionSuccess", None)
-        return await render_template(
-            "thanks.html",
-            user=user,
-        )
-    return redirect(url_for(".home"))
-
-
-@app.route("/buy/")
-@requires_authorization
-async def buy():
-    user: User = await discord.fetch_user()
-    data = {
-        "shopId": config["shop"]["id"],
-        "price": 1.99,
-        "control": user.id,
-        "description": "Atorin Premium " + user.id,
-        "notifyURL": config["dashboard"]["domain"] + "/payments",
-        "returnUrlSuccess": config["dashboard"]["domain"] + "/thanks",
-    }
-    data_to_hash = config["shop"]["paybylink"] + "|"
-    data_to_hash += "{}".format(data["shopId"]) + "|"
-    data_to_hash += "{:.2f}".format(data["price"]) + "|"
-    data_to_hash += data["control"] + "|"
-    data_to_hash += data["description"] + "|"
-    data_to_hash += data["notifyURL"] + "|"
-    data_to_hash += data["returnUrlSuccess"]
-    signature = hashlib.sha256(data_to_hash.encode("utf-8")).hexdigest()
-    data["signature"] = signature
-    r = requests.post("https://secure.pbl.pl/api/v1/transfer/generate", json=data)
-    response = r.json()
-    payment = database.premium.Payments(
-        id=response["transactionId"],
-        user=user.id,
-        created=datetime.datetime.now(),
-    )
-    payment.save()
-    session["transactionSuccess"] = True
-    return redirect(response["url"])
-
-
-@app.route("/payments/", methods=["POST"])
-async def payments():
-    data = await request.get_json()
-    data_to_hash = config["shop"]["paybylink"] + "|"
-    data_to_hash += "{}".format(data["transactionId"]) + "|"
-    data_to_hash += data["control"] + "|"
-    data_to_hash += data["email"] + "|"
-    data_to_hash += "{:.2f}".format(data["amountPaid"]) + "|"
-    data_to_hash += "{}".format(data["notificationAttempt"]) + "|"
-    data_to_hash += data["paymentType"] + "|"
-    data_to_hash += "{}".format(data["apiVersion"])
-    signature = hashlib.sha256(data_to_hash.encode("utf-8")).hexdigest()
-    if signature == data["signature"]:
-        payment = database.premium.Payments.objects(id=data["transactionId"]).first()
-        payment.paid = True
-        payment.save()
-        premium = database.premium.Premium.objects(id=payment["user"]).first()
-        if not premium:
-            premium = database.premium.Premium(id=payment["user"])
-        premium.expire = premium.expire + datetime.timedelta(days=30)
-        premium.save()
-        wallet = database.economy.Wallet.objects(id=payment["user"]).first()
-        if not wallet:
-            wallet = database.economy.Wallet(id=payment["user"])
-        wallet.balance += 10000
-        wallet.save()
-        return "OK", 200
-    else:
-        return "NOT OK", 400

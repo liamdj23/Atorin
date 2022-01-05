@@ -16,7 +16,6 @@ from pymongo.mongo_client import MongoClient
 from ..config import config
 from ..logger import log
 import sys
-from . import premium
 from . import discord
 
 host: str = config["database"]["host"]
