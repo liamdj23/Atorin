@@ -11,5 +11,5 @@ py-cord~=1.7.3
 statcord.py>=3.0.9
 PyNaCl~=1.4.0
 asyncpraw>=7.4.0
-lavalink~=3.1.4
+lavalink~=3.1.5
 black~=21.12b0
