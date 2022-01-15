@@ -10,7 +10,6 @@ from discord.commands import slash_command, Option
 
 from atorin.bot import Atorin
 from .. import config
-from .. import database
 from ..utils import get_weather_emoji, progress_bar, convert_size, user_counter
 
 
@@ -18,13 +17,10 @@ class HelpButtons(discord.ui.View):
     def __init__(self):
         super().__init__()
         self.add_item(
-            discord.ui.Button(label="Komendy", url="https://liamdj23.ovh/commands")
+            discord.ui.Button(label="Wsparcie", url="https://buycoffee.to/liamdj23")
         )
         self.add_item(
-            discord.ui.Button(label="Dashboard", url="https://liamdj23.ovh/login")
-        )
-        self.add_item(
-            discord.ui.Button(label="Support", url="https://liamdj23.ovh/discord")
+            discord.ui.Button(label="Discord", url="https://liamdj23.ovh/discord")
         )
 
 
@@ -233,26 +229,19 @@ class Info(commands.Cog, name="ℹ Informacje"):
         await ctx.respond(embed=embed, view=buttons)
 
     @slash_command(
-        description="Kup lub sprawdź status Atorin Premium",
+        description="Wsparcie bota",
         guild_ids=[408960275933429760],
     )
-    async def premium(self, ctx: discord.ApplicationContext):
+    async def support(self, ctx: discord.ApplicationContext):
         embed = discord.Embed()
-        data = database.premium.Premium.objects(id=ctx.author.id).first()
-        embed.title = "Atorin Premium"
-        if data:
-            embed.add_field(name="💎 Status", value="✅ Aktywne")
-            embed.add_field(
-                name="⏲️ Wygasa",
-                value=f"<t:{int(datetime.timestamp(data.expire))}:t>",
-            )
-        else:
-            embed.description = (
-                f"💎  {ctx.author.mention}, wesprzyj bota kupując Atorin Premium, w zamian otrzymasz dostęp do ekskluzywnych"
-                " funkcji. Więcej informacji"
-                " znajdziesz [na stronie bota](https://liamdj23.ovh/premium)."
-            )
-        await ctx.respond(embed=embed)
+        embed.title = "Wsparcie bota"
+        embed.description = "☕️ Jeśli chcesz wesprzeć rozwój Atorina, możesz postawić kawę jego twórcy na stronie https://buycoffee.to/liamdj23\n**Dziękuję.**"
+        embed.add_field(
+            name="🎉 Wspierający 🎉",
+            value="`Leaf#7075, KMatuszak#2848, Golden_Girl00#0055, HunterAzar#1387, koosek#2618, Vretu#2855`",
+        )
+        buttons = HelpButtons()
+        await ctx.respond(embed=embed, view=buttons)
 
 
 def setup(bot):
