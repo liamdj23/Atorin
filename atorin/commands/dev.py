@@ -3,8 +3,7 @@ import re
 import io
 import zlib
 import discord
-from discord.commands import Option, slash_command
-from discord.commands.commands import OptionChoice
+from discord.commands import Option, slash_command, OptionChoice
 from discord.ext import commands
 import requests
 

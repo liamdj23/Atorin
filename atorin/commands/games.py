@@ -14,14 +14,13 @@ Made with ❤️ by Piotr Gaździcki.
 import re
 from io import BytesIO
 from urllib.parse import quote, urlparse
-from discord.commands.commands import OptionChoice
 import humanize
 import requests
 
 import aiohttp
 import discord
 from discord.ext import commands
-from discord.commands import slash_command, Option
+from discord.commands import slash_command, Option, OptionChoice
 
 from atorin.bot import Atorin
 from ..config import config

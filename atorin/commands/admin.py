@@ -1,7 +1,6 @@
 import discord
-from discord.commands.commands import OptionChoice
 from discord.ext import commands
-from discord.commands import slash_command, Option
+from discord.commands import slash_command, Option, OptionChoice
 
 from atorin.bot import Atorin
 from .. import database
