@@ -5,10 +5,9 @@ import lavalink
 from discord.ext import commands, tasks
 from discord.commands import slash_command, Option
 import discord
-import socket
 
 from atorin.bot import Atorin
-from ..utils import premium_only, progress_bar
+from ..utils import progress_bar
 from ..config import config
 
 url_rx = re.compile(r"https?://(?:www\.)?.+")
@@ -393,7 +392,6 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         )
 
     @slash_command(description="Bass Boost (Premium)", guild_ids=[408960275933429760])
-    @premium_only()
     async def bassboost(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(

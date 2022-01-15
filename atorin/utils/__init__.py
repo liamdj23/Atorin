@@ -15,4 +15,3 @@ from .get_weather_emoji import get_weather_emoji
 from .progress_bar import progress_bar
 from .convert_size import convert_size
 from .user_counter import user_counter
-from .premium_only import premium_only, NoPremiumUser
