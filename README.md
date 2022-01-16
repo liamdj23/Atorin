@@ -18,3 +18,29 @@ Atorin is Discord Bot written in Python 3.10 using Py-cord.
 - 🕹️ Games
 - 🎵 Music
 - 🌐 Website
+- 🐳 Docker
+
+# Installation
+
+1. Install [Python 3.10](https://www.python.org/downloads/), [MongoDB](https://www.mongodb.com/try/download/community) and [Lavalink](https://github.com/freyacodes/Lavalink/releases)([Java](https://aws.amazon.com/corretto/) required)
+2. Clone this repo `git clone https://github.com/liamdj23/Atorin.git`
+3. Change directory to "Atorin" `cd Atorin`
+4. Create virtual environment `python3.10 -m venv venv`
+5. Activate virtualenv `source venv/bin/activate`
+6. Install dependencies `pip install -r requirements.txt`
+7. Fill `config.yml` with token and API keys
+
+# Run
+
+1. Copy service file `sudo cp atorin.service /etc/systemd/system/`
+2. Fill service file with valid paths `sudo nano /etc/systemd/system/atorin.service`
+3. Enable start at boot `sudo systemctl enable atorin`
+4. Run service `sudo systemctl start atorin`
+5. Done 🎉
+
+# Docker
+
+Docker images with Atorin are available in [Docker Hub](https://hub.docker.com/r/liamdj23/atorin) for armv7, aarch64 and amd64.
+
+- Pull image `docker pull liamdj23/atorin`
+- Run container e.g. `docker run --name atorin -p 8080:8080 -v config.yml:/bot/config.yml liamdj23/atorin`
