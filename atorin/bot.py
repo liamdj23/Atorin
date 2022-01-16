@@ -11,18 +11,21 @@
 Made with ❤️ by Piotr Gaździcki.
 
 """
+import subprocess
 from typing import *
 import discord
 import os
 from .config import config
 from .logger import log
 import humanize
+import time
 
 
 class Atorin(discord.AutoShardedBot):
     def __init__(self, *args, **options) -> None:
         super().__init__(shard_count=2, shard_ids=[0, 1], *args, **options)
         self.config = config
+        self.uptime: float = time.time()
         self.log = log
         log.info("Loading extensions...")
         for file in os.listdir("atorin/commands"):
@@ -42,3 +45,13 @@ class Atorin(discord.AutoShardedBot):
 
     def run(self, *args: Any, **kwargs: Any) -> None:
         return super().run(self.config["token"], *args, **kwargs)
+
+    def get_uptime(self) -> float:
+        return time.time() - self.uptime
+
+    def get_version(self) -> str:
+        return (
+            subprocess.check_output(["git", "rev-parse", "--short", "HEAD"])
+            .decode("ascii")
+            .strip()
+        )

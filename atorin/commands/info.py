@@ -1,10 +1,12 @@
+import time
 from urllib.parse import quote
 import platform
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import aiohttp
 import discord
 import psutil
+import humanize
 from discord.ext import commands
 from discord.commands import slash_command, Option
 
@@ -189,11 +191,11 @@ class Info(commands.Cog, name="ℹ Informacje"):
         embed.description = "**👨‍💻 Autor: <@272324980522614784>**"
         embed.add_field(
             name=f"🌐 Liczba serwerów: {len(self.bot.guilds)}",
-            value=f"**#️⃣ Liczba kanałów: {len(list(self.bot.get_all_channels()))}\n🧑‍🤝‍🧑 Liczba użytkowników: {sum(user_counter(self.bot))}\n🎵 Liczba odtwarzaczy: {lavalink_stats}**",
+            value=f"**#️⃣ Liczba kanałów: {len(list(self.bot.get_all_channels()))}\n🧑‍🤝‍🧑 Liczba użytkowników: {sum(user_counter(self.bot))}\n🎵 Liczba odtwarzaczy: {lavalink_stats}\n⏱ Uptime: {humanize.naturaldelta(timedelta(seconds=self.bot.get_uptime()))}**",
         )
         embed.add_field(
             name="⚙️ Środowisko",
-            value=f"Python: `{platform.python_version()}`\nOS: `{platform.system()}`\nPy-cord: `{discord.__version__}`",
+            value=f"Atorin: `{self.bot.get_version()}`\nPython: `{platform.python_version()}`\nOS: `{platform.system()}`\nPy-cord: `{discord.__version__}`",
         )
         ram = psutil.virtual_memory()
         total_ram = convert_size(ram.total)
@@ -204,16 +206,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
         embed.add_field(
             name="🖥 Użycie zasobów",
             inline=False,
-            value="```css\n{0}\n{1}\n{2}```".format(
-                progress_bar(int(psutil.cpu_percent()), "CPU"),
-                progress_bar(
-                    int((ram.used / ram.total) * 100),
-                    "RAM {}/{}".format(used_ram, total_ram),
-                ),
-                progress_bar(
-                    int(disk.percent), "Dysk {}/{}".format(used_disk, total_disk)
-                ),
-            ),
+            value=f"```css\n{progress_bar(int(psutil.cpu_percent()), 'CPU')}\n{progress_bar(int((ram.used / ram.total) * 100), f'RAM {used_ram}/{total_ram}')}\n{progress_bar(int(disk.percent), f'Dysk {used_disk}/{total_disk}')}```",
         )
         await ctx.respond(embed=embed)
 
