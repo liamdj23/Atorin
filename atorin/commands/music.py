@@ -80,7 +80,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         self.bot = bot
         lavalink.add_event_hook(self.track_hook)
 
-        if not hasattr(self.bot, "lavalink"):
+        if self.bot and not hasattr(self.bot, "lavalink"):
             self.bot.lavalink = lavalink.Client(601569107556565012)
             self.bot.lavalink.add_node(address, port, password, region, node)
             self.bot.add_listener(

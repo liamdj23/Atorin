@@ -35,7 +35,7 @@ discord = DiscordOAuth2Session(app)
 
 @app.route("/")
 async def home():
-    user: User = await discord.fetch_user()
+    user: User | None = await discord.fetch_user() if await discord.authorized else None
     return await render_template(
         "home.html",
         servers=1234,
@@ -47,7 +47,7 @@ async def home():
 
 @app.route("/commands/")
 async def commands():
-    user: User = await discord.fetch_user()
+    user: User | None = await discord.fetch_user() if await discord.authorized else None
     cogs: list = []
     for file in os.listdir("atorin/commands"):
         if file.endswith(".py") and not file == "__init__.py":
@@ -63,7 +63,7 @@ async def commands():
 
 @app.route("/terms/")
 async def terms():
-    user: User = await discord.fetch_user()
+    user: User | None = await discord.fetch_user() if await discord.authorized else None
     return await render_template(
         "terms.html",
         user=user,
