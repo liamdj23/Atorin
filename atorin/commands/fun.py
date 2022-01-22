@@ -14,6 +14,7 @@ from pyfiglet import Figlet
 from bs4 import BeautifulSoup
 
 from atorin.bot import Atorin
+from ..config import config
 
 
 class Fun(commands.Cog, name="🎲 Zabawa"):
@@ -21,7 +22,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         self.bot = bot
 
     @slash_command(
-        description="Losowe zdjęcie Shiba Inu", guild_ids=[408960275933429760]
+        description="Losowe zdjęcie Shiba Inu", guild_ids=config["guild_ids"]
     )
     async def shiba(self, ctx: discord.ApplicationContext):
         await ctx.defer()
@@ -38,7 +39,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
 
     @slash_command(
         description="Stwórz pasek z Wiadomości z własnym tekstem",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def tvp(
         self, ctx: discord.ApplicationContext, text: Option(str, "Treść paska")
@@ -65,7 +66,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
 
     @slash_command(
         description="Losowe zdjęcie kota",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def cat(self, ctx: discord.ApplicationContext):
         await ctx.defer()
@@ -82,7 +83,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                 else:
                     raise commands.CommandError(await r.text())
 
-    @slash_command(description="Losowe zdjęcie lisa", guild_ids=[408960275933429760])
+    @slash_command(description="Losowe zdjęcie lisa", guild_ids=config["guild_ids"])
     async def fox(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         async with aiohttp.ClientSession() as session:
@@ -98,7 +99,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
 
     @slash_command(
         description="Wysyła napis stworzony z mniejszych znaków.",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def figlet(
         self, ctx: discord.ApplicationContext, text: Option(str, "Treść figletu")
@@ -117,7 +118,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
 
     @slash_command(
         description="Losowy commit",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def commit(self, ctx: discord.ApplicationContext):
         await ctx.defer()
@@ -134,7 +135,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                     raise commands.CommandError(await r.text())
 
     @slash_command(
-        description="Stwórz osiągnięcie z Minecrafta", guild_ids=[408960275933429760]
+        description="Stwórz osiągnięcie z Minecrafta", guild_ids=config["guild_ids"]
     )
     async def achievement(
         self, ctx: discord.ApplicationContext, text: Option(str, "Treść osiągnięcia")
@@ -167,7 +168,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         )
 
     @slash_command(
-        description="Stwórz własnego mema z Drake", guild_ids=[408960275933429760]
+        description="Stwórz własnego mema z Drake", guild_ids=config["guild_ids"]
     )
     async def drake(
         self,
@@ -200,7 +201,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
 
     @slash_command(
         description="Stwórz kod QR z tekstem lub linkiem",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def codeqr(
         self, ctx: discord.ApplicationContext, content: Option(str, "Treść kodu QR")
@@ -226,7 +227,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         await ctx.send_followup(file=discord.File(img, filename="qr.png"))
 
     # @slash_command(
-    #     description="Pokazuje profil z Instagrama", guild_ids=[408960275933429760]
+    #     description="Pokazuje profil z Instagrama", guild_ids=config["guild_ids"]
     # )
     # async def instagram(
     #     self, ctx, name: Option(str, "Nazwa użytkownika na Instagramie")
@@ -275,7 +276,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
 
     @slash_command(
         description="Tworzy plakat WANTED z wybraną osobą",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def wanted(
         self,
@@ -298,7 +299,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             embed=embed, file=discord.File(img, filename="wanted.png")
         )
 
-    @slash_command(description="Losowe zdjęcie psa", guild_ids=[408960275933429760])
+    @slash_command(description="Losowe zdjęcie psa", guild_ids=config["guild_ids"])
     async def dog(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         async with aiohttp.ClientSession() as session:
@@ -312,7 +313,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                 else:
                     raise commands.CommandError(await r.text())
 
-    @slash_command(description="Rzut monetą", guild_ids=[408960275933429760])
+    @slash_command(description="Rzut monetą", guild_ids=config["guild_ids"])
     async def flip(self, ctx: discord.ApplicationContext):
         embed = discord.Embed()
         embed.title = "Rzut monetą"
@@ -320,7 +321,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         await ctx.respond(embed=embed)
 
     @slash_command(
-        description="Generuje mema Change my mind", guild_ids=[408960275933429760]
+        description="Generuje mema Change my mind", guild_ids=config["guild_ids"]
     )
     async def changemymind(
         self, ctx: discord.ApplicationContext, text: Option(str, "Treść mema")
@@ -350,7 +351,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
 
     @slash_command(
         description="Wysyła losowego mema z /r/Polska_wpz",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def meme(self, ctx: discord.ApplicationContext):
         await ctx.defer()
@@ -369,7 +370,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         embed.set_image(url=meme["url"])
         await ctx.send_followup(embed=embed)
 
-    @slash_command(description="Losowy słodki obrazek", guild_ids=[408960275933429760])
+    @slash_command(description="Losowy słodki obrazek", guild_ids=config["guild_ids"])
     async def aww(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         while True:
@@ -387,7 +388,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         embed.set_image(url=post["url"])
         await ctx.send_followup(embed=embed)
 
-    @slash_command(description="Losowe zdjęcie żółwia", guild_ids=[408960275933429760])
+    @slash_command(description="Losowe zdjęcie żółwia", guild_ids=config["guild_ids"])
     async def turtle(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         while True:
@@ -405,7 +406,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         embed.set_image(url=post["url"])
         await ctx.send_followup(embed=embed)
 
-    @slash_command(description="Losowe zdjęcie alpaki", guild_ids=[408960275933429760])
+    @slash_command(description="Losowe zdjęcie alpaki", guild_ids=config["guild_ids"])
     async def alpaca(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         while True:
@@ -423,7 +424,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         embed.set_image(url=post["url"])
         await ctx.send_followup(embed=embed)
 
-    @slash_command(description="Losowe zdjęcie żaby", guild_ids=[408960275933429760])
+    @slash_command(description="Losowe zdjęcie żaby", guild_ids=config["guild_ids"])
     async def frog(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         while True:
@@ -442,7 +443,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         await ctx.send_followup(embed=embed)
 
     @slash_command(
-        description="Astronomiczne zdjęcie dnia", guild_ids=[408960275933429760]
+        description="Astronomiczne zdjęcie dnia", guild_ids=config["guild_ids"]
     )
     async def apod(self, ctx: discord.ApplicationContext):
         await ctx.defer()
@@ -462,7 +463,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
 
     @slash_command(
         description="Wysyła podaną wiadomość jako Atorin",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def say(
         self, ctx: discord.ApplicationContext, content: Option(str, "Treść wiadomości")

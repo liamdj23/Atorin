@@ -4,6 +4,7 @@ from discord.commands import slash_command, Option, OptionChoice
 
 from atorin.bot import Atorin
 from .. import database
+from ..config import config
 
 
 class Admin(commands.Cog, name="🛠 Administracyjne"):
@@ -15,7 +16,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             server=guild, action_name=action, action_by=by, action_on=on, reason=reason
         ).save()
 
-    @slash_command(description="Czyszczenie kanału", guild_ids=[408960275933429760])
+    @slash_command(description="Czyszczenie kanału", guild_ids=config["guild_ids"])
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_guild_permissions(manage_messages=True)
     @commands.bot_has_guild_permissions(read_message_history=True)
@@ -43,7 +44,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             ctx.guild.id, "clear", ctx.author.id, ctx.channel.id, None
         )
 
-    @slash_command(description="Tworzy ogłoszenie", guild_ids=[408960275933429760])
+    @slash_command(description="Tworzy ogłoszenie", guild_ids=config["guild_ids"])
     @commands.has_guild_permissions(administrator=True)
     @commands.guild_only()
     async def advert(
@@ -63,7 +64,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @slash_command(
         description="Zbanuj użytkownika",
-        guild_ids=[408960275933429760, 927690374305157260],
+        guild_ids=config["guild_ids"],
     )
     @commands.guild_only()
     @commands.has_guild_permissions(ban_members=True)
@@ -111,7 +112,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @slash_command(
         description="Odbanuj użytkownika",
-        guild_ids=[408960275933429760, 927690374305157260],
+        guild_ids=config["guild_ids"],
     )
     @commands.guild_only()
     @commands.has_guild_permissions(ban_members=True)
@@ -142,7 +143,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @slash_command(
         description="Wyrzuć użytkownika",
-        guild_ids=[408960275933429760, 927690374305157260],
+        guild_ids=config["guild_ids"],
     )
     @commands.guild_only()
     @commands.has_guild_permissions(kick_members=True)
@@ -172,7 +173,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @slash_command(
         description="Wycisza użytkownika",
-        guild_ids=[408960275933429760, 927690374305157260],
+        guild_ids=config["guild_ids"],
     )
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
@@ -214,7 +215,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @slash_command(
         description="Odcisza użytkownika",
-        guild_ids=[408960275933429760, 927690374305157260],
+        guild_ids=config["guild_ids"],
     )
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
@@ -242,7 +243,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @slash_command(
         description="Daje ostrzeżenie użytkownikowi",
-        guild_ids=[408960275933429760, 927690374305157260],
+        guild_ids=config["guild_ids"],
     )
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
@@ -269,7 +270,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     @slash_command(
         description="Pokazuje ostrzeżenia dane podanemu użytkownikowi",
-        guild_ids=[408960275933429760, 927690374305157260],
+        guild_ids=config["guild_ids"],
     )
     @commands.guild_only()
     @commands.has_permissions(administrator=True)

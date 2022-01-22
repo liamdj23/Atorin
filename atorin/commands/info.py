@@ -31,7 +31,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
         self.bot = bot
 
     @slash_command(
-        description="Zdjęcie profilowe użytkownika", guild_ids=[408960275933429760]
+        description="Zdjęcie profilowe użytkownika", guild_ids=config["guild_ids"]
     )
     async def avatar(
         self,
@@ -49,7 +49,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
         embed.set_image(url=user.display_avatar.url)
         await ctx.respond(embed=embed)
 
-    @slash_command(description="Informacje o serwerze", guild_ids=[408960275933429760])
+    @slash_command(description="Informacje o serwerze", guild_ids=config["guild_ids"])
     @commands.guild_only()
     async def server(self, ctx: discord.ApplicationContext):
         guild = ctx.guild
@@ -76,7 +76,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
         await ctx.respond(embed=embed)
 
     @slash_command(
-        description="Informacje o użytkowniku", guild_ids=[408960275933429760]
+        description="Informacje o użytkowniku", guild_ids=config["guild_ids"]
     )
     async def user(
         self,
@@ -112,7 +112,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
 
     @slash_command(
         description="Sprawdź pogodę w Twojej miejscowości",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def weather(
         self,
@@ -175,7 +175,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
                 else:
                     raise commands.CommandError(await r.text())
 
-    @slash_command(description="Informacje o Atorinie", guild_ids=[408960275933429760])
+    @slash_command(description="Informacje o Atorinie", guild_ids=config["guild_ids"])
     async def bot(self, ctx: discord.ApplicationContext):
         if (
             hasattr(self.bot, "lavalink")
@@ -210,7 +210,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
         )
         await ctx.respond(embed=embed)
 
-    @slash_command(description="Lista komend AtorinBot", guild_ids=[408960275933429760])
+    @slash_command(description="Lista komend AtorinBot", guild_ids=config["guild_ids"])
     async def help(self, ctx: discord.ApplicationContext):
         embed = discord.Embed()
         embed.title = "Lista komend AtorinBot"
@@ -223,7 +223,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
 
     @slash_command(
         description="Wsparcie bota",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def support(self, ctx: discord.ApplicationContext):
         embed = discord.Embed()

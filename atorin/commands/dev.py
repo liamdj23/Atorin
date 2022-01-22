@@ -8,6 +8,7 @@ from discord.ext import commands
 import requests
 
 from atorin.bot import Atorin
+from ..config import config
 
 
 docs = {
@@ -134,7 +135,7 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
         self.rtfm_cache = {}
 
     @slash_command(
-        description="Informacje o bibliotekach z PyPi", guild_ids=[408960275933429760]
+        description="Informacje o bibliotekach z PyPi", guild_ids=config["guild_ids"]
     )
     async def pypi(
         self, ctx: discord.ApplicationContext, package: Option(str, "Nazwa biblioteki")
@@ -190,7 +191,7 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
             raise commands.CommandError(r.text)
 
     @slash_command(
-        description="Informacje o bibliotekach z NPM", guild_ids=[408960275933429760]
+        description="Informacje o bibliotekach z NPM", guild_ids=config["guild_ids"]
     )
     async def npm(
         self, ctx: discord.ApplicationContext, package: Option(str, "Nazwa biblioteki")
@@ -231,7 +232,7 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
 
     @slash_command(
         description="Wyszukiwanie w dokumentacjach bibliotek do Pythona",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def rtfm(
         self,
@@ -289,7 +290,7 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
 
     @slash_command(
         description="Uruchamianie linijki kodu",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def exec(
         self,

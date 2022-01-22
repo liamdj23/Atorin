@@ -173,7 +173,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
 
     @slash_command(
         description="Odtwarza utwór lub playlistę z YT/Twitch/MP3 na kanale głosowym",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def play(
         self,
@@ -227,7 +227,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             await player.play()
 
     @slash_command(
-        description="Rozłącza bota z kanału głosowego", guild_ids=[408960275933429760]
+        description="Rozłącza bota z kanału głosowego", guild_ids=config["guild_ids"]
     )
     async def disconnect(self, ctx: discord.ApplicationContext):
         """Disconnects the player from the voice channel and clears its queue."""
@@ -239,7 +239,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         await ctx.send_followup("🔇 Rozłączono.")
 
     @slash_command(
-        description="Wstrzymuje odtwarzanie muzyki", guild_ids=[408960275933429760]
+        description="Wstrzymuje odtwarzanie muzyki", guild_ids=config["guild_ids"]
     )
     async def pause(self, ctx: discord.ApplicationContext):
         await ctx.defer()
@@ -254,7 +254,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         return
 
     @slash_command(
-        description="Wznawia odtwarzanie muzyki", guild_ids=[408960275933429760]
+        description="Wznawia odtwarzanie muzyki", guild_ids=config["guild_ids"]
     )
     async def resume(self, ctx: discord.ApplicationContext):
         await ctx.defer()
@@ -267,7 +267,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         return
 
     @slash_command(
-        description="Zatrzymuje odtwarzanie muzyki", guild_ids=[408960275933429760]
+        description="Zatrzymuje odtwarzanie muzyki", guild_ids=config["guild_ids"]
     )
     async def stop(self, ctx: discord.ApplicationContext):
         await ctx.defer()
@@ -280,7 +280,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         return
 
     @slash_command(
-        description="Pomija aktualnie odtwarzany utwór", guild_ids=[408960275933429760]
+        description="Pomija aktualnie odtwarzany utwór", guild_ids=config["guild_ids"]
     )
     async def skip(self, ctx: discord.ApplicationContext):
         await ctx.defer()
@@ -294,7 +294,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
 
     @slash_command(
         description="Ustawia głośność aktualnie odtwarzanego utworu",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def volume(
         self, ctx: discord.ApplicationContext, vol: Option(int, "Głośność od 1 do 100")
@@ -312,7 +312,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
 
     @slash_command(
         description="Wyświetla kolejkę utworów do odtworzenia",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def queue(self, ctx: discord.ApplicationContext):
         await ctx.defer()
@@ -329,7 +329,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
 
     @slash_command(
         description="Wyświetla aktualnie odtwarzany utwór",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def nowplaying(self, ctx: discord.ApplicationContext):
         await ctx.defer()
@@ -364,7 +364,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
 
     @slash_command(
         description="Ustawia powtarzanie aktualnie odtwarzanego utworu",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def loop(self, ctx: discord.ApplicationContext):
         await ctx.defer()
@@ -378,7 +378,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         )
 
     @slash_command(
-        description="Ustawia losowe odtwarzanie kolejki", guild_ids=[408960275933429760]
+        description="Ustawia losowe odtwarzanie kolejki", guild_ids=config["guild_ids"]
     )
     async def shuffle(self, ctx: discord.ApplicationContext):
         await ctx.defer()
@@ -391,7 +391,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             f"🔀 Losowe odtwarzanie kolejki zostało {'włączone' if player.shuffle else 'wyłączone'}."
         )
 
-    @slash_command(description="Bass Boost (Premium)", guild_ids=[408960275933429760])
+    @slash_command(description="Bass Boost (Premium)", guild_ids=config["guild_ids"])
     async def bassboost(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(

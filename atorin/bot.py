@@ -27,6 +27,10 @@ class Atorin(discord.AutoShardedBot):
         self.config = config
         self.uptime: float = time.time()
         self.log = log
+        if config["guild_ids"]:
+            log.warn(f"Commands will be registered in {config['guild_ids']}")
+        else:
+            log.warn("Commands will be registered GLOBALLY!")
         log.info("Loading extensions...")
         for file in os.listdir("atorin/commands"):
             if file.endswith(".py") and not file == "__init__.py":

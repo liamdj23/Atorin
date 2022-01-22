@@ -1,4 +1,6 @@
 token:  # Discord bot token
+guild_ids:
+  - 408960275933429760
 database: # MongoDB
   host: "127.0.0.1"
   port: 27017

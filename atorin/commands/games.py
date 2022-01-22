@@ -87,7 +87,7 @@ class Games(commands.Cog, name="🕹 Gry"):
         self.bot = bot
 
     @slash_command(
-        description="Status serwera Minecraft", guild_ids=[408960275933429760]
+        description="Status serwera Minecraft", guild_ids=config["guild_ids"]
     )
     async def mcsrv(
         self, ctx: discord.ApplicationContext, domain: Option(str, "Adres serwera")
@@ -141,7 +141,7 @@ class Games(commands.Cog, name="🕹 Gry"):
 
     @slash_command(
         description="Wyświetla Twojego skina w Minecraft",
-        guild_ids=[408960275933429760],
+        guild_ids=config["guild_ids"],
     )
     async def mcskin(
         self, ctx: discord.ApplicationContext, nick: Option(str, "Nick w Minecraft")
@@ -167,7 +167,7 @@ class Games(commands.Cog, name="🕹 Gry"):
             raise commands.CommandError(mojang.text)
 
     @slash_command(
-        description="Statystyki w grze Fortnite", guild_ids=[408960275933429760]
+        description="Statystyki w grze Fortnite", guild_ids=config["guild_ids"]
     )
     async def fortnite(
         self,
@@ -212,9 +212,7 @@ class Games(commands.Cog, name="🕹 Gry"):
         else:
             raise commands.CommandError(await r.text())
 
-    @slash_command(
-        description="Statystyki w grze CS:GO", guild_ids=[408960275933429760]
-    )
+    @slash_command(description="Statystyki w grze CS:GO", guild_ids=config["guild_ids"])
     async def csgo(
         self, ctx: discord.ApplicationContext, url: Option(str, "Link do profilu Steam")
     ):
