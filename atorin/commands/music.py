@@ -2,7 +2,7 @@ import re
 
 from datetime import timedelta
 import lavalink
-from discord.ext import commands, tasks
+from discord.ext import commands
 from discord.commands import slash_command, Option
 import discord
 
@@ -155,7 +155,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         if isinstance(event, lavalink.events.TrackStartEvent):
             song = event.track
             channel = self.bot.get_channel(event.player.fetch("channel"))
-            embed = self.bot.embed()
+            embed = discord.Embed()
             embed.title = "Teraz odtwarzane"
             embed.add_field(name="🎧 Utwór", value=song.title, inline=False)
             if not song.duration == 9223372036854775807:
@@ -193,7 +193,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         if not results or not results["tracks"]:
             return await ctx.send_followup("❌ Nie znaleziono utworu o podanej nazwie!")
 
-        embed = ctx.bot.embed(ctx.author)
+        embed = discord.Embed()
 
         # Valid loadTypes are:
         #   TRACK_LOADED    - single video/direct URL)
@@ -247,11 +247,10 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         if not player.paused:
             await player.set_pause(True)
             await ctx.send_followup(
-                "⏸ Wstrzymano odtwarzanie. Aby wznowić wpisz `&resume`."
+                "⏸ Wstrzymano odtwarzanie. Aby wznowić wpisz `/resume`."
             )
         else:
             await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
-        return
 
     @slash_command(
         description="Wznawia odtwarzanie muzyki", guild_ids=config["guild_ids"]
@@ -264,7 +263,6 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             await ctx.send_followup("▶️ Wznowiono odtwarzanie.")
         else:
             await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
-        return
 
     @slash_command(
         description="Zatrzymuje odtwarzanie muzyki", guild_ids=config["guild_ids"]
@@ -277,7 +275,6 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             await player.stop()
         else:
             await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
-        return
 
     @slash_command(
         description="Pomija aktualnie odtwarzany utwór", guild_ids=config["guild_ids"]
@@ -290,7 +287,6 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             await ctx.send_followup("⏭ ️Pominięto utwór.")
         else:
             await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
-        return
 
     @slash_command(
         description="Ustawia głośność aktualnie odtwarzanego utworu",
@@ -308,7 +304,6 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             await ctx.send_followup("🔉 Ustawiono glośność na {}%.".format(vol))
         else:
             await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
-        return
 
     @slash_command(
         description="Wyświetla kolejkę utworów do odtworzenia",
@@ -322,7 +317,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
 
         fmt = "\n".join(f"**{song.title}**" for song in player.queue)
 
-        embed = self.bot.embed(ctx.author)
+        embed = discord.Embed()
         embed.title = f"Utwory w kolejce: {len(player.queue)}"
         embed.description = fmt
         await ctx.send_followup(embed=embed)
@@ -336,7 +331,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         if player.is_playing:
             song = player.current
-            embed = ctx.bot.embed(ctx.author)
+            embed = discord.Embed()
             embed.title = "Teraz odtwarzane"
             embed.add_field(name="🎧 Utwór", value=song.title, inline=False)
             if not song.duration == 9223372036854775807:
@@ -391,7 +386,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             f"🔀 Losowe odtwarzanie kolejki zostało {'włączone' if player.shuffle else 'wyłączone'}."
         )
 
-    @slash_command(description="Bass Boost (Premium)", guild_ids=config["guild_ids"])
+    @slash_command(description="Bass Boost", guild_ids=config["guild_ids"])
     async def bassboost(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
