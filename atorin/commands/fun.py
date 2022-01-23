@@ -478,6 +478,24 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             pass
         await ctx.respond(content)
 
+    @slash_command(description="Losowe zdjęcie pandy", guild_ids=config["guild_ids"])
+    async def panda(self, ctx: discord.ApplicationContext):
+        await ctx.defer()
+        while True:
+            r = requests.get(
+                "https://reddit.com/r/panda/random/.json",
+                headers={"User-agent": "Atorin"},
+            )
+            post = r.json()[0]["data"]["children"][0]["data"]
+            if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
+                break
+        embed = discord.Embed()
+        embed.title = (
+            (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
+        )
+        embed.set_image(url=post["url"])
+        await ctx.send_followup(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(Fun(bot))
