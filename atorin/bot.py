@@ -19,7 +19,12 @@ from .config import config
 from .logger import log
 import humanize
 import time
-from discord.ext import commands
+from discord.ext.commands import (
+    CommandError,
+    NoPrivateMessage,
+    MissingPermissions,
+    BotMissingPermissions,
+)
 
 
 class Atorin(discord.AutoShardedBot):
@@ -62,15 +67,15 @@ class Atorin(discord.AutoShardedBot):
         )
 
     async def on_application_command_error(
-        self, ctx: discord.ApplicationContext, error: commands.CommandError
+        self, ctx: discord.ApplicationContext, error: CommandError
     ):
         embed = discord.Embed()
         embed.color = 0xFF0000
-        if isinstance(error.original, commands.NoPrivateMessage):
+        if isinstance(error.original, NoPrivateMessage):
             embed.description = "❌ **Tę komendę możesz użyć tylko na serwerze.**"
-        elif isinstance(error.original, commands.MissingPermissions):
+        elif isinstance(error.original, MissingPermissions):
             embed.description = f"❌ **Nie masz odpowiednich uprawnień do wykonania tej komendy. Wymagane uprawnienia: `{','.join(error.missing_perms)}`**"
-        elif isinstance(error.original, commands.BotMissingPermissions):
+        elif isinstance(error.original, BotMissingPermissions):
             embed.description = f"❌ **Atorin nie ma odpowiednich uprawnień do wykonania tej komendy. Wymagane uprawnienia: `{','.join(error.missing_perms)}`**"
         else:
             embed.description = f"❌ **{error.original}**"
