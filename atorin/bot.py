@@ -72,11 +72,14 @@ class Atorin(discord.AutoShardedBot):
         embed = discord.Embed()
         embed.color = 0xFF0000
         if isinstance(error.original, NoPrivateMessage):
-            embed.description = "❌ **Tę komendę możesz użyć tylko na serwerze.**"
+            embed.description = f"❌ **Komendę **{ctx.command.qualified_name}** możesz użyć tylko na serwerze.**"
         elif isinstance(error.original, MissingPermissions):
-            embed.description = f"❌ **Nie masz odpowiednich uprawnień do wykonania tej komendy. Wymagane uprawnienia: `{','.join(error.missing_perms)}`**"
+            embed.description = f"❌ **Nie masz odpowiednich uprawnień do wykonania komendy **{ctx.command.qualified_name}**. Wymagane uprawnienia: `{','.join(error.missing_perms)}`**"
         elif isinstance(error.original, BotMissingPermissions):
-            embed.description = f"❌ **Atorin nie ma odpowiednich uprawnień do wykonania tej komendy. Wymagane uprawnienia: `{','.join(error.missing_perms)}`**"
+            embed.description = f"❌ **Atorin nie ma odpowiednich uprawnień do wykonania komendy **{ctx.command.qualified_name}**. Wymagane uprawnienia: `{','.join(error.missing_perms)}`**"
         else:
-            embed.description = f"❌ **{error.original}**"
+            embed.description = (
+                f"❌ **{ctx.command.qualified_name.capitalize()} :: {error.original}**"
+            )
+            log.error(f"{ctx.command.qualified_name.capitalize()} :: {error}")
         await ctx.respond(embed=embed)
