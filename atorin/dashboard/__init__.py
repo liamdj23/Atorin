@@ -38,9 +38,6 @@ async def home():
     user: User | None = await discord.fetch_user() if await discord.authorized else None
     return await render_template(
         "home.html",
-        servers=1234,
-        channels=5678,
-        users=9012,
         user=user,
     )
 
