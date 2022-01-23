@@ -301,7 +301,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
     ):
         await ctx.defer()
         if vol > 100 or vol < 0:
-            raise commands.BadArgument
+            raise commands.BadArgument("Wartość musi być w przedziale od 1 do 100!")
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         if player.is_playing:
             await player.set_volume(vol)

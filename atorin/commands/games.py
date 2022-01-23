@@ -26,28 +26,6 @@ from atorin.bot import Atorin
 from ..config import config
 
 
-def is_domain(argument: str):
-    regex = "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}"
-    p = re.compile(regex)
-    if re.search(p, argument):
-        return argument
-    raise commands.BadArgument
-
-
-def is_minecraft_nick(argument: str):
-    regex = r"^\w{3,16}$"
-    p = re.compile(regex)
-    if re.search(p, argument):
-        return argument
-    raise commands.BadArgument
-
-
-def is_platform(argument: str):
-    if argument.lower() in ["epic", "psn", "xbl"]:
-        return argument.lower()
-    raise commands.BadArgument
-
-
 async def steam_resolve_url(url: str, key: str):
     parsed = urlparse(url)
     if not parsed.netloc:
@@ -162,7 +140,7 @@ class Games(commands.Cog, name="🕹 Gry"):
             else:
                 raise commands.CommandError(skin.text)
         elif mojang.status_code == 204:
-            raise commands.BadArgument("Podany gracz nie został odnaleziony!")
+            raise commands.BadArgument("Nie znaleziono podanego gracza!")
         else:
             raise commands.CommandError(mojang.text)
 

@@ -45,7 +45,9 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         self, ctx: discord.ApplicationContext, text: Option(str, "Treść paska")
     ):
         if len(text) > 48:
-            raise commands.BadArgument
+            raise commands.BadArgument(
+                f"Treść paska jest zbyt długa! Max. 48 znaków, podano {len(text)}."
+            )
         await ctx.defer()
         async with aiohttp.ClientSession() as session:
             async with session.post(
@@ -142,7 +144,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     ):
         if len(text) > 25:
             raise commands.BadArgument(
-                "Treść osiągnięcia jest zbyt długa! (max. 25 znaków)"
+                f"Treść osiągnięcia jest zbyt długa! Max. 25 znaków, podano {len(text)}."
             )
         await ctx.defer()
         text = (
@@ -327,7 +329,9 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         self, ctx: discord.ApplicationContext, text: Option(str, "Treść mema")
     ):
         if len(text) > 140:
-            raise commands.BadArgument("Treść mema jest zbyt długa! (max. 140 znaków)")
+            raise commands.BadArgument(
+                f"Treść mema jest zbyt długa! Max. 140 znaków, podano {len(text)}"
+            )
         await ctx.defer()
         template = Image.open("assets/changemymind/changemymind.jpg")
         txt = Image.new("RGBA", (700, 350), (0, 0, 0, 0))

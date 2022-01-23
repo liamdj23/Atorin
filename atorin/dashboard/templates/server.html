@@ -7,7 +7,7 @@
 <div class="columns mt-5 mb-5 ml-5 mr-5">
   <div class="column is-one-quarter">
     <figure class="image is-128x128 is-inline-block">
-    {% if "icon" in guild %}
+    {% if guild.icon %}
       <img src="https://cdn.discordapp.com/icons/{{ guild.id }}/{{ guild.icon }}.png">
     {% else %}
       <img src="https://kliczkow.com.pl/wp-content/uploads/2020/03/placeholder.png">

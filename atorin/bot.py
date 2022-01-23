@@ -19,6 +19,7 @@ from .config import config
 from .logger import log
 import humanize
 import time
+from discord.ext import commands
 
 
 class Atorin(discord.AutoShardedBot):
@@ -59,3 +60,18 @@ class Atorin(discord.AutoShardedBot):
             .decode("ascii")
             .strip()
         )
+
+    async def on_application_command_error(
+        self, ctx: discord.ApplicationContext, error: commands.CommandError
+    ):
+        embed = discord.Embed()
+        embed.color = 0xFF0000
+        if isinstance(error.original, commands.NoPrivateMessage):
+            embed.description = "❌ **Tę komendę możesz użyć tylko na serwerze.**"
+        elif isinstance(error.original, commands.MissingPermissions):
+            embed.description = f"❌ **Nie masz odpowiednich uprawnień do wykonania tej komendy. Wymagane uprawnienia: `{','.join(error.missing_perms)}`**"
+        elif isinstance(error.original, commands.BotMissingPermissions):
+            embed.description = f"❌ **Atorin nie ma odpowiednich uprawnień do wykonania tej komendy. Wymagane uprawnienia: `{','.join(error.missing_perms)}`**"
+        else:
+            embed.description = f"❌ **{error.original}**"
+        await ctx.respond(embed=embed)
