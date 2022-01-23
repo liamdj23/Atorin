@@ -478,12 +478,12 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             pass
         await ctx.respond(content)
 
-    @slash_command(description="Losowe zdjęcie pandy", guild_ids=config["guild_ids"])
-    async def panda(self, ctx: discord.ApplicationContext):
+    @slash_command(description="Losowe zdjęcie gołębia", guild_ids=config["guild_ids"])
+    async def pigeon(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         while True:
             r = requests.get(
-                "https://reddit.com/r/panda/random/.json",
+                "https://reddit.com/r/pigeon/random/.json",
                 headers={"User-agent": "Atorin"},
             )
             post = r.json()[0]["data"]["children"][0]["data"]
