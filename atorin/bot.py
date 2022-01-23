@@ -68,7 +68,7 @@ class Atorin(discord.AutoShardedBot):
 
     async def on_application_command_error(
         self, ctx: discord.ApplicationContext, error: CommandError
-    ):
+    ) -> None:
         embed = discord.Embed()
         embed.color = 0xFF0000
         if isinstance(error.original, NoPrivateMessage):
@@ -83,3 +83,28 @@ class Atorin(discord.AutoShardedBot):
             )
             log.error(f"{ctx.command.qualified_name.capitalize()} :: {error}")
         await ctx.respond(embed=embed)
+
+    async def on_ready(self) -> None:
+        await self.change_presence(
+            status=discord.Status.online,
+            activity=discord.Game(f"z {len(self.guilds)} serwerami"),
+        )
+        log.info("Atorin is ready!")
+
+    async def on_guild_join(self, guild: discord.Guild) -> None:
+        await self.change_presence(
+            status=discord.Status.online,
+            activity=discord.Game(f"z {len(self.guilds)} serwerami"),
+        )
+
+    async def on_guild_remove(self, guild: discord.Guild) -> None:
+        await self.change_presence(
+            status=discord.Status.online,
+            activity=discord.Game(f"z {len(self.guilds)} serwerami"),
+        )
+
+    async def on_shard_connect(self, shard_id: int) -> None:
+        log.info(f"Atorin shard {shard_id} connected to Discord.")
+
+    async def on_shard_disconnect(self, shard_id: int) -> None:
+        log.warn(f"Atorin shard {shard_id} disconnected from Discord!")
