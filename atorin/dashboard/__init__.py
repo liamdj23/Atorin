@@ -69,7 +69,7 @@ async def terms():
 
 @app.route("/login/")
 async def login():
-    return await discord.create_session()
+    return await discord.create_session(scope=["identify", "guilds"])
 
 
 @app.route("/logout/")
