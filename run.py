@@ -24,7 +24,7 @@ if __name__ == "__main__":
     bot: Atorin = Atorin()
     log.info("Starting dashboard...")
     bot.loop.create_task(dashboard.app.run_task(host="0.0.0.0", port=8080))
-    if config["metrics"]:
+    if config["metrics"]["enabled"]:
         log.info("Starting metrics...")
-        metrics.prom.start_http_server(9100)
+        metrics.prom.start_http_server(config["metrics"]["port"])
     bot.run()
