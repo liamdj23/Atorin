@@ -22,9 +22,9 @@ if __name__ == "__main__":
     # os.system("cls" if sys.platform == "win32" else "clear")
     log.info("Starting Atorin...")
     bot: Atorin = Atorin()
-    log.info("Starting dashboard...")
+    log.info("Starting dashboard at port 8080...")
     bot.loop.create_task(dashboard.app.run_task(host="0.0.0.0", port=8080))
     if config["metrics"]["enabled"]:
-        log.info("Starting metrics...")
+        log.info(f"Starting metrics at port {config['metrics']['port']}...")
         metrics.prom.start_http_server(config["metrics"]["port"])
     bot.run()
