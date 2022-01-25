@@ -460,8 +460,13 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             raise commands.CommandError(r.text)
         embed = discord.Embed()
         embed.title = "Astronomiczne zdjęcie dnia"
-        embed.set_image(url=f"{r.url}{soup.find_all('p')[0].img['src']}")
         embed.description = f"**{soup.find_all('b')[0].text.strip()}**"
+        try:
+            embed.set_image(url=f"{r.url}{soup.find_all('p')[0].img['src']}")
+        except TypeError:
+            embed.description += (
+                f"\n{soup.find_all('p')[0].iframe['src'].replace('/embed/', '/watch/')}"
+            )
         embed.url = r.url
         await ctx.send_followup(embed=embed)
 
