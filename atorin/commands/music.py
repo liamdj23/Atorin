@@ -233,14 +233,17 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
     @slash_command(
         description="Rozłącza bota z kanału głosowego", guild_ids=config["guild_ids"]
     )
-    async def disconnect(self, ctx: discord.ApplicationContext):
+    async def stop(self, ctx: discord.ApplicationContext):
         """Disconnects the player from the voice channel and clears its queue."""
         await ctx.defer()
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
-        player.queue.clear()
-        await player.stop()
-        await ctx.voice_client.disconnect(force=True)
-        await ctx.send_followup("🔇 Rozłączono.")
+        if player.is_playing:
+            player.queue.clear()
+            await player.stop()
+            await ctx.voice_client.disconnect(force=True)
+            await ctx.send_followup("⏹ Zatrzymano odtwarzanie.")
+        else:
+            await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
 
     @slash_command(
         description="Wstrzymuje odtwarzanie muzyki", guild_ids=config["guild_ids"]
@@ -265,19 +268,6 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         if player.paused:
             await player.set_pause(False)
             await ctx.send_followup("▶️ Wznowiono odtwarzanie.")
-        else:
-            await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
-
-    @slash_command(
-        description="Zatrzymuje odtwarzanie muzyki", guild_ids=config["guild_ids"]
-    )
-    async def stop(self, ctx: discord.ApplicationContext):
-        await ctx.defer()
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
-        if player.is_playing:
-            player.queue.clear()
-            await player.stop()
-            await ctx.send_followup("⏹ Zatrzymano odtwarzanie.")
         else:
             await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
 
