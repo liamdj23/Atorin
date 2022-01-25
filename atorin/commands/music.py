@@ -277,6 +277,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         if player.is_playing:
             player.queue.clear()
             await player.stop()
+            await ctx.send_followup("⏹ Zatrzymano odtwarzanie.")
         else:
             await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
 
