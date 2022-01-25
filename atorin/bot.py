@@ -73,15 +73,18 @@ class Atorin(discord.AutoShardedBot):
     ) -> None:
         embed = discord.Embed()
         embed.color = 0xFF0000
-        if isinstance(error.original, NoPrivateMessage):
-            embed.description = f"❌ **Komendę **{ctx.command.qualified_name}** możesz użyć tylko na serwerze.**"
-        elif isinstance(error.original, MissingPermissions):
-            embed.description = f"❌ **Nie masz odpowiednich uprawnień do wykonania komendy **{ctx.command.qualified_name}**. Wymagane uprawnienia: `{','.join(error.missing_perms)}`**"
-        elif isinstance(error.original, BotMissingPermissions):
-            embed.description = f"❌ **Atorin nie ma odpowiednich uprawnień do wykonania komendy **{ctx.command.qualified_name}**. Wymagane uprawnienia: `{','.join(error.missing_perms)}`**"
+        if hasattr(error, "original"):
+            if isinstance(error.original, NoPrivateMessage):
+                embed.description = f"❌ **Komendę **{ctx.command.qualified_name}** możesz użyć tylko na serwerze.**"
+            elif isinstance(error.original, MissingPermissions):
+                embed.description = f"❌ **Nie masz odpowiednich uprawnień do wykonania komendy **{ctx.command.qualified_name}**. Wymagane uprawnienia: `{','.join(error.missing_perms)}`**"
+            elif isinstance(error.original, BotMissingPermissions):
+                embed.description = f"❌ **Atorin nie ma odpowiednich uprawnień do wykonania komendy **{ctx.command.qualified_name}**. Wymagane uprawnienia: `{','.join(error.missing_perms)}`**"
+            else:
+                embed.description = f"❌ **{ctx.command.qualified_name.capitalize()} :: {error.original}**"
         else:
             embed.description = (
-                f"❌ **{ctx.command.qualified_name.capitalize()} :: {error.original}**"
+                f"❌ **{ctx.command.qualified_name.capitalize()} :: {error}**"
             )
             log.error(f"{ctx.command.qualified_name.capitalize()} :: {error}")
         await ctx.respond(embed=embed)
