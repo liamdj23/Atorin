@@ -25,6 +25,8 @@ from discord.ext.commands import (
     MissingPermissions,
     BotMissingPermissions,
 )
+from atorin import metrics
+from atorin.utils import user_counter
 
 
 class Atorin(discord.AutoShardedBot):
@@ -83,6 +85,19 @@ class Atorin(discord.AutoShardedBot):
             )
             log.error(f"{ctx.command.qualified_name.capitalize()} :: {error}")
         await ctx.respond(embed=embed)
+        metrics.commands_executed_with_error.labels(
+            command=ctx.command.qualified_name
+        ).inc()
+
+    async def on_application_command(self, ctx: discord.ApplicationContext) -> None:
+        metrics.commands_executed.labels(command=ctx.command.qualified_name).inc()
+
+    async def on_application_command_completion(
+        self, ctx: discord.ApplicationContext
+    ) -> None:
+        metrics.commands_executed_successfully.labels(
+            command=ctx.command.qualified_name
+        ).inc()
 
     async def on_ready(self) -> None:
         await self.change_presence(
@@ -90,21 +105,32 @@ class Atorin(discord.AutoShardedBot):
             activity=discord.Game(f"z {len(self.guilds)} serwerami"),
         )
         log.info("Atorin is ready!")
+        metrics.servers.set(len(self.guilds))
+        metrics.channels.set(len(list(self.get_all_channels())))
+        metrics.users.set(sum(user_counter(self)))
 
     async def on_guild_join(self, guild: discord.Guild) -> None:
         await self.change_presence(
             status=discord.Status.online,
             activity=discord.Game(f"z {len(self.guilds)} serwerami"),
         )
+        metrics.servers.set(len(self.guilds))
+        metrics.channels.set(len(list(self.get_all_channels())))
+        metrics.users.set(sum(user_counter(self)))
 
     async def on_guild_remove(self, guild: discord.Guild) -> None:
         await self.change_presence(
             status=discord.Status.online,
             activity=discord.Game(f"z {len(self.guilds)} serwerami"),
         )
+        metrics.servers.set(len(self.guilds))
+        metrics.channels.set(len(list(self.get_all_channels())))
+        metrics.users.set(sum(user_counter(self)))
 
     async def on_shard_connect(self, shard_id: int) -> None:
         log.info(f"Atorin shard {shard_id} connected to Discord.")
+        metrics.shards.set(len(self.shards))
 
     async def on_shard_disconnect(self, shard_id: int) -> None:
         log.warn(f"Atorin shard {shard_id} disconnected from Discord!")
+        metrics.shards.set(len(self.shards))

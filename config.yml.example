@@ -18,3 +18,4 @@ lavalink:
   node: default-node
 weather: 
 fortnite: 
+metrics: true
