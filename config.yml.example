@@ -21,3 +21,6 @@ fortnite:
 metrics:
   enabled: true
   port: 9770
+spotify:
+  client_id:
+  client_secret:

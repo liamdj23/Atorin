@@ -1,3 +1,4 @@
+import base64
 import re
 
 from datetime import timedelta
@@ -5,6 +6,7 @@ import lavalink
 from discord.ext import commands
 from discord.commands import slash_command, Option
 import discord
+import requests
 
 from atorin.bot import Atorin
 from ..utils import progress_bar
@@ -76,6 +78,41 @@ class LavalinkVoiceClient(discord.VoiceClient):
         player.channel_id = None
         self.cleanup()
         metrics.active_players.dec()
+
+
+def get_song_from_spotify(id: str) -> str:
+    authorization_token = base64.b64encode(
+        f"{config['spotify']['client_id']}:{config['spotify']['client_secret']}".encode()
+    ).decode("utf-8")
+    r = requests.post(
+        "https://accounts.spotify.com/api/token",
+        headers={
+            "Authorization": f"Basic {authorization_token}",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "User-Agent": "Atorin",
+        },
+        params={"grant_type": "client_credentials"},
+    )
+    if r.status_code == 200:
+        token = r.json()["access_token"]
+        r = requests.get(
+            f"https://api.spotify.com/v1/tracks/{id}",
+            headers={
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {token}",
+                "User-Agent": "Atorin",
+            },
+        )
+        if r.status_code == 200:
+            song = r.json()
+            return f"{song['artists'][0]['name']} {song['name']}"
+        else:
+            raise commands.CommandError("Nie znaleziono podanego utworu!")
+    else:
+        raise commands.CommandError(
+            "Nie udało się uzyskać tokenu z API Spotify, spróbuj ponownie później."
+        )
 
 
 class Music(commands.Cog, name="🎵 Muzyka (beta)"):
@@ -191,6 +228,15 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
 
         if not url_rx.match(query):
             query = f"ytsearch:{query}"
+        else:
+            if "open.spotify.com/track/" in query:
+                song = get_song_from_spotify(
+                    query.split("open.spotify.com/track/")[1].split("?")[0]
+                )
+                query = f"ytsearch:{song}"
+            elif "spotify:track:" in query:
+                song = get_song_from_spotify(query.split("spotify:track:")[1])
+                query = f"ytsearch:{song}"
 
         results = await player.node.get_tracks(query)
 
