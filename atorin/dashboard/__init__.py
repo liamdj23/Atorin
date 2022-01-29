@@ -24,6 +24,7 @@ from .. import database
 app = Quart(__name__)
 
 app.secret_key = b"random bytes representing quart secret key"
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "true" 
 
 app.config["DISCORD_CLIENT_ID"] = config["dashboard"]["client_id"]
 app.config["DISCORD_CLIENT_SECRET"] = config["dashboard"]["client_secret"]
