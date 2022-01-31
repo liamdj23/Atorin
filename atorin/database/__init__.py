@@ -30,8 +30,8 @@ try:
     mongo_client.admin.command("ismaster")
 except Exception:
     log.critical(
-        f"Can't connect to MongoDB! (mongodb://{host}:{port}/{db}) Check configuration file and try again. Shutting down..."
+        f"❌ Can't connect to MongoDB! (mongodb://{host}:{port}/{db}) Check configuration file and try again. Shutting down..."
     )
     sys.exit(1)
 
-log.info(f"Successfully connected to MongoDB! ({db})")
+log.info(f"🗃  Successfully connected to MongoDB! ({db})")
