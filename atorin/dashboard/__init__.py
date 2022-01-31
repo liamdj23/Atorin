@@ -153,12 +153,13 @@ async def server(server_id: int, setting: str):
             case _:
                 return "Nie znaleziono podanego ustawienia."
             
-@app.route("/update/", methods=["POST"])
-async def update():
-    if not "X-Hub-Signature" in request.headers:
-        return {}, 400
-    if not updater.check_signature(request):
-        return {"error": "Bad signature"}, 400
-    Thread(target=updater.process_update).start()
-    return {}, 200
+if config["updater"]["enabled"]:
+    @app.route("/update/", methods=["POST"])
+    async def update():
+        if not "X-Hub-Signature" in request.headers:
+            return {}, 400
+        if not updater.check_signature(request):
+            return {"error": "Bad signature"}, 400
+        Thread(target=updater.process_update).start()
+        return {}, 200
     
