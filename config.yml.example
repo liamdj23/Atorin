@@ -25,3 +25,6 @@ spotify:
   client_id:
   client_secret:
 lol:
+updater:
+  enabled: true
+  webhook: 

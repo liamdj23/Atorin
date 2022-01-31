@@ -11,6 +11,7 @@
 Made with ❤️ by Piotr Gaździcki.
 
 """
+from threading import Thread
 from quart import Quart, redirect, url_for, session, render_template, request
 from quart_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 from quart_discord.models import User, Guild
@@ -19,6 +20,7 @@ from .. import commands as cmds
 import os
 from ..config import config
 from .. import database
+from .. import updater
 
 
 app = Quart(__name__)
@@ -150,4 +152,13 @@ async def server(server_id: int, setting: str):
                     return "Przesłano nieprawidłowe dane."
             case _:
                 return "Nie znaleziono podanego ustawienia."
+            
+@app.route("/update/", methods=["POST"])
+async def update():
+    if not "X-Hub-Signature" in request.headers:
+        return {}, 400
+    if not updater.check_signature(request):
+        return {"error": "Bad signature"}, 400
+    Thread(target=updater.process_update).start()
+    return {}, 200
     
