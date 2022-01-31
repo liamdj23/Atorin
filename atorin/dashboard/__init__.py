@@ -158,7 +158,7 @@ if config["updater"]["enabled"]:
     async def update():
         if not "X-Hub-Signature" in request.headers:
             return {}, 400
-        if not updater.check_signature(request):
+        if not await updater.check_signature(request):
             return {"error": "Bad signature"}, 400
         Thread(target=updater.process_update).start()
         return {}, 200

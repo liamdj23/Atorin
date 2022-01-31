@@ -55,12 +55,13 @@ def pull_update() -> bool:
     return True
 
 
-def check_signature(request: Request) -> bool:
+async def check_signature(request: Request) -> bool:
     signature = request.headers["X-Hub-Signature"]
     if not signature.startswith("sha1="):
         return False
+    data = await request.data
     digest = hmac.new(
-        config["updater"]["webhook"].encode(), request.data, hashlib.sha1
+        config["updater"]["webhook"].encode(), data, hashlib.sha1
     ).hexdigest()
     if not hmac.compare_digest(signature, f"sha1={digest}"):
         return False
