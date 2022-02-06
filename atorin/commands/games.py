@@ -221,6 +221,62 @@ class Games(commands.Cog, name="🕹 Gry"):
                 )
         await ctx.send_followup(embed=embed)
 
+    @slash_command(
+        description="Statystyki w grze League of Legends", guild_ids=config["guild_ids"]
+    )
+    async def lol(
+        self,
+        ctx: discord.ApplicationContext,
+        region: Option(
+            str,
+            "Wybierz region na którym grasz",
+            choices=[
+                OptionChoice("EUNE", "eun1"),
+                OptionChoice("BR", "br1"),
+                OptionChoice("EUW", "euw1"),
+                OptionChoice("JP", "jp1"),
+                OptionChoice("KR", "kr"),
+                OptionChoice("LAN", "la1"),
+                OptionChoice("LAS", "la2"),
+                OptionChoice("NA", "na1"),
+                OptionChoice("OCE", "oc1"),
+                OptionChoice("RU", "ru"),
+                OptionChoice("TR", "tr1"),
+            ],
+        ),
+        nick: Option(str, "Nick gracza"),
+    ):
+        await ctx.defer()
+        r = requests.get(
+            f"https://{region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{nick}",
+            params={"api_key": config["lol"]},
+        )
+        if r.status_code == 404:
+            raise commands.BadArgument("Nie znaleziono podanego gracza!")
+        summoner = r.json()
+        r2 = requests.get(
+            f"https://{region}.api.riotgames.com/lol/league/v4/entries/by-summoner/{summoner['id']}",
+            params={"api_key": config["lol"]},
+        )
+        stats = r2.json()
+        embed = discord.Embed()
+        embed.title = "Statystyki w grze League of Legends"
+        embed.description = f"🧑 Gracz: **{summoner['name']}**\n🏆 Poziom: **{summoner['summonerLevel']}**\n🌍 Region: **{region}**"
+        embed.set_thumbnail(
+            url=f"https://ddragon.leagueoflegends.com/cdn/10.15.1/img/profileicon/{summoner['profileIconId']}.png"
+        )
+        for gamemode in stats:
+            value = ""
+            if "tier" in gamemode:
+                value += f"🎌 **Ranga:** `{gamemode['tier']} {gamemode['rank']}`\n"
+            value += f"✅ **Wygrane:** `{gamemode['wins']}`\n"
+            value += f"❌ **Przegrane:** `{gamemode['losses']}`\n"
+            embed.add_field(
+                name=f"🏟 Tryb gry: `{gamemode['queueType'].replace('_', ' ')}`",
+                value=value,
+            )
+        await ctx.send_followup(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(Games(bot))

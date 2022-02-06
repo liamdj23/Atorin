@@ -37,13 +37,17 @@ class Info(commands.Cog, name="ℹ Informacje"):
         self,
         ctx: discord.ApplicationContext,
         user: Option(
-            discord.Member,
+            discord.User,
             "Nazwa osoby której awatar chcesz wyświetlić",
             required=False,
         ),
     ):
         if not user:
             user = ctx.author
+        if type(user) is int:
+            user = await self.bot.fetch_user(user)
+            if not user:
+                raise commands.CommandError("Nie znaleziono użytkownika!")
         embed = discord.Embed()
         embed.title = f"Zdjęcie profilowe {user}"
         embed.set_image(url=user.display_avatar.url)

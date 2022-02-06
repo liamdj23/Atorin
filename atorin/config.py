@@ -20,14 +20,14 @@ class Configuration:
     def __init__(self) -> None:
         try:
             with open("config.yml", "r") as file:
-                log.info("Reading configuration file (config.yml)...")
+                log.info("📖 Reading configuration file (config.yml)...")
                 self.data = yaml.safe_load(file)
-                log.info("Configuration loaded successfully!")
+                log.info("✅ Configuration loaded successfully!")
         except FileNotFoundError:
-            log.critical("Configuration file not found!")
+            log.critical("❌ Configuration file not found!")
             sys.exit(1)
         except yaml.YAMLError as e:
-            log.critical(f"A problem occurred with configuration file: {e}")
+            log.critical(f"❌ A problem occurred with configuration file: {e}")
             sys.exit(1)
 
     def get(self) -> dict:
@@ -38,12 +38,12 @@ class Configuration:
             with open("config.yml", "w") as file:
                 yaml.dump(self.data, file)
                 self.data = yaml.dump(self.data)
-                log.info("Configuration file saved successfully!")
+                log.info("💾 Configuration file saved successfully!")
         except FileNotFoundError:
-            log.critical("Configuration file not found!")
+            log.critical("❌ Configuration file not found!")
             sys.exit(1)
         except yaml.YAMLError as e:
-            log.critical(f"A problem occurred with configuration file: {e}")
+            log.critical(f"❌ A problem occurred with configuration file: {e}")
             sys.exit(1)
 
 
