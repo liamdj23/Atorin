@@ -210,7 +210,13 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
                 value=f"```bash\nnpm i {data['name']}```",
                 inline=False,
             )
-            embed.add_field(name="👨‍💻 Autor", value=data["author"]["name"])
+            if "author" in data:
+                embed.add_field(
+                    name="👨‍💻 Autor",
+                    value=data["author"]
+                    if type(data["author"]) is str
+                    else data["author"]["name"],
+                )
             embed.add_field(name="⚙️ Wersja", value=data["dist-tags"]["latest"])
             embed.add_field(
                 name="📜 Licencja",

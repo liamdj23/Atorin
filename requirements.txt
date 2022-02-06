@@ -12,3 +12,4 @@ psutil>=5.8.0
 PyNaCl>=1.4.0
 lavalink>=3.1.5
 humanize>=3.13.1
+prometheus-client>=0.12.0

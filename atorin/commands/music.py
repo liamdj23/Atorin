@@ -1,3 +1,4 @@
+import base64
 import re
 
 from datetime import timedelta
@@ -5,10 +6,12 @@ import lavalink
 from discord.ext import commands
 from discord.commands import slash_command, Option
 import discord
+import requests
 
 from atorin.bot import Atorin
 from ..utils import progress_bar
 from ..config import config
+from .. import metrics
 
 url_rx = re.compile(r"https?://(?:www\.)?.+")
 
@@ -52,6 +55,7 @@ class LavalinkVoiceClient(discord.VoiceClient):
         # ensure there is a player_manager when creating a new voice_client
         self.lavalink.player_manager.create(guild_id=self.channel.guild.id)
         await self.channel.guild.change_voice_state(channel=self.channel)
+        metrics.active_players.inc()
 
     async def disconnect(self, *, force: bool) -> None:
         """
@@ -73,6 +77,42 @@ class LavalinkVoiceClient(discord.VoiceClient):
         # disconnect
         player.channel_id = None
         self.cleanup()
+        metrics.active_players.dec()
+
+
+def get_song_from_spotify(id: str) -> str:
+    authorization_token = base64.b64encode(
+        f"{config['spotify']['client_id']}:{config['spotify']['client_secret']}".encode()
+    ).decode("utf-8")
+    r = requests.post(
+        "https://accounts.spotify.com/api/token",
+        headers={
+            "Authorization": f"Basic {authorization_token}",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "User-Agent": "Atorin",
+        },
+        params={"grant_type": "client_credentials"},
+    )
+    if r.status_code == 200:
+        token = r.json()["access_token"]
+        r = requests.get(
+            f"https://api.spotify.com/v1/tracks/{id}",
+            headers={
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {token}",
+                "User-Agent": "Atorin",
+            },
+        )
+        if r.status_code == 200:
+            song = r.json()
+            return f"{song['artists'][0]['name']} {song['name']}"
+        else:
+            raise commands.CommandError("Nie znaleziono podanego utworu!")
+    else:
+        raise commands.CommandError(
+            "Nie udało się uzyskać tokenu z API Spotify, spróbuj ponownie później."
+        )
 
 
 class Music(commands.Cog, name="🎵 Muzyka (beta)"):
@@ -81,7 +121,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         lavalink.add_event_hook(self.track_hook)
 
         if self.bot and not hasattr(self.bot, "lavalink"):
-            self.bot.lavalink = lavalink.Client(601569107556565012)
+            self.bot.lavalink = lavalink.Client(config["dashboard"]["client_id"])
             self.bot.lavalink.add_node(address, port, password, region, node)
             self.bot.add_listener(
                 self.bot.lavalink.voice_update_handler, "on_socket_response"
@@ -170,6 +210,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
                 url=f"https://img.youtube.com/vi/{song.identifier}/maxresdefault.jpg"
             )
             await channel.send(embed=embed)
+            metrics.songs.labels(song=song.title).inc()
 
     @slash_command(
         description="Odtwarza utwór lub playlistę z YT/Twitch/MP3 na kanale głosowym",
@@ -187,6 +228,15 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
 
         if not url_rx.match(query):
             query = f"ytsearch:{query}"
+        else:
+            if "open.spotify.com/track/" in query:
+                song = get_song_from_spotify(
+                    query.split("open.spotify.com/track/")[1].split("?")[0]
+                )
+                query = f"ytsearch:{song}"
+            elif "spotify:track:" in query:
+                song = get_song_from_spotify(query.split("spotify:track:")[1])
+                query = f"ytsearch:{song}"
 
         results = await player.node.get_tracks(query)
 
@@ -229,14 +279,17 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
     @slash_command(
         description="Rozłącza bota z kanału głosowego", guild_ids=config["guild_ids"]
     )
-    async def disconnect(self, ctx: discord.ApplicationContext):
+    async def stop(self, ctx: discord.ApplicationContext):
         """Disconnects the player from the voice channel and clears its queue."""
         await ctx.defer()
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
-        player.queue.clear()
-        await player.stop()
-        await ctx.voice_client.disconnect(force=True)
-        await ctx.send_followup("🔇 Rozłączono.")
+        if player.is_playing:
+            player.queue.clear()
+            await player.stop()
+            await ctx.voice_client.disconnect(force=True)
+            await ctx.send_followup("⏹ Zatrzymano odtwarzanie.")
+        else:
+            await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
 
     @slash_command(
         description="Wstrzymuje odtwarzanie muzyki", guild_ids=config["guild_ids"]
@@ -261,18 +314,6 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         if player.paused:
             await player.set_pause(False)
             await ctx.send_followup("▶️ Wznowiono odtwarzanie.")
-        else:
-            await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
-
-    @slash_command(
-        description="Zatrzymuje odtwarzanie muzyki", guild_ids=config["guild_ids"]
-    )
-    async def stop(self, ctx: discord.ApplicationContext):
-        await ctx.defer()
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
-        if player.is_playing:
-            player.queue.clear()
-            await player.stop()
         else:
             await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
 
