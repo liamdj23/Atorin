@@ -118,9 +118,9 @@ def get_song_from_spotify(id: str) -> str:
 class Music(commands.Cog, name="🎵 Muzyka (beta)"):
     def __init__(self, bot: Atorin):
         self.bot = bot
-        lavalink.add_event_hook(self.track_hook)
 
         if self.bot and not hasattr(self.bot, "lavalink"):
+            lavalink.add_event_hook(self.track_hook)
             self.bot.lavalink = lavalink.Client(config["dashboard"]["client_id"])
             self.bot.lavalink.add_node(address, port, password, region, node)
             self.bot.add_listener(
