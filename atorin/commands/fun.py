@@ -470,19 +470,6 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         embed.url = r.url
         await ctx.send_followup(embed=embed)
 
-    @slash_command(
-        description="Wysyła podaną wiadomość jako Atorin",
-        guild_ids=config["guild_ids"],
-    )
-    async def say(
-        self, ctx: discord.ApplicationContext, content: Option(str, "Treść wiadomości")
-    ):
-        try:
-            await ctx.message.delete()
-        except discord.Forbidden:
-            pass
-        await ctx.respond(content)
-
     @slash_command(description="Losowe zdjęcie gołębia", guild_ids=config["guild_ids"])
     async def pigeon(self, ctx: discord.ApplicationContext):
         await ctx.defer()
