@@ -11,7 +11,6 @@
 Made with ❤️ by Piotr Gaździcki.
 
 """
-from email.policy import default
 import mongoengine, datetime
 
 
@@ -42,7 +41,7 @@ class Item(mongoengine.EmbeddedDocument):
 class Pet(mongoengine.Document):
     owner = mongoengine.IntField(primary_key=True)
     created = mongoengine.DateTimeField(default=datetime.datetime.now())
-    hunger = mongoengine.EmbeddedDocumentField(Hunger)
-    thirst = mongoengine.EmbeddedDocumentField(Thirst)
-    sleep = mongoengine.EmbeddedDocumentField(Sleep)
+    hunger = mongoengine.EmbeddedDocumentField(Hunger, default=Hunger())
+    thirst = mongoengine.EmbeddedDocumentField(Thirst, default=Thirst())
+    sleep = mongoengine.EmbeddedDocumentField(Sleep, default=Sleep())
     inventory = mongoengine.EmbeddedDocumentListField(Item)

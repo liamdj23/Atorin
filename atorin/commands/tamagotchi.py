@@ -27,13 +27,13 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     async def cog_before_invoke(self, ctx: discord.ApplicationContext):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
-        )[0]
-        if (
-            not ctx.command.name in ("feed", "drink", "sleep")
-            and pet.sleep.in_bed is not True
-        ):
-            return True
-        else:
+        ).first()
+        print(ctx.command.name)
+        if ctx.command.name is not "start" and pet is None:
+            raise commands.CommandError(
+                "Nie posiadasz pupila! Utwórz go komendą /tamagotchi settings start"
+            )
+        if ctx.command.name in ("feed", "drink", "sleep") and pet.sleep.in_bed is True:
             raise commands.CommandError(
                 f"Nie możesz użyć komendy `{ctx.command.name}` kiedy Twój pupil śpi!"
             )
@@ -92,7 +92,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         await ctx.defer()
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
-        )[0]
+        ).first()
         embed = discord.Embed()
         embed.title = f"Pupil {ctx.author}"
         embed.add_field(
@@ -107,7 +107,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     async def food_searcher(ctx: discord.AutocompleteContext):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.interaction.user.id
-        )[0]
+        ).first()
         inventory: list = [*{*pet.inventory}]
         return [
             item.name
@@ -130,11 +130,13 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         await ctx.defer()
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
-        )[0]
+        ).first()
         inventory: dict = {
             i: pet.inventory.count(i) for i in pet.inventory
         }  # {"database.tamagotchi.Item(name="Apple")": 3,}
-        item: database.tamagotchi.Item = database.tamagotchi.Item.objects(name=food)[0]
+        item: database.tamagotchi.Item = database.tamagotchi.Item.objects(
+            name=food
+        ).first()
         if inventory[item] < count:
             raise commands.BadArgument(
                 f"Nie posiadasz takiej ilości przedmiotu `{item.name}`!"
@@ -150,7 +152,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     async def drink_searcher(ctx: discord.AutocompleteContext):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.interaction.user.id
-        )[0]
+        ).first()
         inventory: list = [*{*pet.inventory}]
         return [
             item.name
@@ -173,13 +175,13 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         await ctx.defer()
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
-        )[0]
+        ).first()
         inventory: dict = {
             i: pet.inventory.count(i) for i in pet.inventory
         }  # {"database.tamagotchi.Item(name="Water")": 2,}
-        item: database.tamagotchi.Item = database.tamagotchi.Item.objects(name=_drink)[
-            0
-        ]
+        item: database.tamagotchi.Item = database.tamagotchi.Item.objects(
+            name=_drink
+        ).first()
         if inventory[item] < count:
             raise commands.BadArgument(
                 f"Nie posiadasz takiej ilości przedmiotu `{item.name}`!"
@@ -200,7 +202,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         await ctx.defer()
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
-        )[0]
+        ).first()
         pet.sleep.in_bed = True
         pet.save()
         await ctx.send_followup("Pupil zasnął!")
@@ -213,7 +215,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         await ctx.defer()
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
-        )[0]
+        ).first()
         pet.sleep.in_bed = False
         pet.save()
         await ctx.send_followup("Pupil się obudził!")
