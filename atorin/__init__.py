@@ -16,5 +16,4 @@ from .config import *
 from .logger import *
 from .database import *
 from .dashboard import *
-from .metrics import *
 from .updater import *

@@ -11,7 +11,6 @@ import requests
 from atorin.bot import Atorin
 from ..utils import progress_bar
 from ..config import config
-from .. import metrics
 
 url_rx = re.compile(r"https?://(?:www\.)?.+")
 
@@ -55,7 +54,6 @@ class LavalinkVoiceClient(discord.VoiceClient):
         # ensure there is a player_manager when creating a new voice_client
         self.lavalink.player_manager.create(guild_id=self.channel.guild.id)
         await self.channel.guild.change_voice_state(channel=self.channel)
-        metrics.active_players.inc()
 
     async def disconnect(self, *, force: bool) -> None:
         """
@@ -77,7 +75,6 @@ class LavalinkVoiceClient(discord.VoiceClient):
         # disconnect
         player.channel_id = None
         self.cleanup()
-        metrics.active_players.dec()
 
 
 def get_song_from_spotify(id: str) -> str:
@@ -210,7 +207,6 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
                 url=f"https://img.youtube.com/vi/{song.identifier}/maxresdefault.jpg"
             )
             await channel.send(embed=embed)
-            metrics.songs.labels(song=song.title).inc()
 
     @slash_command(
         description="Odtwarza utwór lub playlistę z YT/Twitch/MP3 na kanale głosowym",
