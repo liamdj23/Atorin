@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 from discord.commands import slash_command, Option, OptionChoice
+from discord.ui import Modal, InputText
+
 
 from atorin.bot import Atorin
 from .. import database
@@ -47,25 +49,6 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         await self.save_to_event_logs(
             ctx.guild.id, "clear", ctx.author.id, ctx.channel.id, None
         )
-
-    @slash_command(description="Tworzy ogłoszenie", guild_ids=config["guild_ids"])
-    @commands.has_guild_permissions(administrator=True)
-    @commands.guild_only()
-    async def advert(
-        self, ctx: discord.ApplicationContext, content: Option(str, "Treść ogłoszenia")
-    ):
-        await ctx.defer()
-        embed = discord.Embed()
-        embed.title = "Ogłoszenie"
-        embed.description = content
-        embed.set_thumbnail(url=str(ctx.guild.icon))
-        message = await ctx.send_followup(embed=embed)
-        await message.add_reaction("👍")
-        await message.add_reaction("❤")
-        await message.add_reaction("😆")
-        await message.add_reaction("😮")
-        await message.add_reaction("😢")
-        await message.add_reaction("😠")
 
     @slash_command(
         description="Zbanuj użytkownika",
@@ -323,6 +306,38 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
                 self.bot.get_guild(payload.guild_id).roles, id=roles[str(payload.emoji)]
             )
             await payload.member.add_roles(role)
+
+    @slash_command(description="Tworzy ogłoszenie", guild_ids=config["guild_ids"])
+    @commands.has_guild_permissions(administrator=True)
+    @commands.guild_only()
+    async def advert(self, ctx: discord.ApplicationContext):
+        class ExecModal(Modal):
+            def __init__(self) -> None:
+                super().__init__("Ogłoszenie")
+                self.add_item(
+                    InputText(
+                        label="Treść ogłoszenia",
+                        placeholder="Atorin jest super!",
+                        style=discord.InputTextStyle.long,
+                    )
+                )
+
+            async def callback(self, interaction: discord.Interaction):
+                embed = discord.Embed()
+                embed.title = "Ogłoszenie"
+                embed.description = self.children[0].value
+                embed.set_thumbnail(url=str(ctx.guild.icon))
+                interaction = await interaction.response.send_message(embeds=[embed])
+                message = await interaction.original_message()
+                await message.add_reaction("👍")
+                await message.add_reaction("❤")
+                await message.add_reaction("😆")
+                await message.add_reaction("😮")
+                await message.add_reaction("😢")
+                await message.add_reaction("😠")
+
+        modal = ExecModal()
+        await ctx.interaction.response.send_modal(modal)
 
 
 def setup(bot):
