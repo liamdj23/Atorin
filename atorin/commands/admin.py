@@ -24,21 +24,25 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def clear(
         self,
         ctx: discord.ApplicationContext,
-        limit: Option(int, "Liczba wiadomości do usunięcia"),
+        limit: Option(int, "Liczba wiadomości do usunięcia, max. 100"),
     ):
         await ctx.defer()
+        if limit > 100:
+            raise commands.BadArgument(
+                "Nie możesz usunąć więcej niż 100 wiadomości naraz!"
+            )
         try:
-            async for message in ctx.channel.history(limit=limit):
-                try:
-                    await message.delete()
-                except discord.NotFound:
-                    pass
-                except discord.HTTPException:
-                    pass
+            await ctx.channel.purge(limit=limit)
         except discord.HTTPException:
             raise commands.CommandInvokeError(
-                "Nie udało się pobrać historii wiadomości."
+                "Nie udało się usunąć wiadomości, spróbuj jeszcze raz."
             )
+        embed = discord.Embed()
+        embed.title = "Czyszczenie kanału"
+        embed.description = (
+            f"✅ **{limit} wiadomości zostało usuniętych przez {ctx.author.mention}**"
+        )
+        await ctx.send(embed=embed)
 
         await self.save_to_event_logs(
             ctx.guild.id, "clear", ctx.author.id, ctx.channel.id, None
