@@ -54,11 +54,12 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def advert(
         self, ctx: discord.ApplicationContext, content: Option(str, "Treść ogłoszenia")
     ):
+        await ctx.defer()
         embed = discord.Embed()
         embed.title = "Ogłoszenie"
         embed.description = content
         embed.set_thumbnail(url=str(ctx.guild.icon))
-        message = await ctx.respond(embed=embed)
+        message = await ctx.send_followup(embed=embed)
         await message.add_reaction("👍")
         await message.add_reaction("❤")
         await message.add_reaction("😆")
@@ -89,6 +90,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             required=False,
         ) = "0",
     ):
+        await ctx.defer()
         await member.ban(reason=reason, delete_message_days=delete_message_days)
         await self.save_to_event_logs(
             ctx.guild.id, "ban", ctx.author.id, member.id, reason
@@ -98,7 +100,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         embed.description = (
             f"🔨 {ctx.author.mention} **zbanował** {member.mention} z powodu `{reason}`"
         )
-        await ctx.respond(embed=embed)
+        await ctx.send_followup(embed=embed)
         try:
             await member.send(
                 f"🔨 Zostałeś zbanowany na serwerze {ctx.guild.name} przez {ctx.author.mention} z powodu `{reason}`"
@@ -129,6 +131,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         ),
         reason: Option(str, "Powód odbanowania", required=False) = "Brak",
     ):
+        await ctx.defer()
         banned_users = await ctx.guild.bans()
         if not banned_users:
             raise commands.BadArgument("Lista zbanowanych jest pusta!")
@@ -143,7 +146,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
                 embed.description = (
                     f"✅ {ctx.author.mention} **odbanował** {ban_entry.user.mention}"
                 )
-                await ctx.respond(embed=embed)
+                await ctx.send_followup(embed=embed)
 
     @slash_command(
         description="Wyrzuć użytkownika",
@@ -158,6 +161,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         member: Option(discord.Member, "Osoba którą chcesz wyrzucić"),
         reason: Option(str, "Powód wyrzucenia", required=False) = "Brak",
     ):
+        await ctx.defer()
         await member.kick(reason=reason)
         await self.save_to_event_logs(
             ctx.guild.id, "kick", ctx.author.id, member.id, reason
@@ -167,7 +171,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         embed.description = (
             f"🦶 {ctx.author.mention} wyrzucił {member.mention} z powodu `{reason}`"
         )
-        await ctx.respond(embed=embed)
+        await ctx.send_followup(embed=embed)
         try:
             await member.send(
                 f"🦶 Zostałeś **wyrzucony** z serwera **{ctx.guild.name}** przez {ctx.author.mention} z powodu `{reason}`"
@@ -188,6 +192,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         member: Option(discord.Member, "Wybierz osobę, którą chcesz wyciszyć"),
         reason: Option(str, "Powód wyciszenia", required=False) = "Brak",
     ):
+        await ctx.defer()
         mutedrole: discord.Role | None = discord.utils.get(
             ctx.guild.roles, name="Muted"
         )
@@ -209,7 +214,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         embed.description = (
             f"🔇 {ctx.author.mention} wyciszył {member.mention} z powodu `{reason}`"
         )
-        await ctx.respond(embed=embed)
+        await ctx.send_followup(embed=embed)
         try:
             await member.send(
                 f"🔇 {ctx.author.mention} wyciszył Cię na serwerze **{ctx.guild.name}** z powodu `{reason}`"
@@ -229,6 +234,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         ctx: discord.ApplicationContext,
         member: Option(discord.Member, "Osoba, którą chcesz odciszyć"),
     ):
+        await ctx.defer()
         mutedrole: discord.Role = discord.utils.get(ctx.guild.roles, name="Muted")
         await member.remove_roles(mutedrole)
         await self.save_to_event_logs(
@@ -237,7 +243,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         embed = discord.Embed()
         embed.title = "Odciszenie"
         embed.description = f"🔊 {ctx.author.mention} odciszył **{member.mention}**"
-        await ctx.respond(embed=embed)
+        await ctx.send_followup(embed=embed)
         try:
             await member.send(
                 f"🔊 {ctx.author.mention} odciszył Cię na serwerze **{ctx.guild.name}**"
@@ -257,6 +263,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         member: Option(discord.Member, "Osoba, której chcesz dać ostrzeżenie"),
         reason: Option(str, "Powód ostrzeżenia", required=False) = "Brak",
     ):
+        await ctx.defer()
         database.discord.Warns(
             server=ctx.guild.id,
             member=member.id,
@@ -270,7 +277,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         embed.title = "Ostrzeżenie"
         embed.description = f"⚠️ {member.mention} został ostrzeżony przez {ctx.author.mention} z powodu `{reason}`"
         embed.color = discord.Color.gold()
-        await ctx.respond(embed=embed)
+        await ctx.send_followup(embed=embed)
 
     @slash_command(
         description="Pokazuje ostrzeżenia dane podanemu użytkownikowi",
@@ -283,6 +290,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         ctx: discord.ApplicationContext,
         member: Option(discord.Member, "Osoba, której ostrzeżenia chcesz wyświetlić"),
     ):
+        await ctx.defer()
         embed = discord.Embed()
         embed.title = "Ostrzeżenia"
         embed.color = discord.Color.gold()
@@ -300,7 +308,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             for warn in warns:
                 i += 1
                 embed.description += f"{i}. `{warn.reason}` od <@{warn.given_by}> w dniu {warn.date.strftime('%d-%m-%Y %H:%M')}\n"
-        await ctx.respond(embed=embed)
+        await ctx.send_followup(embed=embed)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
