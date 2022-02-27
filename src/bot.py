@@ -179,12 +179,10 @@ class Atorin(commands.AutoShardedBot):
     def embed(self, author=None):
         embed = discord.Embed()
         embed.timestamp = datetime.utcnow()
-        if author and self.mongo.Premium.objects(id=author.id).first():
-            embed.set_footer(
-                text="Atorin Premium 💎", icon_url=str(self.user.avatar_url)
-            )
-        else:
-            embed.set_footer(text="Atorin", icon_url=str(self.user.avatar_url))
+        embed.set_footer(
+            text="❌ Ze względu na zmiany wprowadzone przez Discorda, od 1 marca 2022 komendy z prefixem & zostaną wyłączone. Proszę o używanie komend z ukośnikiem. W przypadku problemów, wejdź na serwer support Atorina",
+            icon_url=str(self.user.avatar_url),
+        )
         embed.colour = discord.Colour(0xC4C3EB)
         return embed
 
