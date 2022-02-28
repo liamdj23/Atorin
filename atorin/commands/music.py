@@ -330,7 +330,9 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         guild_ids=config["guild_ids"],
     )
     async def volume(
-        self, ctx: discord.ApplicationContext, vol: Option(int, "Głośność od 1 do 100")
+        self,
+        ctx: discord.ApplicationContext,
+        vol: Option(int, "Głośność od 1 do 100", min_value=1, max_value=100),
     ):
         await ctx.defer()
         if vol > 100 or vol < 0:
