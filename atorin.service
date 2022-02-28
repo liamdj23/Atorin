@@ -1,0 +1,16 @@
+[Unit]
+Description=Atorin Discord Bot by liamdj23
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=user
+WorkingDirectory=/path/to/Atorin/
+Environment=PYTHONPATH=/path/to/Atorin
+ExecStart=/path/to/Atorin/venv/bin/python run.py
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target

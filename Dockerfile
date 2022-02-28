@@ -1,14 +1,7 @@
-FROM python:3.9-buster
-
-WORKDIR /app
-
-COPY requirements.txt ./
-RUN  ln -sf /usr/share/zoneinfo/Europe/Warsaw /etc/timezone && \
-     ln -sf /usr/share/zoneinfo/Europe/Warsaw /etc/localtime && \
-     pip install -r requirements.txt
-
-COPY . .
-
-WORKDIR /app/src
-
-CMD ["python", "main.py"]
+FROM python:3.10.1-bullseye
+RUN ln -sf /usr/share/zoneinfo/Europe/Warsaw /etc/timezone
+RUN ln -sf /usr/share/zoneinfo/Europe/Warsaw /etc/localtime
+COPY . /bot
+WORKDIR /bot
+RUN pip install -r requirements.txt
+CMD [ "python", "run.py" ]

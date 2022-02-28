@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Atorin :: {% block title %}{% endblock %}</title>
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://cdn.discordapp.com/avatars/408959273956147200/f670365c268789fb1e1ba6e32a764e26.png?size=1024"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css"
+    />
+    <script
+      src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <style>
+      img.emoji {
+        height: 1em;
+        width: 1em;
+        margin: 0 0.05em 0 0.1em;
+        vertical-align: -0.1em;
+      }
+    </style>
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="navbar-brand">
+        <a class="navbar-item" href="/">
+          <img
+            class="mr-1"
+            src="https://cdn.discordapp.com/avatars/408959273956147200/f670365c268789fb1e1ba6e32a764e26.png?size=1024"
+            alt="Atorin"
+          />
+          Atorin
+        </a>
+        <a
+          role="button"
+          class="navbar-burger"
+          aria-label="menu"
+          aria-expanded="false"
+          data-target="navMenu"
+        >
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+      <div id="navMenu" class="navbar-menu">
+        <div class="navbar-start">
+          <a href="/" class="navbar-item"> 📄Strona główna </a>
+          <a href="/commands" class="navbar-item"> 📕 Komendy </a>
+          <a href="https://liamdj23.ovh/discord" class="navbar-item">
+            🚑 Discord
+          </a>
+          <a href="https://bot.liamdj23.ovh/stats" class="navbar-item">
+            📈 Statystyki
+          </a>
+          <a href="https://buycoffee.to/liamdj23" class="navbar-item">
+            💸 <strong>Wsparcie</strong>
+          </a>
+        </div>
+
+        <div class="navbar-end">
+          {% if user %}
+          <div class="navbar-item has-dropdown is-hoverable">
+            <a class="navbar-link">
+              <img class="mr-1" src="{{ user.avatar_url }}" />
+              <strong>{{ user.username }}#{{ user.discriminator }}</strong>
+            </a>
+            <div class="navbar-dropdown">
+              <a href="/servers" class="navbar-item"> Wybierz serwer </a>
+              <hr class="navbar-divider" />
+              <a href="/logout" class="navbar-item"> Wyloguj się </a>
+            </div>
+          </div>
+          {% else %}
+          <div class="navbar-item">
+            <div class="buttons">
+              <a href="/login" class="button is-link">Zaloguj</a>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <section class="hero is-link is-small-with-navbar">
+      {% for message in get_flashed_messages() %}
+      <div class="notification has-text-centered is-danger">
+        <button class="delete"></button>
+        {{ message }}
+      </div>
+      {% endfor %}
+      <div class="hero-body has-text-centered">
+        <figure class="image is-128x128 is-inline-block">
+          <img
+            src="https://cdn.discordapp.com/avatars/408959273956147200/f670365c268789fb1e1ba6e32a764e26.png?size=1024"
+          />
+        </figure>
+        <p class="title">Atorin</p>
+        <p class="subtitle">Wielofunkcyjny bot na Twój serwer Discord</p>
+        <a href="https://liamdj23.ovh/addbot" class="button"
+          >Dodaj Atorina na swój serwer!</a
+        >
+      </div>
+    </section>
+    <section>{% block content %}{% endblock %}</section>
+    <footer class="footer">
+      <div class="content has-text-centered">
+        <p>
+          Atorin by <a href="https://liamdj23.ovh/">liamdj23</a> | 2018-2022
+        </p>
+        <a href="/terms">Regulamin serwisu</a>
+      </div>
+    </footer>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        $(".navbar-burger").click(function () {
+          $(".navbar-burger").toggleClass("is-active");
+          $(".navbar-menu").toggleClass("is-active");
+        });
+      });
+      document.addEventListener("DOMContentLoaded", () => {
+        (document.querySelectorAll(".notification .delete") || []).forEach(
+          ($delete) => {
+            const $notification = $delete.parentNode;
+
+            $delete.addEventListener("click", () => {
+              $notification.parentNode.removeChild($notification);
+            });
+          }
+        );
+      });
+    </script>
+    <script>
+      twemoji.parse(document.body);
+    </script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

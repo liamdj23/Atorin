@@ -1,0 +1,28 @@
+token:  # Discord bot token
+guild_ids:
+  - 408960275933429760
+database: # MongoDB
+  host: "127.0.0.1"
+  port: 27017
+  db: "atorin"
+dashboard: # Discord OAuth2
+  client_id: 
+  client_secret: 
+  domain: http://127.0.0.1:8080
+steam: 
+lavalink:
+  host: 127.0.0.1
+  port: 2333
+  password: youshallnotpass
+  region: eu
+  node: default-node
+weather: 
+fortnite: 
+spotify:
+  client_id:
+  client_secret:
+lol:
+updater:
+  enabled: true
+  webhook: 
+statcord:
