@@ -7,6 +7,7 @@ from discord.commands import Option, slash_command, OptionChoice
 from discord.ext import commands
 from discord.ui import Modal, InputText
 import requests
+import base64
 
 from atorin.bot import Atorin
 from ..config import config
@@ -351,6 +352,40 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
 
         modal = ExecModal()
         await ctx.interaction.response.send_modal(modal)
+
+    @slash_command(
+        description="Kodowanie/Dekodowanie tekstu/ciągu w Base64",
+        guild_ids=config["guild_ids"],
+    )
+    async def base64(
+        self,
+        ctx: discord.ApplicationContext,
+        action: Option(
+            str,
+            "Wybierz co chcesz zrobić",
+            choices=[
+                OptionChoice("Kodowanie", "encode"),
+                OptionChoice("Dekodowanie", "decode"),
+            ],
+        ),
+        content: Option(str, "Wprowadź tekst"),
+    ):
+        await ctx.defer()
+        embed = discord.Embed()
+        embed.title = "Base64"
+        if action == "encode":
+            encoded = base64.b64encode(content.encode("utf-8", "ignore")).decode(
+                "utf-8", "ignore"
+            )
+            embed.add_field(name="📋 Tekst", value=f"```{content}```", inline=False)
+            embed.add_field(name="🔠 Base64", value=f"```{encoded}```", inline=False)
+        elif action == "decode":
+            decoded = base64.b64decode(content.encode("utf-8", "ignore")).decode(
+                "utf-8", "ignore"
+            )
+            embed.add_field(name="🔠 Base64", value=f"```{content}```", inline=False)
+            embed.add_field(name="📋 Tekst", value=f"```{decoded}```", inline=False)
+        await ctx.send_followup(embed=embed)
 
 
 def setup(bot):
