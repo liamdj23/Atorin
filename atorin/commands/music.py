@@ -367,9 +367,11 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
     )
     async def nowplaying(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
+            ctx.guild.id
+        )
         if player.is_playing:
-            song = player.current
+            song: lavalink.AudioTrack = player.current
             embed = discord.Embed()
             embed.title = "Teraz odtwarzane"
             embed.add_field(name="🎧 Utwór", value=song.title, inline=False)
@@ -388,7 +390,15 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
                 )
             else:
                 embed.add_field(name="🛤️ Postęp", value="🔴 Na żywo")
-            embed.add_field(name="💃 Zaproponowany przez", value=f"<@{song.requester}>")
+
+            embed.add_field(
+                name="🔂 Powtarzanie utworu",
+                value="✅ Włączone" if player.repeat else "❌ Wyłączone",
+            )
+            embed.add_field(name="🔉 Głośność", value=f"{player.volume}%")
+            embed.add_field(
+                name="💃 Zaproponowany przez", value=f"<@{song.requester}>", inline=False
+            )
             embed.set_thumbnail(
                 url=f"https://img.youtube.com/vi/{song.identifier}/maxresdefault.jpg"
             )
