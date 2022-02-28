@@ -25,7 +25,7 @@ from discord.ext.commands import (
     MissingPermissions,
     BotMissingPermissions,
 )
-from atorin.utils import user_counter
+import statcord
 
 
 class Atorin(discord.AutoShardedBot):
@@ -55,6 +55,8 @@ class Atorin(discord.AutoShardedBot):
                     )
         log.info("✅ Extensions loaded successfully!")
         humanize.activate("pl_PL")
+        self.statcord = statcord.Client(self, config["statcord"])
+        self.statcord.start_loop()
 
     def run(self, *args: Any, **kwargs: Any) -> None:
         return super().run(self.config["token"], *args, **kwargs)
@@ -68,6 +70,9 @@ class Atorin(discord.AutoShardedBot):
             .decode("ascii")
             .strip()
         )
+
+    async def on_application_command(self, ctx: discord.ApplicationContext) -> None:
+        self.statcord.command_run(ctx)
 
     async def on_application_command_error(
         self, ctx: discord.ApplicationContext, error: CommandError

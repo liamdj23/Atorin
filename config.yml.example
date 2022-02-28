@@ -25,3 +25,4 @@ lol:
 updater:
   enabled: true
   webhook: 
+statcord:
