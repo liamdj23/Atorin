@@ -17,12 +17,9 @@ def restart_process() -> None:
 
 
 def send_webhook(message: str) -> None:
-    data = {
-        "username": "Atorin",
-        "avatar_url": "https://cdn.discordapp.com/avatars/408959273956147200/d26356dd40d8b76e10c0678b4afe3f1b.png",
-    }
+    data = {}
     data["embeds"] = [
-        {"title": "Aktualizacja Atorina", "description": message, "color": 16711680}
+        {"description": message, "color": 16711680}
     ]
     r = requests.post(config["updater"]["webhook"], json=data)
     try:
@@ -69,23 +66,23 @@ async def check_signature(request: Request) -> bool:
 
 
 def process_update() -> None:
-    log.info("Downloading update...")
+    log.info("⬇️ Downloading update...")
     if not pull_update():
-        log.error("Downloading updates has failed!")
-        send_webhook("Nie udało się pobrać aktualizacji.")
+        log.error("❌ Downloading updates has failed!")
+        send_webhook("⬇️ Nie udało się pobrać aktualizacji.")
         return
-    log.info("Update downloaded successfully!")
-    log.info("Updating dependencies...")
+    log.info("✅ Update downloaded successfully!")
+    log.info("📦 Updating dependencies...")
     if not update_dependencies():
-        log.error("Updating dependencies has failed!")
-        send_webhook("Nie udało się uaktualnić zależności.")
+        log.error("❌ Updating dependencies has failed!")
+        send_webhook("📦 Nie udało się uaktualnić zależności.")
         return
-    log.info("Dependencies updated successfully!")
-    log.info("Checking config for new entries...")
+    log.info("✅ Dependencies updated successfully!")
+    log.info("📝 Checking config for new entries...")
     if check_config_for_changes():
         log.warning(
-            "Example config has new entries, fill your config.yml and restart bot to apply update."
+            "❌ Example config has new entries, fill your config.yml and restart bot to apply update."
         )
-        send_webhook("Konfiguracja wymaga uzupełnienia, wymagany ręczny restart.")
+        send_webhook("📝 Konfiguracja wymaga uzupełnienia, wymagany ręczny restart.")
         return
     restart_process()
