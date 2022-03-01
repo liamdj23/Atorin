@@ -2,6 +2,7 @@ import base64
 import re
 
 from datetime import timedelta
+from bs4 import BeautifulSoup, Tag
 import lavalink
 from discord.ext import commands
 from discord.commands import slash_command, Option
@@ -141,6 +142,10 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         return guild_check
 
     async def ensure_voice(self, ctx):
+        # These are commands that doesn't require author to join a voicechannel
+        if ctx.command.name in ("lyrics",):
+            return True
+
         """This check ensures that the bot and command author are in the same voicechannel."""
         player = self.bot.lavalink.player_manager.create(
             ctx.guild.id, endpoint=str(ctx.guild.region)
@@ -450,6 +455,98 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         await ctx.send_followup(
             f"🎚 Bass boost został **{'włączony' if player.fetch('bassboost') else 'wyłączony'}**."
         )
+
+    @slash_command(description="Tekst piosenki", guild_ids=config["guild_ids"])
+    async def lyrics(
+        self,
+        ctx: discord.ApplicationContext,
+        title: Option(
+            str,
+            "Podaj tytuł utworu lub pozostaw puste, jeśli chcesz tekst aktualnie odtwarzanego utworu",
+        ) = None,
+    ):
+        await ctx.defer()
+        from_player: bool = False
+        if not title:
+            player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
+                ctx.guild.id
+            )
+            if not player or not player.is_playing:
+                raise commands.BadArgument(
+                    "Atorin nie odtwarza muzyki, musisz podać tytuł utworu!"
+                )
+            song: lavalink.AudioTrack = player.current
+            title: str = song.title.split(" (")[0]
+            from_player = True
+        search = requests.get(
+            "https://genius.com/api/search/multi",
+            params={"q": title},
+            headers={"User-agent": "Atorin"},
+        )
+        if not search.status_code == 200:
+            raise commands.CommandError(
+                f"Wystąpił błąd podczas wyszukiwania tekstu piosenki! [{search.status_code}]"
+            )
+        search_data = search.json()["response"]["sections"]
+        if not search_data:
+            if from_player:
+                raise commands.BadArgument(
+                    "Nie znaleziono tekstu odtwarzanego utworu! Spróbuj wpisać komendę jeszcze raz, podając tytuł utworu."
+                )
+            else:
+                raise commands.BadArgument("Nie znaleziono tekstu podanego utworu!")
+        for section in search_data:
+            if section["type"] == "song":
+                lyrics_data = section["hits"][0]["result"]
+        lyrics_url = lyrics_data["path"]
+        lyrics_artist = lyrics_data["artist_names"]
+        lyrics_title = lyrics_data["title"]
+        lyrics_thumbnail = lyrics_data["song_art_image_url"]
+        r = requests.get(
+            f"https://genius.com{lyrics_url}", headers={"User-agent": "Atorin"}
+        )
+        if not r.status_code == 200:
+            raise commands.CommandError(
+                f"Wystąpił błąd podczas pobierania tekstu piosenki! [{r.status_code}]"
+            )
+        soup = BeautifulSoup(r.content, "html.parser")
+        containers: list[Tag] = soup.find_all(
+            "div", attrs={"data-lyrics-container": "true"}
+        )
+        if not containers:
+            raise commands.CommandError(f"Wystąpił błąd podczas przetwarzania tekstu!")
+        lyrics: str = ""
+        for container in containers:
+            i_tags: list[Tag] = container.find_all("i")
+            for tag in i_tags:
+                tag.replace_with(f"*{tag.text}*")
+            b_tags: list[Tag] = container.find_all("b")
+            for tag in b_tags:
+                tag.replace_with(f"**{tag.text}**")
+            lyrics += container.get_text("\n", strip=True) + "\n"
+        splited_lyrics = lyrics.splitlines()
+        for i, line in enumerate(splited_lyrics):
+            if line.startswith("[") and line.endswith("]"):
+                splited_lyrics[i] = f"\n**{line}**"
+        lyrics = "\n".join(splited_lyrics)
+        embed = discord.Embed()
+        embed.title = f"🎶 {lyrics_artist} - {lyrics_title}"
+        embed.set_thumbnail(url=lyrics_thumbnail)
+        if len(lyrics) > 4096:
+            splited_message = []
+            limit = 4096
+            for i in range(0, len(lyrics), limit):
+                splited_message.append(lyrics[i : i + limit])
+                if i > 2:
+                    break
+            embed.description = splited_message.pop(0)
+            await ctx.send_followup(embed=embed)
+            for message in splited_message:
+                embed.description = message
+                await ctx.send(embed=embed)
+        else:
+            embed.description = lyrics
+            await ctx.send_followup(embed=embed)
 
 
 def setup(bot):
