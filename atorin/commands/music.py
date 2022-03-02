@@ -5,7 +5,7 @@ from datetime import timedelta
 from bs4 import BeautifulSoup, Tag
 import lavalink
 from discord.ext import commands
-from discord.commands import slash_command, Option
+from discord.commands import slash_command, Option, SlashCommandGroup
 import discord
 import requests
 
@@ -349,21 +349,89 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         else:
             await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
 
-    @slash_command(
-        description="Wyświetla kolejkę utworów do odtworzenia",
+    queue_group = SlashCommandGroup(
+        "queue",
+        "Komendy do zarządzania kolejką odtwarzania",
         guild_ids=config["guild_ids"],
     )
-    async def queue(self, ctx: discord.ApplicationContext):
+
+    @queue_group.command(
+        name="view",
+        description="Wyświetla kolejkę utworów do odtworzenia",
+    )
+    async def queue_view(self, ctx: discord.ApplicationContext):
+        emoji_numbers = {
+            1: "1️⃣",
+            2: "2️⃣",
+            3: "3️⃣",
+            4: "4️⃣",
+            5: "5️⃣",
+            6: "6️⃣",
+            7: "7️⃣",
+            8: "8️⃣",
+            9: "9️⃣",
+            10: "🔟",
+        }
         await ctx.defer()
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
+            ctx.guild.id
+        )
         if not player.queue:
             return await ctx.send_followup("🕳️ Kolejka jest pusta!")
 
-        fmt = "\n".join(f"**{song.title}**" for song in player.queue)
+        fmt = "\n".join(
+            f"{emoji_numbers[i]} **{song.title}**"
+            for i, song in enumerate(player.queue, start=1)
+        )
 
         embed = discord.Embed()
         embed.title = f"Utwory w kolejce: {len(player.queue)}"
         embed.description = fmt
+        await ctx.send_followup(embed=embed)
+
+    @queue_group.command(
+        name="clear",
+        description="Czyści kolejkę",
+    )
+    async def queue_clear(self, ctx: discord.ApplicationContext):
+        await ctx.defer()
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
+            ctx.guild.id
+        )
+        if not player.queue:
+            return await ctx.send_followup("🕳️ Kolejka jest pusta!")
+        embed = discord.Embed()
+        embed.title = "Wyczyszczono kolejkę"
+        embed.description = (
+            f"✅  **Pomyślnie usunięto *{len(player.queue)}* utworów z kolejki.**"
+        )
+        player.queue = []
+        await ctx.send_followup(embed=embed)
+
+    @queue_group.command(
+        name="remove",
+        description="Usuwa z kolejki podany utwór",
+    )
+    async def queue_remove(
+        self,
+        ctx: discord.ApplicationContext,
+        number: Option(int, "Wpisz numer utworu w kolejce", min_value=1),
+    ):
+        await ctx.defer()
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
+            ctx.guild.id
+        )
+        if not player.queue:
+            return await ctx.send_followup("🕳️ Kolejka jest pusta!")
+        try:
+            song: lavalink.AudioTrack = player.queue.pop(number - 1)
+        except IndexError:
+            raise commands.BadArgument(
+                "Podano niepoprawny numer utworu! Sprawdź kolejkę komendą `/queue view`"
+            )
+        embed = discord.Embed()
+        embed.title = "Usunięto z kolejki"
+        embed.description = f"🗑 {song.title}"
         await ctx.send_followup(embed=embed)
 
     @slash_command(
