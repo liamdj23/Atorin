@@ -402,7 +402,15 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             )
             embed.add_field(name="🔉 Głośność", value=f"{player.volume}%")
             embed.add_field(
-                name="💃 Zaproponowany przez", value=f"<@{song.requester}>", inline=False
+                name="🎚 Bass Boost",
+                value="✅ Włączony" if player.fetch("bassboost") else "❌ Wyłączony",
+            )
+            embed.add_field(
+                name="🔀 Losowo", value="✅ Włączony" if player.shuffle else "❌ Wyłączony"
+            )
+            embed.add_field(
+                name="💃 Zaproponowany przez",
+                value=f"<@{song.requester}>",
             )
             embed.set_thumbnail(
                 url=f"https://img.youtube.com/vi/{song.identifier}/maxresdefault.jpg"
