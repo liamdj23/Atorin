@@ -159,18 +159,16 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             should_connect = ctx.command.name in ("play",)
 
         if not ctx.author.voice or not ctx.author.voice.channel:
-            raise commands.CommandInvokeError(
-                "Musisz być połączony do kanału głosowego!"
-            )
+            raise commands.CommandError("Musisz być połączony do kanału głosowego!")
 
         if not player.is_connected:
             if not should_connect:
-                raise commands.CommandInvokeError("Atorin nie odtwarza muzyki!")
+                raise commands.CommandError("Atorin nie odtwarza muzyki!")
 
             permissions = ctx.author.voice.channel.permissions_for(ctx.me)
 
             if not permissions.connect or not permissions.speak:
-                raise commands.CommandInvokeError(
+                raise commands.CommandError(
                     "Atorin nie ma uprawnień potrzebnych do odtwarzania muzyki."
                     " Daj roli `Atorin` uprawnienia `Łączenie` oraz `Mówienie`"
                     " i spróbuj ponownie."
@@ -180,7 +178,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             await ctx.author.voice.channel.connect(cls=LavalinkVoiceClient)
         else:
             if int(player.channel_id) != ctx.author.voice.channel.id:
-                raise commands.CommandInvokeError(
+                raise commands.CommandError(
                     "Nie jesteś połączony do kanału na którym jest Atorin!"
                 )
 
