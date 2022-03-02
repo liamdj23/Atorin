@@ -3,7 +3,7 @@ import re
 import io
 import zlib
 import discord
-from discord.commands import Option, slash_command, OptionChoice
+from discord.commands import Option, slash_command, OptionChoice, SlashCommandGroup
 from discord.ext import commands
 from discord.ui import Modal, InputText
 import requests
@@ -353,38 +353,48 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
         modal = ExecModal()
         await ctx.interaction.response.send_modal(modal)
 
-    @slash_command(
-        description="Kodowanie/Dekodowanie tekstu/ciągu w Base64",
+    base64_group = SlashCommandGroup(
+        "base64",
+        "Kodowanie/Dekodowanie tekstu/ciągu w Base64",
         guild_ids=config["guild_ids"],
     )
-    async def base64(
+
+    @base64_group.command(
+        name="encode",
+        description="Kodowanie tekstu w Base64",
+    )
+    async def base64_encode(
         self,
         ctx: discord.ApplicationContext,
-        action: Option(
-            str,
-            "Wybierz co chcesz zrobić",
-            choices=[
-                OptionChoice("Kodowanie", "encode"),
-                OptionChoice("Dekodowanie", "decode"),
-            ],
-        ),
         content: Option(str, "Wprowadź tekst"),
     ):
         await ctx.defer()
         embed = discord.Embed()
         embed.title = "Base64"
-        if action == "encode":
-            encoded = base64.b64encode(content.encode("utf-8", "ignore")).decode(
-                "utf-8", "ignore"
-            )
-            embed.add_field(name="📋 Tekst", value=f"```{content}```", inline=False)
-            embed.add_field(name="🔠 Base64", value=f"```{encoded}```", inline=False)
-        elif action == "decode":
-            decoded = base64.b64decode(content.encode("utf-8", "ignore")).decode(
-                "utf-8", "ignore"
-            )
-            embed.add_field(name="🔠 Base64", value=f"```{content}```", inline=False)
-            embed.add_field(name="📋 Tekst", value=f"```{decoded}```", inline=False)
+        encoded = base64.b64encode(content.encode("utf-8", "ignore")).decode(
+            "utf-8", "ignore"
+        )
+        embed.add_field(name="📋 Tekst", value=f"```{content}```", inline=False)
+        embed.add_field(name="🔠 Base64", value=f"```{encoded}```", inline=False)
+        await ctx.send_followup(embed=embed)
+
+    @base64_group.command(
+        name="decode",
+        description="Dekodowanie ciągu w Base64",
+    )
+    async def base64_decode(
+        self,
+        ctx: discord.ApplicationContext,
+        content: Option(str, "Wprowadź ciąg"),
+    ):
+        await ctx.defer()
+        embed = discord.Embed()
+        embed.title = "Base64"
+        decoded = base64.b64decode(content.encode("utf-8", "ignore")).decode(
+            "utf-8", "ignore"
+        )
+        embed.add_field(name="🔠 Base64", value=f"```{content}```", inline=False)
+        embed.add_field(name="📋 Tekst", value=f"```{decoded}```", inline=False)
         await ctx.send_followup(embed=embed)
 
 
