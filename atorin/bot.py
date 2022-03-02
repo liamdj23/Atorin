@@ -26,6 +26,7 @@ from discord.ext.commands import (
     BotMissingPermissions,
 )
 import statcord
+import requests
 
 
 class Atorin(discord.AutoShardedBot):
@@ -107,12 +108,26 @@ class Atorin(discord.AutoShardedBot):
             status=discord.Status.online,
             activity=discord.Game(f"z {len(self.guilds)} serwerami"),
         )
+        # Post guild count to Top.gg
+        if config["topgg"]:
+            requests.post(
+                f"https://top.gg/api/bots/{self.user.id}/stats",
+                headers={"Authorization": config["topgg"]},
+                json={"server_count": len(self.guilds)},
+            )
 
     async def on_guild_remove(self, guild: discord.Guild) -> None:
         await self.change_presence(
             status=discord.Status.online,
             activity=discord.Game(f"z {len(self.guilds)} serwerami"),
         )
+        # Post guild count to Top.gg
+        if config["topgg"]:
+            requests.post(
+                f"https://top.gg/api/bots/{self.user.id}/stats",
+                headers={"Authorization": config["topgg"]},
+                json={"server_count": len(self.guilds)},
+            )
 
     async def on_shard_connect(self, shard_id: int) -> None:
         log.info(f"👁  Atorin shard {shard_id} connected to Discord.")
