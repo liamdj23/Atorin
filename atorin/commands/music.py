@@ -222,7 +222,9 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
     ):
         """Searches and plays a song from a given query."""
         await ctx.defer()
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
+            ctx.guild.id
+        )
         query = query.strip("<>")
 
         if not url_rx.match(query):
@@ -281,7 +283,9 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
     async def stop(self, ctx: discord.ApplicationContext):
         """Disconnects the player from the voice channel and clears its queue."""
         await ctx.defer()
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
+            ctx.guild.id
+        )
         if player.is_playing:
             player.queue.clear()
             await player.stop()
@@ -297,7 +301,9 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
     )
     async def pause(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
+            ctx.guild.id
+        )
         if not player.paused:
             await player.set_pause(True)
             embed = discord.Embed()
@@ -313,7 +319,9 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
     )
     async def resume(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
+            ctx.guild.id
+        )
         if player.paused:
             await player.set_pause(False)
             embed = discord.Embed()
@@ -362,7 +370,9 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         await ctx.defer()
         if vol > 100 or vol < 0:
             raise commands.BadArgument("Wartość musi być w przedziale od 1 do 100!")
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
+            ctx.guild.id
+        )
         if player.is_playing:
             await player.set_volume(vol)
             embed = discord.Embed()
@@ -516,7 +526,9 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
     )
     async def loop(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
+            ctx.guild.id
+        )
         if player.repeat:
             player.repeat = False
         else:
@@ -530,7 +542,9 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
     )
     async def shuffle(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
+            ctx.guild.id
+        )
         if player.shuffle:
             player.shuffle = False
         else:
@@ -545,11 +559,14 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
             ctx.guild.id
         )
+        equalizer = lavalink.filters.Equalizer()
         if not player.fetch("bassboost"):
-            await player.set_gains((0, 0.50), (1, 0.50), (2, 0.50))
+            bands = [(0, 0.25), (1, 0.25), (2, 0.25)]
+            equalizer.update(bands=bands)
+            await player.set_filter(equalizer)
             player.store("bassboost", True)
         else:
-            await player.reset_equalizer()
+            await player.remove_filter(equalizer)
             player.store("bassboost", False)
         await ctx.send_followup(
             f"🎚 Bass boost został **{'włączony' if player.fetch('bassboost') else 'wyłączony'}**."
