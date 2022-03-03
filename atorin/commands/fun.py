@@ -1,7 +1,7 @@
 import textwrap
 import unicodedata
 from io import BytesIO
-from random import randrange
+from random import randint
 
 import aiohttp
 import discord
@@ -52,7 +52,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 "https://pasek-tvpis.pl/index.php",
-                data={"fimg": randrange(2), "msg": text},
+                data={"fimg": randint(0, 1), "msg": text},
             ) as r:
                 if r.status == 200:
                     image = await r.content.read()
@@ -154,7 +154,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             .encode("ASCII", "ignore")
             .decode("UTF-8")
         )
-        template = Image.open("assets/achievement/{0}.png".format(randrange(1, 39)))
+        template = Image.open("assets/achievement/{0}.png".format(randint(1, 39)))
         d1 = ImageDraw.Draw(template)
         font = ImageFont.truetype("assets/achievement/font.ttf", 16)
         d1.text((60, 7), "Osiagniecie zdobyte!", font=font, fill=(255, 255, 0))
@@ -319,7 +319,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     async def flip(self, ctx: discord.ApplicationContext):
         embed = discord.Embed()
         embed.title = "Rzut monetą"
-        embed.description = f"🪙 **{'Orzeł' if randrange(2) == 1 else 'Reszka'}**"
+        embed.description = f"🪙 **{'Orzeł' if randint(0, 1) == 1 else 'Reszka'}**"
         await ctx.respond(embed=embed)
 
     @slash_command(
@@ -504,6 +504,35 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
         )
         embed.set_image(url=post["url"])
+        await ctx.send_followup(embed=embed)
+
+    @slash_command(
+        description="Losowy komiks z xkcd.com", guild_ids=config["guild_ids"]
+    )
+    async def xkcd(self, ctx: discord.ApplicationContext):
+        await ctx.defer()
+        latest = requests.get(
+            f"https://xkcd.com/info.0.json",
+            headers={"User-agent": "Atorin"},
+        )
+        if not latest.status_code == 200:
+            raise commands.CommandError(
+                "Wystąpił błąd przy pobieraniu komiksu, spróbuj ponownie później."
+            )
+        latest_number = latest.json()["num"]
+        random_comic = randint(1, latest_number)
+        comic = requests.get(
+            f"https://xkcd.com/{random_comic}/info.0.json",
+            headers={"User-agent": "Atorin"},
+        )
+        if not comic.status_code == 200:
+            raise commands.CommandError(
+                "Wystąpił błąd przy pobieraniu komiksu, spróbuj ponownie później."
+            )
+        comic_data = comic.json()
+        embed = discord.Embed()
+        embed.title = comic_data["title"]
+        embed.set_image(url=comic_data["img"])
         await ctx.send_followup(embed=embed)
 
 
