@@ -319,10 +319,24 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
     @slash_command(
         description="Pomija aktualnie odtwarzany utwór", guild_ids=config["guild_ids"]
     )
-    async def skip(self, ctx: discord.ApplicationContext):
+    async def skip(
+        self,
+        ctx: discord.ApplicationContext,
+        number: Option(
+            int, "Podaj numer utworu który chcesz odtworzyć", min_value=1
+        ) = None,
+    ):
         await ctx.defer()
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
+            ctx.guild.id
+        )
         if player.is_playing:
+            if number:
+                if number > len(player.queue):
+                    raise commands.BadArgument(
+                        "Podano niepoprawny numer utworu! Sprawdź kolejkę komendą `/queue view`"
+                    )
+                player.queue = player.queue[number - 1 :]
             await player.skip()
             await ctx.send_followup("⏭ ️Pominięto utwór.")
         else:
