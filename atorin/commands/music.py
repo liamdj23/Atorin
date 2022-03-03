@@ -286,9 +286,11 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             player.queue.clear()
             await player.stop()
             await ctx.voice_client.disconnect(force=True)
-            await ctx.send_followup("⏹ Zatrzymano odtwarzanie.")
+            embed = discord.Embed()
+            embed.description = "⏹ **Zatrzymano odtwarzanie.**"
+            await ctx.send_followup(embed=embed)
         else:
-            await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
+            raise commands.CommandError("Atorin nie odtwarza muzyki!")
 
     @slash_command(
         description="Wstrzymuje odtwarzanie muzyki", guild_ids=config["guild_ids"]
@@ -298,11 +300,13 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         if not player.paused:
             await player.set_pause(True)
-            await ctx.send_followup(
-                "⏸ Wstrzymano odtwarzanie. Aby wznowić wpisz `/resume`."
+            embed = discord.Embed()
+            embed.description = (
+                "⏸ **Wstrzymano odtwarzanie. Aby wznowić wpisz `/resume`.**"
             )
+            await ctx.send_followup(embed=embed)
         else:
-            await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
+            raise commands.CommandError("Atorin nie odtwarza muzyki!")
 
     @slash_command(
         description="Wznawia odtwarzanie muzyki", guild_ids=config["guild_ids"]
@@ -312,9 +316,11 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         if player.paused:
             await player.set_pause(False)
-            await ctx.send_followup("▶️ Wznowiono odtwarzanie.")
+            embed = discord.Embed()
+            embed.description = "▶️ **Wznowiono odtwarzanie.**"
+            await ctx.send_followup(embed=embed)
         else:
-            await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
+            raise commands.CommandError("Atorin nie odtwarza muzyki!")
 
     @slash_command(
         description="Pomija aktualnie odtwarzany utwór", guild_ids=config["guild_ids"]
@@ -338,9 +344,11 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
                     )
                 player.queue = player.queue[number - 1 :]
             await player.skip()
-            await ctx.send_followup("⏭ ️Pominięto utwór.")
+            embed = discord.Embed()
+            embed.description = "⏭ ️**Pominięto utwór.**"
+            await ctx.send_followup(embed=embed)
         else:
-            await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
+            raise commands.CommandError("Atorin nie odtwarza muzyki!")
 
     @slash_command(
         description="Ustawia głośność aktualnie odtwarzanego utworu",
@@ -357,9 +365,11 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         if player.is_playing:
             await player.set_volume(vol)
-            await ctx.send_followup("🔉 Ustawiono glośność na {}%.".format(vol))
+            embed = discord.Embed()
+            embed.description = f"🔉 **Ustawiono glośność na {vol}%.**"
+            await ctx.send_followup(embed=embed)
         else:
-            await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
+            raise commands.CommandError("Atorin nie odtwarza muzyki!")
 
     queue_group = SlashCommandGroup(
         "queue",
@@ -388,15 +398,14 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
             ctx.guild.id
         )
+        embed = discord.Embed()
         if not player.queue:
-            return await ctx.send_followup("🕳️ Kolejka jest pusta!")
-
+            embed.description = "🕳️ **Kolejka jest pusta!**"
+            return await ctx.send_followup(embed=embed)
         fmt = "\n".join(
             f"{emoji_numbers[i]} **{song.title}**"
             for i, song in enumerate(player.queue, start=1)
         )
-
-        embed = discord.Embed()
         embed.title = f"Utwory w kolejce: {len(player.queue)}"
         embed.description = fmt
         await ctx.send_followup(embed=embed)
@@ -410,9 +419,10 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
             ctx.guild.id
         )
-        if not player.queue:
-            return await ctx.send_followup("🕳️ Kolejka jest pusta!")
         embed = discord.Embed()
+        if not player.queue:
+            embed.description = "🕳️ **Kolejka jest pusta!**"
+            return await ctx.send_followup(embed=embed)
         embed.title = "Wyczyszczono kolejkę"
         embed.description = (
             f"✅  **Pomyślnie usunięto *{len(player.queue)}* utworów z kolejki.**"
@@ -433,15 +443,16 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
             ctx.guild.id
         )
+        embed = discord.Embed()
         if not player.queue:
-            return await ctx.send_followup("🕳️ Kolejka jest pusta!")
+            embed.description = "🕳️ **Kolejka jest pusta!**"
+            return await ctx.send_followup(embed=embed)
         try:
             song: lavalink.AudioTrack = player.queue.pop(number - 1)
         except IndexError:
             raise commands.BadArgument(
                 "Podano niepoprawny numer utworu! Sprawdź kolejkę komendą `/queue view`"
             )
-        embed = discord.Embed()
         embed.title = "Usunięto z kolejki"
         embed.description = f"🗑 {song.title}"
         await ctx.send_followup(embed=embed)
@@ -497,7 +508,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             )
             await ctx.send_followup(embed=embed)
         else:
-            await ctx.send_followup("🙊 Atorin nie odtwarza muzyki.")
+            raise commands.CommandError("Atorin nie odtwarza muzyki!")
 
     @slash_command(
         description="Ustawia powtarzanie aktualnie odtwarzanego utworu",
