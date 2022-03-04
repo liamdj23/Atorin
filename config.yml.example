@@ -18,9 +18,6 @@ lavalink:
   node: default-node
 weather: 
 fortnite: 
-metrics:
-  enabled: true
-  port: 9770
 spotify:
   client_id:
   client_secret:
@@ -28,3 +25,5 @@ lol:
 updater:
   enabled: true
   webhook: 
+statcord:
+topgg:

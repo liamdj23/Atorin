@@ -15,7 +15,6 @@ import sys, os
 from atorin import Atorin
 from atorin import log
 from atorin import dashboard
-from atorin import metrics
 from atorin.config import config
 
 if __name__ == "__main__":
@@ -24,7 +23,4 @@ if __name__ == "__main__":
     bot: Atorin = Atorin()
     log.info("🎛  Starting dashboard at port 8080...")
     bot.loop.create_task(dashboard.app.run_task(host="0.0.0.0", port=8080))
-    if config["metrics"]["enabled"]:
-        log.info(f"📊 Starting metrics at port {config['metrics']['port']}...")
-        metrics.prom.start_http_server(config["metrics"]["port"])
     bot.run()

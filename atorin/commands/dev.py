@@ -3,9 +3,11 @@ import re
 import io
 import zlib
 import discord
-from discord.commands import Option, slash_command, OptionChoice
+from discord.commands import Option, slash_command, OptionChoice, SlashCommandGroup
 from discord.ext import commands
+from discord.ui import Modal, InputText
 import requests
+import base64
 
 from atorin.bot import Atorin
 from ..config import config
@@ -295,7 +297,7 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
         await ctx.send_followup(embed=embed)
 
     @slash_command(
-        description="Uruchamianie linijki kodu",
+        description="Uruchamianie kodu",
         guild_ids=config["guild_ids"],
     )
     async def exec(
@@ -303,7 +305,7 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
         ctx: discord.ApplicationContext,
         language: Option(
             str,
-            "Język programowania",
+            "Wybierz język programowania",
             choices=[
                 OptionChoice(name="Bash", value="bash"),
                 OptionChoice(name="C#", value="csharp"),
@@ -320,19 +322,79 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
                 OptionChoice(name="TypeScript", value="typescript"),
             ],
         ),
-        code: Option(str, "Twój kod"),
+    ):
+        class ExecModal(Modal):
+            def __init__(self) -> None:
+                super().__init__("Uruchamianie kodu")
+                self.add_item(
+                    InputText(
+                        label="Twój kod",
+                        placeholder="print('Hello world!')",
+                        style=discord.InputTextStyle.multiline,
+                    )
+                )
+
+            async def callback(self, interaction: discord.Interaction):
+                r = requests.post(
+                    "https://emkc.org/api/v1/piston/execute",
+                    json={
+                        "language": language,
+                        "source": self.children[0].value,
+                    },
+                )
+                if r.status_code != 200:
+                    raise commands.CommandError(r.text)
+                data = r.json()
+                embed = discord.Embed()
+                embed.title = f"Uruchamianie kodu {language.capitalize()}"
+                embed.description = f"```{data['output'][:4000] if data['output'] else 'Program wykonany pomyślnie.'}```"
+                await interaction.response.send_message(embeds=[embed])
+
+        modal = ExecModal()
+        await ctx.interaction.response.send_modal(modal)
+
+    base64_group = SlashCommandGroup(
+        "base64",
+        "Kodowanie/Dekodowanie tekstu/ciągu w Base64",
+        guild_ids=config["guild_ids"],
+    )
+
+    @base64_group.command(
+        name="encode",
+        description="Kodowanie tekstu w Base64",
+    )
+    async def base64_encode(
+        self,
+        ctx: discord.ApplicationContext,
+        content: Option(str, "Wprowadź tekst"),
     ):
         await ctx.defer()
-        r = requests.post(
-            "https://emkc.org/api/v1/piston/execute",
-            json={"language": language, "source": code},
-        )
-        if r.status_code != 200:
-            raise commands.CommandError(r.text)
-        data = r.json()
         embed = discord.Embed()
-        embed.title = f"Uruchamianie kodu {language.capitalize()}"
-        embed.description = f"```{data['output'][:4000] if data['output'] else 'Program wykonany pomyślnie.'}```"
+        embed.title = "Base64"
+        encoded = base64.b64encode(content.encode("utf-8", "ignore")).decode(
+            "utf-8", "ignore"
+        )
+        embed.add_field(name="📋 Tekst", value=f"```{content}```", inline=False)
+        embed.add_field(name="🔠 Base64", value=f"```{encoded}```", inline=False)
+        await ctx.send_followup(embed=embed)
+
+    @base64_group.command(
+        name="decode",
+        description="Dekodowanie ciągu w Base64",
+    )
+    async def base64_decode(
+        self,
+        ctx: discord.ApplicationContext,
+        content: Option(str, "Wprowadź ciąg"),
+    ):
+        await ctx.defer()
+        embed = discord.Embed()
+        embed.title = "Base64"
+        decoded = base64.b64decode(content.encode("utf-8", "ignore")).decode(
+            "utf-8", "ignore"
+        )
+        embed.add_field(name="🔠 Base64", value=f"```{content}```", inline=False)
+        embed.add_field(name="📋 Tekst", value=f"```{decoded}```", inline=False)
         await ctx.send_followup(embed=embed)
 
 
