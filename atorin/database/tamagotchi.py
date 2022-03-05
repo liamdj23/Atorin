@@ -15,27 +15,19 @@ import mongoengine, datetime
 
 
 class Hunger(mongoengine.EmbeddedDocument):
-    state = mongoengine.IntField(default=5)
-    limit = mongoengine.IntField(default=10)
+    state = mongoengine.IntField(default=75)
+    limit = mongoengine.IntField(default=100)
 
 
 class Thirst(mongoengine.EmbeddedDocument):
-    state = mongoengine.IntField(default=5)
-    limit = mongoengine.IntField(default=10)
+    state = mongoengine.IntField(default=75)
+    limit = mongoengine.IntField(default=100)
 
 
 class Sleep(mongoengine.EmbeddedDocument):
-    state = mongoengine.IntField(default=5)
-    limit = mongoengine.IntField(default=10)
+    state = mongoengine.IntField(default=100)
+    limit = mongoengine.IntField(default=100)
     in_bed = mongoengine.BooleanField(default=False)
-
-
-class Item(mongoengine.EmbeddedDocument):
-    name = mongoengine.StringField(primary_key=True)
-    type = mongoengine.IntField()
-    cost = mongoengine.IntField()
-    description = mongoengine.StringField()
-    points = mongoengine.IntField()
 
 
 class Pet(mongoengine.Document):
@@ -44,4 +36,7 @@ class Pet(mongoengine.Document):
     hunger = mongoengine.EmbeddedDocumentField(Hunger, default=Hunger())
     thirst = mongoengine.EmbeddedDocumentField(Thirst, default=Thirst())
     sleep = mongoengine.EmbeddedDocumentField(Sleep, default=Sleep())
-    inventory = mongoengine.EmbeddedDocumentListField(Item)
+    foods = mongoengine.DictField()
+    drinks = mongoengine.DictField()
+    wallet = mongoengine.IntField(default=100)
+    daily = mongoengine.DateTimeField()

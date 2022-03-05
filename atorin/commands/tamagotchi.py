@@ -14,6 +14,7 @@ Made with ❤️ by Piotr Gaździcki.
 import discord
 from discord.ext import commands
 from discord.commands import slash_command, Option, OptionChoice, SlashCommandGroup
+from datetime import datetime, timedelta
 
 from atorin.bot import Atorin
 from .. import database
@@ -23,13 +24,17 @@ from ..config import config
 class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     def __init__(self, bot: Atorin):
         self.bot = bot
+        self.foods = {
+            "1": {"name": "🍎 Jabłko", "cost": 5, "points": 5},
+            "2": {"name": "🍌 Banan", "cost": 5, "points": 5},
+        }
+        self.drinks = {"1": {"name": "🚰 Woda", "cost": 5, "points": 5}}
 
     async def cog_before_invoke(self, ctx: discord.ApplicationContext):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
         ).first()
-        print(ctx.command.name)
-        if ctx.command.name is not "start" and pet is None:
+        if not ctx.command.name == "start" and pet is None:
             raise commands.CommandError(
                 "Nie posiadasz pupila! Utwórz go komendą /tamagotchi settings start"
             )
@@ -38,7 +43,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                 f"Nie możesz użyć komendy `{ctx.command.name}` kiedy Twój pupil śpi!"
             )
 
-    tamagotchi = SlashCommandGroup("tamagotchi", "Twój wirtualny pupil")
+    tamagotchi = SlashCommandGroup("pet", "Twój wirtualny pupil")
     tamagotchi_settings = tamagotchi.create_subgroup("settings", "Ustawienia")
     tamagotchi_shop = tamagotchi.create_subgroup("shop", "Sklep")
 
@@ -104,15 +109,18 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         embed.add_field(name="🛏 Sen", value=f"{pet.sleep.state}/{pet.sleep.limit}")
         await ctx.send_followup(embed=embed)
 
-    async def food_searcher(ctx: discord.AutocompleteContext):
+    async def food_searcher(self, ctx: discord.AutocompleteContext):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.interaction.user.id
         ).first()
-        inventory: list = [*{*pet.inventory}]
+        foods: list[dict] = []
+        for id in self.foods:
+            if id in pet.foods:
+                foods.append(self.foods[id])
         return [
-            item.name
-            for item in inventory
-            if item.type == 0 and item.name.lower().startswith(ctx.value.lower())
+            food["name"]
+            for food in foods
+            if food["name"].lower().startswith(ctx.value.lower())
         ]
 
     @tamagotchi.command(
@@ -122,42 +130,40 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     async def feed(
         self,
         ctx: discord.ApplicationContext,
-        food: Option(
-            str, "Wybierz jedzenie", autocomplete=food_searcher, required=True
+        food_name: Option(
+            str,
+            "Wybierz jedzenie",
+            autocomplete=food_searcher,
         ),
-        count: Option(int, "Ilość", required=True),
     ):
         await ctx.defer()
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
         ).first()
-        inventory: dict = {
-            i: pet.inventory.count(i) for i in pet.inventory
-        }  # {"database.tamagotchi.Item(name="Apple")": 3,}
-        item: database.tamagotchi.Item = database.tamagotchi.Item.objects(
-            name=food
-        ).first()
-        if inventory[item] < count:
-            raise commands.BadArgument(
-                f"Nie posiadasz takiej ilości przedmiotu `{item.name}`!"
-            )
-        if item.points * count > pet.hunger.limit:
-            raise commands.CommandError("Zbyt duża ilość jedzenia!")
-        for i in range(count):
-            pet.inventory.remove(item)
-            pet.hunger.state += item.points
-        pet.save()
-        await ctx.send_followup("Nakarmiono pupila!")
+        if pet.hunger.state >= 100:
+            raise commands.CommandError("Pupil jest najedzony!")
+        for id in self.foods:
+            item = self.foods[id]
+            if item["name"] == food_name:
+                pet.foods[id] -= 1
+                if pet.foods[id] == 0:
+                    del pet.foods[id]
+                pet.hunger.state += item["points"]
+                pet.save()
+                return await ctx.send_followup("Nakarmiono pupila!")
 
-    async def drink_searcher(ctx: discord.AutocompleteContext):
+    async def drink_searcher(self, ctx: discord.AutocompleteContext):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.interaction.user.id
         ).first()
-        inventory: list = [*{*pet.inventory}]
+        drinks: list[dict] = []
+        for id in self.drinks:
+            if id in pet.drinks:
+                drinks.append(self.drinks[id])
         return [
-            item.name
-            for item in inventory
-            if item.type == 1 and item.name.lower().startswith(ctx.value.lower())
+            drink["name"]
+            for drink in drinks
+            if drink["name"].lower().startswith(ctx.value.lower())
         ]
 
     @tamagotchi.command(
@@ -167,32 +173,23 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     async def drink(
         self,
         ctx: discord.ApplicationContext,
-        _drink: Option(
-            str, "Wybierz napój", autocomplete=drink_searcher, required=True
-        ),
-        count: Option(int, "Ilość", required=True),
+        drink_name: Option(str, "Wybierz napój", autocomplete=drink_searcher),
     ):
         await ctx.defer()
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
         ).first()
-        inventory: dict = {
-            i: pet.inventory.count(i) for i in pet.inventory
-        }  # {"database.tamagotchi.Item(name="Water")": 2,}
-        item: database.tamagotchi.Item = database.tamagotchi.Item.objects(
-            name=_drink
-        ).first()
-        if inventory[item] < count:
-            raise commands.BadArgument(
-                f"Nie posiadasz takiej ilości przedmiotu `{item.name}`!"
-            )
-        if item.points * count > pet.thirst.limit:
-            raise commands.CommandError("Zbyt duża ilość napoju!")
-        for i in range(count):
-            pet.inventory.remove(item)
-            pet.thirst.state += item.points
-        pet.save()
-        await ctx.send_followup("Zaspokojono pragnienie pupila!")
+        if pet.thirst.state >= 100:
+            raise commands.CommandError("Pupil jest napojony!")
+        for id in self.drinks:
+            item = self.drinks[id]
+            if item["name"] == drink_name:
+                pet.drinks[id] -= 1
+                if pet.drinks[id] == 0:
+                    del pet.drinks[id]
+                pet.thirst.state += item["points"]
+                pet.save()
+                return await ctx.send_followup("Napojono pupila!")
 
     @tamagotchi.command(
         description="Położ pupila spać",
@@ -220,13 +217,13 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         pet.save()
         await ctx.send_followup("Pupil się obudził!")
 
-    @tamagotchi.command(
-        description="Ulepszenia pupila",
-        guild_ids=config["guild_ids"],
-    )
-    async def upgrades(self, ctx: discord.ApplicationContext):
-        await ctx.defer()
-        await ctx.send_followup("Masz wszystkie ulepszenia pupila!")
+    # @tamagotchi.command(
+    #     description="Ulepszenia pupila",
+    #     guild_ids=config["guild_ids"],
+    # )
+    # async def upgrades(self, ctx: discord.ApplicationContext):
+    #     await ctx.defer()
+    #     await ctx.send_followup("Masz wszystkie ulepszenia pupila!")
 
     @tamagotchi.command(
         description="Saldo konta",
@@ -234,7 +231,10 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     )
     async def balance(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        await ctx.send_followup("Masz 100 coinów!")
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+            owner=ctx.author.id
+        ).first()
+        await ctx.send_followup(f"Masz {pet.wallet} coinów!")
 
     @tamagotchi.command(
         description="Darmowe 100 coinów do odebrania raz dziennie",
@@ -242,55 +242,131 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     )
     async def daily(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        await ctx.send_followup("Otrzymano darmowe 100 coinów!")
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+            owner=ctx.author.id
+        ).first()
+        if (datetime.now() - pet.daily) > timedelta(1):
+            pet.wallet += 100
+            pet.daily = datetime.now()
+            pet.save()
+            await ctx.send_followup("Otrzymano darmowe 100 coinów!")
+        else:
+            await ctx.send_followup("Otrzymałeś już darmowe 100 coinów, wróć jutro.")
+
+    async def food_shop_searcher(self, ctx: discord.AutocompleteContext):
+        return [
+            item["name"]
+            for item in self.foods.values()
+            if item["name"].lower().startswith(ctx.value.lower())
+        ]
 
     @tamagotchi_shop.command(
         description="Kup jedzenie dla pupila",
         guild_ids=config["guild_ids"],
     )
-    async def food(self, ctx: discord.ApplicationContext):
+    async def food(
+        self,
+        ctx: discord.ApplicationContext,
+        food_name: Option(str, "Wybierz jedzenie", autocomplete=food_shop_searcher),
+    ):
         await ctx.defer()
-        await ctx.send_followup("Zakupiono jedzenie dla pupila!")
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+            owner=ctx.author.id
+        ).first()
+        for id in self.foods:
+            item = self.foods[id]
+            if item["name"] == food_name:
+                if pet.wallet < item["cost"]:
+                    raise commands.BadArgument(
+                        f"Nie posiadasz {item['cost']} coinów, aby zakupić ten przedmiot!"
+                    )
+                try:
+                    pet.foods[id] += 1
+                except KeyError:
+                    pet.foods[id] = 1
+                pet.wallet -= item["cost"]
+                pet.save()
+                return await ctx.send_followup("Zakupiono jedzenie dla pupila!")
+
+    async def drink_shop_searcher(self, ctx: discord.AutocompleteContext):
+        return [
+            item["name"]
+            for item in self.drinks.values()
+            if item["name"].lower().startswith(ctx.value.lower())
+        ]
 
     @tamagotchi_shop.command(
         description="Kup napój dla pupila",
         guild_ids=config["guild_ids"],
     )
-    async def drinks(self, ctx: discord.ApplicationContext):
+    async def drink(
+        self,
+        ctx: discord.ApplicationContext,
+        drink_name: Option(str, "Wybierz napój", autocomplete=drink_shop_searcher),
+    ):
         await ctx.defer()
-        await ctx.send_followup("Zakupiono napój dla pupila!")
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+            owner=ctx.author.id
+        ).first()
+        for id in self.drinks:
+            item = self.drinks[id]
+            if item["name"] == drink_name:
+                if pet.wallet < item["cost"]:
+                    raise commands.BadArgument(
+                        f"Nie posiadasz {item['cost']} coinów, aby zakupić ten przedmiot!"
+                    )
+                try:
+                    pet.drinks[id] += 1
+                except KeyError:
+                    pet.drinks[id] = 1
+                pet.wallet -= item["cost"]
+                pet.save()
+                return await ctx.send_followup("Zakupiono napój dla pupila!")
 
-    @tamagotchi_shop.command(
-        description="Kup ubranie dla pupila",
-        guild_ids=config["guild_ids"],
-    )
-    async def clothes(self, ctx: discord.ApplicationContext):
-        await ctx.defer()
-        await ctx.send_followup("Zakupiono ubranie dla pupila!")
+    # @tamagotchi_shop.command(
+    #     description="Kup ubranie dla pupila",
+    #     guild_ids=config["guild_ids"],
+    # )
+    # async def clothes(self, ctx: discord.ApplicationContext):
+    #     await ctx.defer()
+    #     await ctx.send_followup("Zakupiono ubranie dla pupila!")
 
-    @tamagotchi_shop.command(
-        description="Kup ulepszenie dla pupila",
-        guild_ids=config["guild_ids"],
-    )
-    async def upgrades(self, ctx: discord.ApplicationContext):
-        await ctx.defer()
-        await ctx.send_followup("Zakupiono ulepszenie dla pupila!")
+    # @tamagotchi_shop.command(
+    #     description="Kup ulepszenie dla pupila",
+    #     guild_ids=config["guild_ids"],
+    # )
+    # async def upgrades(self, ctx: discord.ApplicationContext):
+    #     await ctx.defer()
+    #     await ctx.send_followup("Zakupiono ulepszenie dla pupila!")
 
     @tamagotchi.command(
         description="Przekaż coiny",
         guild_ids=config["guild_ids"],
     )
-    async def transfer(self, ctx: discord.ApplicationContext):
+    async def transfer(
+        self,
+        ctx: discord.ApplicationContext,
+        user: Option(discord.Member, "Wybierz komu przekazać coiny"),
+        coins: Option(int, "Podaj ilość coinów", min_value=1),
+    ):
         await ctx.defer()
-        await ctx.send_followup("Przekazano 100 coinów!")
-
-    @tamagotchi.command(
-        description="Daj przedmiot",
-        guild_ids=config["guild_ids"],
-    )
-    async def give(self, ctx: discord.ApplicationContext):
-        await ctx.defer()
-        await ctx.send_followup("Dano przedmiot!")
+        if user.id == ctx.author.id:
+            raise commands.BadArgument("Nie możesz przekazać coinów samemu sobie!")
+        author_pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+            owner=ctx.author.id
+        ).first()
+        if author_pet.wallet < coins:
+            raise commands.BadArgument("Nie masz takiej ilości coinów!")
+        recipent_pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+            owner=ctx.author.id
+        ).first()
+        if not recipent_pet:
+            raise commands.BadArgument("Odbiorca nie posiada pupila!")
+        author_pet.wallet -= coins
+        recipent_pet.wallet += coins
+        author_pet.save()
+        recipent_pet.save()
+        await ctx.send_followup(f"Przekazano {coins} coinów do {user.mention}!")
 
 
 def setup(bot):
