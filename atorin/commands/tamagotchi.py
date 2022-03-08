@@ -11,24 +11,108 @@
 Made with ❤️ by Piotr Gaździcki.
 
 """
+from random import randint
 import discord
-from discord.ext import commands
-from discord.commands import slash_command, Option, OptionChoice, SlashCommandGroup
+from discord.ext import commands, tasks
+from discord.commands import Option, SlashCommandGroup
 from datetime import datetime, timedelta
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
 
 from atorin.bot import Atorin
 from .. import database
 from ..config import config
 
 
+class Confirm(discord.ui.View):
+    def __init__(self):
+        super().__init__()
+        self.value: bool = None
+
+    @discord.ui.button(label="Potwierdź", style=discord.ButtonStyle.green)
+    async def confirm(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
+        self.value = True
+        self.stop()
+
+    @discord.ui.button(label="Anuluj", style=discord.ButtonStyle.red)
+    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.value = False
+        self.stop()
+
+
 class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     def __init__(self, bot: Atorin):
         self.bot = bot
+        self.check_pets_thirst.start()
+        self.check_pets_hanger.start()
+        self.check_pets_sleep.start()
+        self.check_pets_health.start()
         self.foods = {
             "1": {"name": "🍎 Jabłko", "cost": 5, "points": 5},
             "2": {"name": "🍌 Banan", "cost": 5, "points": 5},
         }
-        self.drinks = {"1": {"name": "🚰 Woda", "cost": 5, "points": 5}}
+        self.drinks = {
+            "1": {"name": "🚰 Woda", "cost": 5, "points": 5},
+            "2": {"name": "🧃 Sok", "cost": 10, "points": 7},
+        }
+        self.potions = {
+            "1": {"name": "💊 Tabletka", "cost": 50, "points": 25},
+            "2": {"name": "💉 Strzykawka", "cost": 200, "points": 100},
+        }
+        self.wallpapers = {"1": {"name": "Zwykła tapeta", "cost": 25}}
+        self.hats = {"1": {"name": "Czapka z daszkiem", "cost": 50}}
+
+    @tasks.loop(minutes=1)
+    async def check_pets_thirst(self):
+        for pet in database.tamagotchi.Pet.objects:
+            if pet.thirst.state >= 5:
+                pet.thirst.state -= randint(1, 5)
+            else:
+                pet.thirst.state = 0
+            pet.save()
+
+    @tasks.loop(minutes=2)
+    async def check_pets_hanger(self):
+        for pet in database.tamagotchi.Pet.objects:
+            if pet.hunger.state >= 5:
+                pet.hunger.state -= randint(1, 5)
+            else:
+                pet.hunger.state = 0
+            pet.save()
+
+    @tasks.loop(minutes=3)
+    async def check_pets_sleep(self):
+        for pet in database.tamagotchi.Pet.objects:
+            if pet.sleep.in_bed:
+                pet.sleep.state += randint(5, 10)
+            else:
+                if pet.sleep.state >= 5:
+                    pet.sleep.state -= randint(1, 5)
+                else:
+                    pet.sleep.state = 0
+            pet.save()
+
+    @tasks.loop(hours=2)
+    async def check_pets_health(self):
+        for pet in database.tamagotchi.Pet.objects:
+            if pet.thirst.state == 0:
+                if pet.health.state >= 5:
+                    pet.health.state -= randint(1, 5)
+                else:
+                    pet.health.state = 0
+            if pet.hunger.state == 0:
+                if pet.health.state >= 5:
+                    pet.health.state -= randint(1, 5)
+                else:
+                    pet.health.state = 0
+            if pet.sleep.state == 0 and not pet.sleep.in_bed:
+                if pet.health.state >= 5:
+                    pet.health.state -= randint(1, 5)
+                else:
+                    pet.health.state = 0
+            pet.save()
 
     async def cog_before_invoke(self, ctx: discord.ApplicationContext):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
@@ -98,16 +182,153 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
         ).first()
+        template = Image.open("assets/tamagotchi/pet_status.png")
+        if pet.hunger.state == 100:
+            hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_100.png")
+        elif pet.hunger.state <= 99 and pet.hunger.state >= 90:
+            hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_90.png")
+        elif pet.hunger.state <= 89 and pet.hunger.state >= 80:
+            hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_80.png")
+        elif pet.hunger.state <= 79 and pet.hunger.state >= 70:
+            hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_70.png")
+        elif pet.hunger.state <= 69 and pet.hunger.state >= 60:
+            hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_60.png")
+        elif pet.hunger.state <= 59 and pet.hunger.state >= 50:
+            hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_50.png")
+        elif pet.hunger.state <= 49 and pet.hunger.state >= 40:
+            hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_40.png")
+        elif pet.hunger.state <= 39 and pet.hunger.state >= 30:
+            hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_30.png")
+        elif pet.hunger.state <= 29 and pet.hunger.state >= 20:
+            hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_20.png")
+        elif pet.hunger.state <= 19 and pet.hunger.state >= 10:
+            hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_10.png")
+        elif pet.hunger.state <= 9 and pet.hunger.state >= 5:
+            hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_5.png")
+        else:
+            hunger_progress_bar = None
+        if pet.thirst.state == 100:
+            thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_100.png")
+        elif pet.thirst.state <= 99 and pet.thirst.state >= 90:
+            thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_90.png")
+        elif pet.thirst.state <= 89 and pet.thirst.state >= 80:
+            thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_80.png")
+        elif pet.thirst.state <= 79 and pet.thirst.state >= 70:
+            thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_70.png")
+        elif pet.thirst.state <= 69 and pet.thirst.state >= 60:
+            thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_60.png")
+        elif pet.thirst.state <= 59 and pet.thirst.state >= 50:
+            thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_50.png")
+        elif pet.thirst.state <= 49 and pet.thirst.state >= 40:
+            thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_40.png")
+        elif pet.thirst.state <= 39 and pet.thirst.state >= 30:
+            thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_30.png")
+        elif pet.thirst.state <= 29 and pet.thirst.state >= 20:
+            thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_20.png")
+        elif pet.thirst.state <= 19 and pet.thirst.state >= 10:
+            thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_10.png")
+        elif pet.thirst.state <= 9 and pet.thirst.state >= 5:
+            thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_5.png")
+        else:
+            thirst_progress_bar = None
+        if pet.sleep.state == 100:
+            sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_100.png")
+        elif pet.sleep.state <= 99 and pet.sleep.state >= 90:
+            sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_90.png")
+        elif pet.sleep.state <= 89 and pet.sleep.state >= 80:
+            sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_80.png")
+        elif pet.sleep.state <= 79 and pet.sleep.state >= 70:
+            sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_70.png")
+        elif pet.sleep.state <= 69 and pet.sleep.state >= 60:
+            sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_60.png")
+        elif pet.sleep.state <= 59 and pet.sleep.state >= 50:
+            sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_50.png")
+        elif pet.sleep.state <= 49 and pet.sleep.state >= 40:
+            sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_40.png")
+        elif pet.sleep.state <= 39 and pet.sleep.state >= 30:
+            sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_30.png")
+        elif pet.sleep.state <= 29 and pet.sleep.state >= 20:
+            sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_20.png")
+        elif pet.sleep.state <= 19 and pet.sleep.state >= 10:
+            sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_10.png")
+        elif pet.sleep.state <= 9 and pet.sleep.state >= 5:
+            sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_5.png")
+        else:
+            sleep_progress_bar = None
+        if pet.health.state == 100:
+            health_progress_bar = Image.open("assets/tamagotchi/pet_progress_100.png")
+        elif pet.health.state <= 99 and pet.health.state >= 90:
+            health_progress_bar = Image.open("assets/tamagotchi/pet_progress_90.png")
+        elif pet.health.state <= 89 and pet.health.state >= 80:
+            health_progress_bar = Image.open("assets/tamagotchi/pet_progress_80.png")
+        elif pet.health.state <= 79 and pet.health.state >= 70:
+            health_progress_bar = Image.open("assets/tamagotchi/pet_progress_70.png")
+        elif pet.health.state <= 69 and pet.health.state >= 60:
+            health_progress_bar = Image.open("assets/tamagotchi/pet_progress_60.png")
+        elif pet.health.state <= 59 and pet.health.state >= 50:
+            health_progress_bar = Image.open("assets/tamagotchi/pet_progress_50.png")
+        elif pet.health.state <= 49 and pet.health.state >= 40:
+            health_progress_bar = Image.open("assets/tamagotchi/pet_progress_40.png")
+        elif pet.health.state <= 39 and pet.health.state >= 30:
+            health_progress_bar = Image.open("assets/tamagotchi/pet_progress_30.png")
+        elif pet.health.state <= 29 and pet.health.state >= 20:
+            health_progress_bar = Image.open("assets/tamagotchi/pet_progress_20.png")
+        elif pet.health.state <= 19 and pet.health.state >= 10:
+            health_progress_bar = Image.open("assets/tamagotchi/pet_progress_10.png")
+        elif pet.health.state <= 9 and pet.health.state >= 5:
+            health_progress_bar = Image.open("assets/tamagotchi/pet_progress_5.png")
+        else:
+            health_progress_bar = None
+        if hunger_progress_bar:
+            template.paste(hunger_progress_bar, (583, 150))
+        if thirst_progress_bar:
+            template.paste(thirst_progress_bar, (583, 267))
+        if sleep_progress_bar:
+            template.paste(sleep_progress_bar, (583, 383))
+        if health_progress_bar:
+            template.paste(health_progress_bar, (583, 500))
+        # pet_background = Image.new("RGB", (316, 466), (255, 0, 0))
+        if pet.wallpaper:
+            pet_background = Image.open(
+                f"assets/tamagotchi/wallpapers/{pet.wallpaper}.png"
+            )
+        else:
+            pet_background = Image.open("assets/tamagotchi/wallpapers/0.png")
+        pet_image = Image.open("assets/tamagotchi/pet.png")
+        pet_background.paste(pet_image, (0, 9), pet_image.split()[3])
+        template.paste(pet_background, (117, 117))
+        template_draw = ImageDraw.Draw(template)
+        template_draw.text(
+            (960, 140),
+            f"{pet.hunger.state}",
+            (255, 255, 255),
+            ImageFont.truetype("assets/tamagotchi/apasih.ttf", 48),
+        )
+        template_draw.text(
+            (960, 257),
+            f"{pet.thirst.state}",
+            (255, 255, 255),
+            ImageFont.truetype("assets/tamagotchi/apasih.ttf", 48),
+        )
+        template_draw.text(
+            (960, 375),
+            f"{pet.sleep.state}",
+            (255, 255, 255),
+            ImageFont.truetype("assets/tamagotchi/apasih.ttf", 48),
+        )
+        template_draw.text(
+            (960, 490),
+            f"{pet.health.state}",
+            (255, 255, 255),
+            ImageFont.truetype("assets/tamagotchi/apasih.ttf", 48),
+        )
+        img = BytesIO()
+        template.save(img, "PNG")
+        img.seek(0)
         embed = discord.Embed()
         embed.title = f"Pupil {ctx.author}"
-        embed.add_field(
-            name="🍔 Jedzenie", value=f"{pet.hunger.state}/{pet.hunger.limit}"
-        )
-        embed.add_field(
-            name="🥤 Pragnienie", value=f"{pet.thirst.state}/{pet.thirst.limit}"
-        )
-        embed.add_field(name="🛏 Sen", value=f"{pet.sleep.state}/{pet.sleep.limit}")
-        await ctx.send_followup(embed=embed)
+        embed.set_image(url="attachment://pet_status.png")
+        await ctx.send_followup(embed=embed, file=discord.File(img, "pet_status.png"))
 
     async def food_searcher(self, ctx: discord.AutocompleteContext):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
@@ -140,7 +361,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
         ).first()
-        if pet.hunger.state >= 100:
+        if pet.hunger.state == 100:
             raise commands.CommandError("Pupil jest najedzony!")
         for id in self.foods:
             item = self.foods[id]
@@ -148,7 +369,10 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                 pet.foods[id] -= 1
                 if pet.foods[id] == 0:
                     del pet.foods[id]
-                pet.hunger.state += item["points"]
+                if pet.hunger.state + item["points"] > 100:
+                    raise commands.CommandError(f"Pupil nie chce zjeść {item['name']}")
+                else:
+                    pet.hunger.state += item["points"]
                 pet.save()
                 return await ctx.send_followup("Nakarmiono pupila!")
 
@@ -187,9 +411,49 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                 pet.drinks[id] -= 1
                 if pet.drinks[id] == 0:
                     del pet.drinks[id]
-                pet.thirst.state += item["points"]
+                if pet.thirst.state + item["points"] > 100:
+                    raise commands.CommandError(
+                        f"Pupil nie chce wypić {item['points']}"
+                    )
+                else:
+                    pet.thirst.state += item["points"]
                 pet.save()
                 return await ctx.send_followup("Napojono pupila!")
+
+    async def wallpaper_searcher(self, ctx: discord.AutocompleteContext):
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+            owner=ctx.interaction.user.id
+        ).first()
+        wallpapers: list[dict] = []
+        for id in self.wallpapers:
+            if id in pet.wallpapers and not id == pet.wallpaper:
+                wallpapers.append(self.wallpapers[id])
+        return [
+            wallpaper["name"]
+            for wallpaper in wallpapers
+            if wallpaper["name"].lower().startswith(ctx.value.lower())
+        ]
+
+    @tamagotchi.command(
+        description="Zmień tapetę w pokoju pupila", guild_ids=config["guild_ids"]
+    )
+    async def wallpaper(
+        self,
+        ctx: discord.ApplicationContext,
+        wallpaper_name: Option(str, "Wybierz tapetę", autocomplete=wallpaper_searcher),
+    ):
+        await ctx.defer()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+            owner=ctx.author.id
+        ).first()
+        for id in self.wallpapers:
+            item = self.wallpapers[id]
+            if item["name"] == wallpaper_name:
+                pet.wallpaper = id
+                pet.save()
+                return await ctx.send_followup(
+                    f"Zmieniono tapetę w pokoju pupila na {item['name']}!"
+                )
 
     @tamagotchi.command(
         description="Położ pupila spać",
@@ -200,6 +464,8 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
         ).first()
+        if pet.sleep.state == 100:
+            raise commands.CommandError("Pupil nie chce iść spać")
         pet.sleep.in_bed = True
         pet.save()
         await ctx.send_followup("Pupil zasnął!")
@@ -245,7 +511,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
         ).first()
-        if (datetime.now() - pet.daily) > timedelta(1):
+        if pet.daily is None or (datetime.now() - pet.daily) > timedelta(1):
             pet.wallet += 100
             pet.daily = datetime.now()
             pet.save()
@@ -268,6 +534,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         self,
         ctx: discord.ApplicationContext,
         food_name: Option(str, "Wybierz jedzenie", autocomplete=food_shop_searcher),
+        count: Option(int, "Wpisz ilość", min_value=1, default=1),
     ):
         await ctx.defer()
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
@@ -276,17 +543,36 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         for id in self.foods:
             item = self.foods[id]
             if item["name"] == food_name:
-                if pet.wallet < item["cost"]:
-                    raise commands.BadArgument(
-                        f"Nie posiadasz {item['cost']} coinów, aby zakupić ten przedmiot!"
-                    )
-                try:
-                    pet.foods[id] += 1
-                except KeyError:
-                    pet.foods[id] = 1
-                pet.wallet -= item["cost"]
-                pet.save()
-                return await ctx.send_followup("Zakupiono jedzenie dla pupila!")
+                embed = discord.Embed()
+                embed.title = "Zakup jedzenia"
+                embed.description = f"❓ **Czy na pewno chcesz kupić {item['name']}?**"
+                embed.add_field(name="🔢 Ilość:", value=count)
+                embed.add_field(name="🪙 Koszt:", value=item["cost"] * count)
+                embed.add_field(
+                    name="<:feed:949827709662527548> Jedzenie:",
+                    value=f"+{item['points'] * count}",
+                )
+                confirm_view = Confirm()
+                message = await ctx.send_followup(embed=embed, view=confirm_view)
+                await confirm_view.wait()
+                embed = discord.Embed()
+                embed.title = "Zakup jedzenia"
+                if confirm_view.value is None:
+                    await message.delete()
+                elif confirm_view.value:
+                    if pet.wallet < item["cost"] * count:
+                        embed.description = f"❌ **Nie posiadasz {item['cost'] * count} coinów, aby zakupić {count} sztuk {item['name']}!**"
+                        return await message.edit(embed=embed, view=None)
+                    try:
+                        pet.foods[id] += count
+                    except KeyError:
+                        pet.foods[id] = count
+                    pet.wallet -= item["cost"] * count
+                    pet.save()
+                    embed.description = f"✅ **Pomyślnie zakupiono {count} {item['name']} za {item['cost'] * count} coinów!**"
+                else:
+                    embed.description = "❌ **Anulowano zakup.**"
+                await message.edit(embed=embed, view=None)
 
     async def drink_shop_searcher(self, ctx: discord.AutocompleteContext):
         return [
@@ -303,6 +589,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         self,
         ctx: discord.ApplicationContext,
         drink_name: Option(str, "Wybierz napój", autocomplete=drink_shop_searcher),
+        count: Option(int, "Wpisz ilość", min_value=1, default=1),
     ):
         await ctx.defer()
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
@@ -311,17 +598,86 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         for id in self.drinks:
             item = self.drinks[id]
             if item["name"] == drink_name:
-                if pet.wallet < item["cost"]:
-                    raise commands.BadArgument(
-                        f"Nie posiadasz {item['cost']} coinów, aby zakupić ten przedmiot!"
-                    )
-                try:
-                    pet.drinks[id] += 1
-                except KeyError:
-                    pet.drinks[id] = 1
-                pet.wallet -= item["cost"]
-                pet.save()
-                return await ctx.send_followup("Zakupiono napój dla pupila!")
+                embed = discord.Embed()
+                embed.title = "Zakup napoju"
+                embed.description = f"❓ **Czy na pewno chcesz kupić {item['name']}?**"
+                embed.add_field(name="🔢 Ilość:", value=count)
+                embed.add_field(name="🪙 Koszt:", value=item["cost"] * count)
+                embed.add_field(
+                    name="<:drink:949827709641572352> Nawodnienie:",
+                    value=f"+{item['points'] * count}",
+                )
+                confirm_view = Confirm()
+                message = await ctx.send_followup(embed=embed, view=confirm_view)
+                await confirm_view.wait()
+                embed = discord.Embed()
+                embed.title = "Zakup napoju"
+                if confirm_view.value is None:
+                    await message.delete()
+                elif confirm_view.value:
+                    if pet.wallet < item["cost"] * count:
+                        embed.description = f"❌ **Nie posiadasz {item['cost'] * count} coinów, aby zakupić {count} sztuk {item['name']}!**"
+                        return await message.edit(embed=embed, view=None)
+                    try:
+                        pet.drinks[id] += count
+                    except KeyError:
+                        pet.drinks[id] = count
+                    pet.wallet -= item["cost"] * count
+                    pet.save()
+                    embed.description = f"✅ **Pomyślnie zakupiono {count} {item['name']} za {item['cost'] * count} coinów!**"
+                else:
+                    embed.description = "❌ **Anulowano zakup.**"
+                await message.edit(embed=embed, view=None)
+
+    async def wallpapers_shop_searcher(self, ctx: discord.AutocompleteContext):
+        return [
+            item["name"]
+            for item in self.wallpapers.values()
+            if item["name"].lower().startswith(ctx.value.lower())
+        ]
+
+    @tamagotchi_shop.command(
+        description="Kup tapety dla pupila", guild_ids=config["guild_ids"]
+    )
+    async def wallpapers(
+        self,
+        ctx: discord.ApplicationContext,
+        wallpaper_name: Option(
+            str, "Wybierz tapetę", autocomplete=wallpapers_shop_searcher
+        ),
+    ):
+        await ctx.defer()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+            owner=ctx.author.id
+        ).first()
+        for id in self.wallpapers:
+            item = self.wallpapers[id]
+            if item["name"] == wallpaper_name:
+                embed = discord.Embed()
+                embed.title = "Zakup tapety"
+                if id in pet.wallpapers:
+                    embed.description = f"❌ **Posiadasz już tę tapetę, sprawdź zakupione tapety komendą `/pet wallpapers`**"
+                    return await ctx.send_followup(embed=embed)
+                embed.description = f"❓ **Czy na pewno chcesz kupić {item['name']}?**"
+                embed.add_field(name="🪙 Koszt:", value=item["cost"])
+                confirm_view = Confirm()
+                message = await ctx.send_followup(embed=embed, view=confirm_view)
+                await confirm_view.wait()
+                embed = discord.Embed()
+                embed.title = "Zakup tapety"
+                if confirm_view.value is None:
+                    await message.delete()
+                elif confirm_view.value:
+                    if pet.wallet < item["cost"]:
+                        embed.description = f"❌ **Nie posiadasz {item['cost']} coinów, aby zakupić {item['name']}!**"
+                        return await message.edit(embed=embed, view=None)
+                    pet.wallpapers.append(id)
+                    pet.wallet -= item["cost"]
+                    pet.save()
+                    embed.description = f"✅ **Pomyślnie zakupiono {item['name']} za {item['cost']} coinów!**"
+                else:
+                    embed.description = "❌ **Anulowano zakup.**"
+                await message.edit(embed=embed, view=None)
 
     # @tamagotchi_shop.command(
     #     description="Kup ubranie dla pupila",
