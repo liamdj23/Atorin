@@ -455,6 +455,48 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                     f"Zmieniono tapetę w pokoju pupila na {item['name']}!"
                 )
 
+    async def potion_searcher(self, ctx: discord.AutocompleteContext):
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+            owner=ctx.interaction.user.id
+        ).first()
+        potions: list[dict] = []
+        for id in self.potions:
+            if id in pet.potions:
+                potions.append(self.potions[id])
+        return [
+            potion["name"]
+            for potion in potions
+            if potion["name"].lower().startswith(ctx.value.lower())
+        ]
+
+    @tamagotchi.command(
+        description="Ulecz pupila",
+        guild_ids=config["guild_ids"],
+    )
+    async def potion(
+        self,
+        ctx: discord.ApplicationContext,
+        potion_name: Option(str, "Wybierz lekarstwo", autocomplete=potion_searcher),
+    ):
+        await ctx.defer()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+            owner=ctx.author.id
+        ).first()
+        if pet.health.state >= 100:
+            raise commands.CommandError("Pupil jest zdrowy!")
+        for id in self.potions:
+            item = self.potions[id]
+            if item["name"] == potion_name:
+                pet.potions[id] -= 1
+                if pet.potions[id] == 0:
+                    del pet.potions[id]
+                if pet.health.state + item["points"] > 100:
+                    raise commands.CommandError(f"Pupil nie chce {item['points']}")
+                else:
+                    pet.health.state += item["points"]
+                pet.save()
+                return await ctx.send_followup("Uleczono pupila!")
+
     @tamagotchi.command(
         description="Położ pupila spać",
         guild_ids=config["guild_ids"],
@@ -675,6 +717,63 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                     pet.wallet -= item["cost"]
                     pet.save()
                     embed.description = f"✅ **Pomyślnie zakupiono {item['name']} za {item['cost']} coinów!**"
+                else:
+                    embed.description = "❌ **Anulowano zakup.**"
+                await message.edit(embed=embed, view=None)
+
+    async def potions_shop_searcher(self, ctx: discord.AutocompleteContext):
+        return [
+            item["name"]
+            for item in self.potions.values()
+            if item["name"].lower().startswith(ctx.value.lower())
+        ]
+
+    @tamagotchi_shop.command(
+        description="Kup lekarstwa dla pupila",
+        guild_ids=config["guild_ids"],
+    )
+    async def potions(
+        self,
+        ctx: discord.ApplicationContext,
+        potion_name: Option(
+            str, "Wybierz lekarstwo", autocomplete=potions_shop_searcher
+        ),
+        count: Option(int, "Wpisz ilość", min_value=1, default=1),
+    ):
+        await ctx.defer()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+            owner=ctx.author.id
+        ).first()
+        for id in self.potions:
+            item = self.potions[id]
+            if item["name"] == potion_name:
+                embed = discord.Embed()
+                embed.title = "Zakup lekarstwa"
+                embed.description = f"❓ **Czy na pewno chcesz kupić {item['name']}?**"
+                embed.add_field(name="🔢 Ilość:", value=count)
+                embed.add_field(name="🪙 Koszt:", value=item["cost"] * count)
+                embed.add_field(
+                    name="<:health:949827709666742312> Zdrowie:",
+                    value=f"+{item['points'] * count}",
+                )
+                confirm_view = Confirm()
+                message = await ctx.send_followup(embed=embed, view=confirm_view)
+                await confirm_view.wait()
+                embed = discord.Embed()
+                embed.title = "Zakup lekarstwa"
+                if confirm_view.value is None:
+                    await message.delete()
+                elif confirm_view.value:
+                    if pet.wallet < item["cost"] * count:
+                        embed.description = f"❌ **Nie posiadasz {item['cost'] * count} coinów, aby zakupić {count} sztuk {item['name']}!**"
+                        return await message.edit(embed=embed, view=None)
+                    try:
+                        pet.potions[id] += count
+                    except KeyError:
+                        pet.potions[id] = count
+                    pet.wallet -= item["cost"] * count
+                    pet.save()
+                    embed.description = f"✅ **Pomyślnie zakupiono {count} {item['name']} za {item['cost'] * count} coinów!**"
                 else:
                     embed.description = "❌ **Anulowano zakup.**"
                 await message.edit(embed=embed, view=None)
