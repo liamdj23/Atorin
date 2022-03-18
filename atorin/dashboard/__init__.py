@@ -26,7 +26,7 @@ from .. import updater
 app = Quart(__name__)
 
 app.secret_key = b"random bytes representing quart secret key"
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "true" 
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "true"
 
 app.config["DISCORD_CLIENT_ID"] = config["dashboard"]["client_id"]
 app.config["DISCORD_CLIENT_SECRET"] = config["dashboard"]["client_secret"]
@@ -117,7 +117,9 @@ async def server(server_id: int, setting: str):
         return redirect(url_for("/addbot"))
     server_db = database.discord.Server.objects(id=guild["id"]).first()
     if not server_db:
-        server_db = database.discord.Server(id=guild["id"], logs=database.discord.Logs())
+        server_db = database.discord.Server(
+            id=guild["id"], logs=database.discord.Logs()
+        )
         server_db.save()
     event_logs = database.discord.EventLogs.objects(server=guild["id"]).order_by(
         "-date"
@@ -129,7 +131,7 @@ async def server(server_id: int, setting: str):
             channels=channels,
             user=user,
             logs=server_db.logs,
-            event_logs=event_logs
+            event_logs=event_logs,
         )
     elif request.method == "POST":
         if not setting:
@@ -140,7 +142,11 @@ async def server(server_id: int, setting: str):
                 if "state" in data:
                     server_db.logs.enabled = bool(data["state"])
                     server_db.save()
-                    return "Zdarzenia zostały włączone!" if data["state"] else "Zdarzenia zostały wyłączone!"
+                    return (
+                        "Zdarzenia zostały włączone!"
+                        if data["state"]
+                        else "Zdarzenia zostały wyłączone!"
+                    )
                 elif "channel" in data and len(data["channel"]) == 18:
                     if any(channel["id"] == data["channel"] for channel in channels):
                         server_db.logs.channel = int(data["channel"])
@@ -152,14 +158,18 @@ async def server(server_id: int, setting: str):
                     return "Przesłano nieprawidłowe dane."
             case _:
                 return "Nie znaleziono podanego ustawienia."
-            
+
+
 if config["updater"]["enabled"]:
+
     @app.route("/update/", methods=["POST"])
     async def update():
         if not "X-Hub-Signature" in request.headers:
             return {}, 400
         if not await updater.check_signature(request):
             return {"error": "Bad signature"}, 400
+        data = await request.json
+        if not data["ref"] == "refs/heads/master":
+            return {}, 200
         Thread(target=updater.process_update).start()
         return {}, 200
-    
