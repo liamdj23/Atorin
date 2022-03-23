@@ -7,7 +7,7 @@ import lavalink
 from discord.ext import commands
 from discord.commands import slash_command, Option, SlashCommandGroup
 import discord
-import requests
+import httpx
 
 from atorin.bot import Atorin
 from ..utils import progress_bar
@@ -82,7 +82,7 @@ def get_song_from_spotify(id: str) -> str:
     authorization_token = base64.b64encode(
         f"{config['spotify']['client_id']}:{config['spotify']['client_secret']}".encode()
     ).decode("utf-8")
-    r = requests.post(
+    r = httpx.post(
         "https://accounts.spotify.com/api/token",
         headers={
             "Authorization": f"Basic {authorization_token}",
@@ -93,7 +93,7 @@ def get_song_from_spotify(id: str) -> str:
     )
     if r.status_code == 200:
         token = r.json()["access_token"]
-        r = requests.get(
+        r = httpx.get(
             f"https://api.spotify.com/v1/tracks/{id}",
             headers={
                 "Accept": "application/json",
@@ -594,7 +594,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             song: lavalink.AudioTrack = player.current
             title: str = song.title.split(" (")[0]
             from_player = True
-        search = requests.get(
+        search = httpx.get(
             "https://genius.com/api/search/multi",
             params={"q": title},
             headers={"User-agent": "Atorin"},
@@ -618,7 +618,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         lyrics_artist = lyrics_data["artist_names"]
         lyrics_title = lyrics_data["title"]
         lyrics_thumbnail = lyrics_data["song_art_image_url"]
-        r = requests.get(
+        r = httpx.get(
             f"https://genius.com{lyrics_url}", headers={"User-agent": "Atorin"}
         )
         if not r.status_code == 200:

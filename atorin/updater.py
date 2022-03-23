@@ -3,7 +3,7 @@ import sys
 import os
 import subprocess
 import yaml
-import requests
+import httpx
 
 from quart import Request
 from .logger import log
@@ -18,13 +18,11 @@ def restart_process() -> None:
 
 def send_webhook(message: str) -> None:
     data = {}
-    data["embeds"] = [
-        {"description": message, "color": 16711680}
-    ]
-    r = requests.post(config["updater"]["webhook"], json=data)
+    data["embeds"] = [{"description": message, "color": 16711680}]
+    r = httpx.post(config["updater"]["webhook"], json=data)
     try:
         r.raise_for_status()
-    except requests.exceptions.HTTPError as err:
+    except httpx.exceptions.HTTPError as err:
         log.error(f"Updater :: Webhook :: {err}")
 
 

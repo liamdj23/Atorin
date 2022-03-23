@@ -4,11 +4,13 @@ import platform
 from datetime import datetime, timedelta
 
 import aiohttp
+from bs4 import BeautifulSoup
 import discord
 import psutil
 import humanize
 from discord.ext import commands
-from discord.commands import slash_command, Option
+from discord.commands import slash_command, Option, OptionChoice
+import httpx
 
 from atorin.bot import Atorin
 from .. import config
@@ -239,6 +241,93 @@ class Info(commands.Cog, name="ℹ Informacje"):
         )
         buttons = HelpButtons()
         await ctx.respond(embed=embed, view=buttons)
+
+    async def surname_searcher(ctx: discord.AutocompleteContext):
+        if not ctx.value or len(ctx.value) < 2:
+            return []
+        r = httpx.get(
+            "https://nazwiska.ijp.pan.pl/public/backend/nwp/ajax/hasla-tab-slownik-starts.php",
+            params={"query": ctx.value.lower()},
+            headers={"User-agent": "Atorin"},
+        )
+        data = r.json()["aaData"]
+        return [
+            OptionChoice(
+                name=entry["nazwisko"].lower().capitalize(), value=entry["menuID"]
+            )
+            for entry in data
+        ]
+
+    @slash_command(
+        description="Nazwiska w Polsce",
+        guild_ids=config["guild_ids"],
+    )
+    async def surnames(
+        self,
+        ctx: discord.ApplicationContext,
+        surname: Option(
+            str,
+            "Podaj nazwisko o którym chcesz dostać informacje",
+            autocomplete=surname_searcher,
+        ),
+    ):
+        await ctx.defer()
+        if not surname.isdigit():
+            r = httpx.get(
+                "https://nazwiska.ijp.pan.pl/public/backend/nwp/ajax/hasla-tab-slownik-starts.php",
+                params={"query": surname},
+                headers={"User-agent": "Atorin"},
+            )
+            data = r.json()["aaData"]
+            if not data:
+                raise commands.BadArgument("Nie znaleziono podanego nazwiska!")
+            surname = data[0]["menuID"]
+        r = httpx.get(
+            f"https://nazwiska.ijp.pan.pl/haslo/show/id/{surname.strip()}",
+            headers={"User-agent": "Atorin"},
+        )
+        soup = BeautifulSoup(r.content, "html.parser")
+        embed = discord.Embed()
+        embed.title = "Nazwiska w Polsce"
+        embed.description = f"🧑 **Nazwisko: {soup.find('h1', class_='title').text.lower().capitalize()}**\n{soup.find(id='collapse-liczba').text.strip()}"
+        voivodships = (
+            soup.find(id="collapse-geografia")
+            .text.strip()
+            .split("\n\n\n\n")[0]
+            .split("\n")[2:]
+        )
+        for i, _ in enumerate(voivodships):
+            name, count = voivodships[i].split(" /")
+            voivodships[i] = f"{name.lower().capitalize()}: **{count}**"
+        counties = (
+            soup.find(id="collapse-geografia")
+            .text.strip()
+            .split("\n\n\n\n")[1]
+            .split("\n")[2:]
+        )
+        for i, _ in enumerate(counties):
+            name, count = counties[i].split(" /")
+            counties[i] = f"{name.lower().capitalize()}: **{count}**"
+        municipalities = (
+            soup.find(id="collapse-geografia")
+            .text.strip()
+            .split("\n\n\n\n")[2]
+            .split("\n")[2:]
+        )
+        for i, _ in enumerate(municipalities):
+            name, count = municipalities[i].split(" /")
+            municipalities[i] = f"{name.lower().capitalize()}: **{count}**"
+        embed.add_field(
+            name="🏢 Województwa",
+            value="\n".join(voivodships),
+        )
+        embed.add_field(name="🏘️ Powiaty", value="\n".join(counties))
+        embed.add_field(
+            name="🏡 Gminy",
+            value="\n".join(municipalities),
+        )
+        embed.set_footer(text="Źródło: nazwiska.ijp.pan.pl")
+        await ctx.send_followup(embed=embed)
 
 
 def setup(bot):

@@ -6,7 +6,7 @@ import discord
 from discord.commands import Option, slash_command, OptionChoice, SlashCommandGroup
 from discord.ext import commands
 from discord.ui import Modal, InputText
-import requests
+import httpx
 import base64
 
 from atorin.bot import Atorin
@@ -143,7 +143,7 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
         self, ctx: discord.ApplicationContext, package: Option(str, "Nazwa biblioteki")
     ):
         await ctx.defer()
-        r = requests.get(
+        r = httpx.get(
             f"https://pypi.org/pypi/{package}/json",
             headers={"User-agent": "Atorin"},
         )
@@ -199,7 +199,7 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
         self, ctx: discord.ApplicationContext, package: Option(str, "Nazwa biblioteki")
     ):
         await ctx.defer()
-        r = requests.get(
+        r = httpx.get(
             f"https://registry.npmjs.org/{package}/",
             headers={"User-agent": "Atorin"},
         )
@@ -252,7 +252,7 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
         await ctx.defer()
         embed = discord.Embed()
         embed.title = "Znalezione w dokumentacji"
-        pypi = requests.get(
+        pypi = httpx.get(
             f"https://pypi.org/pypi/{package}/json",
             headers={"User-agent": "Atorin"},
         )
@@ -274,7 +274,7 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
                         url = os.path.join(url, "en", "latest")
                 else:
                     url = f"https://{package}.readthedocs.io/en/latest/"
-            r = requests.get(
+            r = httpx.get(
                 os.path.join(url, "objects.inv"),
                 headers={"User-agent": "Atorin"},
             )
@@ -335,7 +335,7 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
                 )
 
             async def callback(self, interaction: discord.Interaction):
-                r = requests.post(
+                r = httpx.post(
                     "https://emkc.org/api/v1/piston/execute",
                     json={
                         "language": language,

@@ -15,7 +15,7 @@ import re
 from io import BytesIO
 from urllib.parse import quote, urlparse
 import humanize
-import requests
+import httpx
 
 import aiohttp
 import discord
@@ -125,10 +125,10 @@ class Games(commands.Cog, name="🕹 Gry"):
         self, ctx: discord.ApplicationContext, nick: Option(str, "Nick w Minecraft")
     ):
         await ctx.defer()
-        mojang = requests.get(f"https://api.mojang.com/users/profiles/minecraft/{nick}")
+        mojang = httpx.get(f"https://api.mojang.com/users/profiles/minecraft/{nick}")
         if mojang.status_code == 200:
             data = mojang.json()
-            skin = requests.get(f"https://crafatar.com/renders/body/{data['id']}")
+            skin = httpx.get(f"https://crafatar.com/renders/body/{data['id']}")
             if skin.status_code == 200:
                 embed = discord.Embed()
                 embed.title = f"Skin {nick} w Minecraft"
@@ -162,7 +162,7 @@ class Games(commands.Cog, name="🕹 Gry"):
         nick: Option(str, "Nick gracza"),
     ):
         await ctx.defer()
-        r = requests.get(
+        r = httpx.get(
             url="https://fortnite-api.com/v2/stats/br/v2",
             params={"name": nick, "accountType": platform},
             headers={"Authorization": config["fortnite"]},
@@ -247,14 +247,14 @@ class Games(commands.Cog, name="🕹 Gry"):
         nick: Option(str, "Nick gracza"),
     ):
         await ctx.defer()
-        r = requests.get(
+        r = httpx.get(
             f"https://{region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{nick}",
             params={"api_key": config["lol"]},
         )
         if r.status_code == 404:
             raise commands.BadArgument("Nie znaleziono podanego gracza!")
         summoner = r.json()
-        r2 = requests.get(
+        r2 = httpx.get(
             f"https://{region}.api.riotgames.com/lol/league/v4/entries/by-summoner/{summoner['id']}",
             params={"api_key": config["lol"]},
         )

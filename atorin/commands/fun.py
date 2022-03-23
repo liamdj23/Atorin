@@ -7,7 +7,7 @@ import aiohttp
 import discord
 from discord.commands import Option, slash_command
 import qrcode
-import requests
+import httpx
 from PIL import Image, ImageDraw, ImageFont
 from discord.ext import commands
 from pyfiglet import Figlet
@@ -239,7 +239,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     #     for cookie in self.bot.config["instagram"]:
     #         cookies.append(cookie["name"] + "=" + cookie["value"])
     #     name = name.replace("@", "")
-    #     r = requests.get(
+    #     r = httpx.get(
     #         f"https://www.instagram.com/{name}/?__a=1",
     #         headers={"cookie": "; ".join(cookies)},
     #     )
@@ -360,9 +360,10 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     async def meme(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         while True:
-            r = requests.get(
+            r = httpx.get(
                 "https://reddit.com/r/Polska_wpz/random/.json",
                 headers={"User-agent": "Atorin"},
+                follow_redirects=True,
             )
             meme = r.json()[0]["data"]["children"][0]["data"]
             if meme["url"].endswith(".jpg") or meme["url"].endswith(".png"):
@@ -378,9 +379,10 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     async def aww(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         while True:
-            r = requests.get(
+            r = httpx.get(
                 "https://reddit.com/r/aww/random/.json",
                 headers={"User-agent": "Atorin"},
+                follow_redirects=True,
             )
             post = r.json()[0]["data"]["children"][0]["data"]
             if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
@@ -396,9 +398,10 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     async def turtle(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         while True:
-            r = requests.get(
+            r = httpx.get(
                 "https://reddit.com/r/turtle/random/.json",
                 headers={"User-agent": "Atorin"},
+                follow_redirects=True,
             )
             post = r.json()[0]["data"]["children"][0]["data"]
             if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
@@ -414,9 +417,10 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     async def alpaca(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         while True:
-            r = requests.get(
+            r = httpx.get(
                 "https://reddit.com/r/alpaca/random/.json",
                 headers={"User-agent": "Atorin"},
+                follow_redirects=True,
             )
             post = r.json()[0]["data"]["children"][0]["data"]
             if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
@@ -432,9 +436,10 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     async def frog(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         while True:
-            r = requests.get(
+            r = httpx.get(
                 "https://reddit.com/r/frogs/random/.json",
                 headers={"User-agent": "Atorin"},
+                follow_redirects=True,
             )
             post = r.json()[0]["data"]["children"][0]["data"]
             if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
@@ -451,9 +456,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     )
     async def apod(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        r = requests.get(
-            "https://apod.nasa.gov/apod/", headers={"User-agent": "Atorin"}
-        )
+        r = httpx.get("https://apod.nasa.gov/apod/", headers={"User-agent": "Atorin"})
         soup = BeautifulSoup(r.content, "html.parser")
         soup.find_all("p")[2].p.clear()
         if r.status_code != 200:
@@ -474,9 +477,10 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     async def pigeon(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         while True:
-            r = requests.get(
+            r = httpx.get(
                 "https://reddit.com/r/pigeon/random/.json",
                 headers={"User-agent": "Atorin"},
+                follow_redirects=True,
             )
             post = r.json()[0]["data"]["children"][0]["data"]
             if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
@@ -492,9 +496,10 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     async def duck(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         while True:
-            r = requests.get(
+            r = httpx.get(
                 "https://reddit.com/r/duck/random/.json",
                 headers={"User-agent": "Atorin"},
+                follow_redirects=True,
             )
             post = r.json()[0]["data"]["children"][0]["data"]
             if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
@@ -511,7 +516,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     )
     async def xkcd(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        latest = requests.get(
+        latest = httpx.get(
             f"https://xkcd.com/info.0.json",
             headers={"User-agent": "Atorin"},
         )
@@ -521,7 +526,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             )
         latest_number = latest.json()["num"]
         random_comic = randint(1, latest_number)
-        comic = requests.get(
+        comic = httpx.get(
             f"https://xkcd.com/{random_comic}/info.0.json",
             headers={"User-agent": "Atorin"},
         )

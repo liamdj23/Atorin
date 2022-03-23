@@ -26,7 +26,7 @@ from discord.ext.commands import (
     BotMissingPermissions,
 )
 import statcord
-import requests
+import httpx
 
 
 class Atorin(discord.AutoShardedBot):
@@ -110,7 +110,7 @@ class Atorin(discord.AutoShardedBot):
         )
         # Post guild count to Top.gg
         if config["topgg"]:
-            requests.post(
+            httpx.post(
                 f"https://top.gg/api/bots/{self.user.id}/stats",
                 headers={"Authorization": config["topgg"]},
                 json={"server_count": len(self.guilds)},
@@ -123,7 +123,7 @@ class Atorin(discord.AutoShardedBot):
         )
         # Post guild count to Top.gg
         if config["topgg"]:
-            requests.post(
+            httpx.post(
                 f"https://top.gg/api/bots/{self.user.id}/stats",
                 headers={"Authorization": config["topgg"]},
                 json={"server_count": len(self.guilds)},
