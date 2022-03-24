@@ -143,10 +143,11 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
         self, ctx: discord.ApplicationContext, package: Option(str, "Nazwa biblioteki")
     ):
         await ctx.defer()
-        r = httpx.get(
-            f"https://pypi.org/pypi/{package}/json",
-            headers={"User-agent": "Atorin"},
-        )
+        async with httpx.AsyncClient() as client:
+            r = await client.get(
+                f"https://pypi.org/pypi/{package}/json",
+                headers={"User-agent": "Atorin"},
+            )
         if r.status_code == 200:
             data = r.json()
             embed = discord.Embed()
@@ -199,10 +200,11 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
         self, ctx: discord.ApplicationContext, package: Option(str, "Nazwa biblioteki")
     ):
         await ctx.defer()
-        r = httpx.get(
-            f"https://registry.npmjs.org/{package}/",
-            headers={"User-agent": "Atorin"},
-        )
+        async with httpx.AsyncClient() as client:
+            r = await client.get(
+                f"https://registry.npmjs.org/{package}/",
+                headers={"User-agent": "Atorin"},
+            )
         if r.status_code == 200:
             data = r.json()
             embed = discord.Embed()
@@ -252,10 +254,11 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
         await ctx.defer()
         embed = discord.Embed()
         embed.title = "Znalezione w dokumentacji"
-        pypi = httpx.get(
-            f"https://pypi.org/pypi/{package}/json",
-            headers={"User-agent": "Atorin"},
-        )
+        async with httpx.AsyncClient() as client:
+            pypi = await client.get(
+                f"https://pypi.org/pypi/{package}/json",
+                headers={"User-agent": "Atorin"},
+            )
         if pypi.status_code == 200:
             data = pypi.json()
             embed.add_field(name="🔤 Biblioteka", value=data["info"]["name"])
@@ -274,10 +277,11 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
                         url = os.path.join(url, "en", "latest")
                 else:
                     url = f"https://{package}.readthedocs.io/en/latest/"
-            r = httpx.get(
-                os.path.join(url, "objects.inv"),
-                headers={"User-agent": "Atorin"},
-            )
+            async with httpx.AsyncClient() as client:
+                r = await client.get(
+                    os.path.join(url, "objects.inv"),
+                    headers={"User-agent": "Atorin"},
+                )
             if r.status_code == 200:
                 self.rtfm_cache[package] = SphinxObjectFileReader(
                     r.content
@@ -335,13 +339,14 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
                 )
 
             async def callback(self, interaction: discord.Interaction):
-                r = httpx.post(
-                    "https://emkc.org/api/v1/piston/execute",
-                    json={
-                        "language": language,
-                        "source": self.children[0].value,
-                    },
-                )
+                async with httpx.AsyncClient() as client:
+                    r = await client.post(
+                        "https://emkc.org/api/v1/piston/execute",
+                        json={
+                            "language": language,
+                            "source": self.children[0].value,
+                        },
+                    )
                 if r.status_code != 200:
                     raise commands.CommandError(r.text)
                 data = r.json()

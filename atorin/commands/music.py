@@ -78,30 +78,32 @@ class LavalinkVoiceClient(discord.VoiceClient):
         self.cleanup()
 
 
-def get_song_from_spotify(id: str) -> str:
+async def get_song_from_spotify(id: str) -> str:
     authorization_token = base64.b64encode(
         f"{config['spotify']['client_id']}:{config['spotify']['client_secret']}".encode()
     ).decode("utf-8")
-    r = httpx.post(
-        "https://accounts.spotify.com/api/token",
-        headers={
-            "Authorization": f"Basic {authorization_token}",
-            "Content-Type": "application/x-www-form-urlencoded",
-            "User-Agent": "Atorin",
-        },
-        params={"grant_type": "client_credentials"},
-    )
-    if r.status_code == 200:
-        token = r.json()["access_token"]
-        r = httpx.get(
-            f"https://api.spotify.com/v1/tracks/{id}",
+    async with httpx.AsyncClient() as client:
+        r = await client.post(
+            "https://accounts.spotify.com/api/token",
             headers={
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {token}",
+                "Authorization": f"Basic {authorization_token}",
+                "Content-Type": "application/x-www-form-urlencoded",
                 "User-Agent": "Atorin",
             },
+            params={"grant_type": "client_credentials"},
         )
+    if r.status_code == 200:
+        token = r.json()["access_token"]
+        async with httpx.AsyncClient() as client:
+            r = await client.get(
+                f"https://api.spotify.com/v1/tracks/{id}",
+                headers={
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {token}",
+                    "User-Agent": "Atorin",
+                },
+            )
         if r.status_code == 200:
             song = r.json()
             return f"{song['artists'][0]['name']} {song['name']}"
@@ -231,12 +233,12 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             query = f"ytsearch:{query}"
         else:
             if "open.spotify.com/track/" in query:
-                song = get_song_from_spotify(
+                song = await get_song_from_spotify(
                     query.split("open.spotify.com/track/")[1].split("?")[0]
                 )
                 query = f"ytsearch:{song}"
             elif "spotify:track:" in query:
-                song = get_song_from_spotify(query.split("spotify:track:")[1])
+                song = await get_song_from_spotify(query.split("spotify:track:")[1])
                 query = f"ytsearch:{song}"
 
         results = await player.node.get_tracks(query)
@@ -594,11 +596,12 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             song: lavalink.AudioTrack = player.current
             title: str = song.title.split(" (")[0]
             from_player = True
-        search = httpx.get(
-            "https://genius.com/api/search/multi",
-            params={"q": title},
-            headers={"User-agent": "Atorin"},
-        )
+        async with httpx.AsyncClient() as client:
+            search = await client.get(
+                "https://genius.com/api/search/multi",
+                params={"q": title},
+                headers={"User-agent": "Atorin"},
+            )
         if not search.status_code == 200:
             raise commands.CommandError(
                 f"Wystąpił błąd podczas wyszukiwania tekstu piosenki! [{search.status_code}]"
@@ -618,9 +621,10 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         lyrics_artist = lyrics_data["artist_names"]
         lyrics_title = lyrics_data["title"]
         lyrics_thumbnail = lyrics_data["song_art_image_url"]
-        r = httpx.get(
-            f"https://genius.com{lyrics_url}", headers={"User-agent": "Atorin"}
-        )
+        async with httpx.AsyncClient() as client:
+            r = await client.get(
+                f"https://genius.com{lyrics_url}", headers={"User-agent": "Atorin"}
+            )
         if not r.status_code == 200:
             raise commands.CommandError(
                 f"Wystąpił błąd podczas pobierania tekstu piosenki! [{r.status_code}]"

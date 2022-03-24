@@ -127,59 +127,60 @@ class Info(commands.Cog, name="ℹ Informacje"):
     ):
         token = config["weather"]
         await ctx.defer()
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                "http://api.openweathermap.org/data/2.5/weather?appid={0}&units=metric&lang=pl&q={1}".format(
-                    token, quote(city)
-                )
-            ) as r:
-                embed = discord.Embed()
-                if r.status == 200:
-                    data = await r.json()
-                    embed.title = "Pogoda w " + data["name"]
-                    emoji = get_weather_emoji(data["weather"][0]["id"])
-                    embed.description = f"{emoji} __**{data['weather'][0]['description'].capitalize()}**__"
-                    embed.add_field(
-                        name="🌡️ Temperatura",
-                        value=f"{data['main']['temp']}°C",
-                    )
-                    embed.add_field(
-                        name="👐 Odczuwalna",
-                        value=f"{data['main']['feels_like']}°C",
-                    )
-                    embed.add_field(
-                        name="🥶 Najniższa",
-                        value=f"{data['main']['temp_min']}°C",
-                    )
-                    embed.add_field(
-                        name="🥵 Najwyższa",
-                        value=f"{data['main']['temp_max']}°C",
-                    )
-                    embed.add_field(
-                        name="🎈 Ciśnienie",
-                        value=f"{data['main']['pressure']}hPa",
-                    )
-                    embed.add_field(
-                        name="💧 Wilgotność",
-                        value=f"{data['main']['humidity']}%",
-                    )
-                    embed.add_field(
-                        name="💨 Wiatr",
-                        value=f"{int(data['wind']['speed'] * 3.6)}km/h",
-                    )
-                    embed.add_field(
-                        name="🌅 Wschód słońca",
-                        value=f"<t:{data['sys']['sunrise']}:t>",
-                    )
-                    embed.add_field(
-                        name="🌇 Zachód słońca",
-                        value=f"<t:{data['sys']['sunset']}:t>",
-                    )
-                    await ctx.send_followup(embed=embed)
-                elif r.status == 404:
-                    raise commands.BadArgument("Nie odnaleziono podanej miejscowości.")
-                else:
-                    raise commands.CommandError(await r.text())
+        async with httpx.AsyncClient() as client:
+            r = await client.get(
+                "http://api.openweathermap.org/data/2.5/weather",
+                params={"appid": token, "units": "metric", "lang": "pl", "q": city},
+            )
+        embed = discord.Embed()
+        if r.status_code == 200:
+            data = r.json()
+            embed.title = "Pogoda w " + data["name"]
+            emoji = get_weather_emoji(data["weather"][0]["id"])
+            embed.description = (
+                f"{emoji} __**{data['weather'][0]['description'].capitalize()}**__"
+            )
+            embed.add_field(
+                name="🌡️ Temperatura",
+                value=f"{data['main']['temp']}°C",
+            )
+            embed.add_field(
+                name="👐 Odczuwalna",
+                value=f"{data['main']['feels_like']}°C",
+            )
+            embed.add_field(
+                name="🥶 Najniższa",
+                value=f"{data['main']['temp_min']}°C",
+            )
+            embed.add_field(
+                name="🥵 Najwyższa",
+                value=f"{data['main']['temp_max']}°C",
+            )
+            embed.add_field(
+                name="🎈 Ciśnienie",
+                value=f"{data['main']['pressure']}hPa",
+            )
+            embed.add_field(
+                name="💧 Wilgotność",
+                value=f"{data['main']['humidity']}%",
+            )
+            embed.add_field(
+                name="💨 Wiatr",
+                value=f"{int(data['wind']['speed'] * 3.6)}km/h",
+            )
+            embed.add_field(
+                name="🌅 Wschód słońca",
+                value=f"<t:{data['sys']['sunrise']}:t>",
+            )
+            embed.add_field(
+                name="🌇 Zachód słońca",
+                value=f"<t:{data['sys']['sunset']}:t>",
+            )
+            await ctx.send_followup(embed=embed)
+        elif r.status_code == 404:
+            raise commands.BadArgument("Nie odnaleziono podanej miejscowości.")
+        else:
+            raise commands.CommandError(r.text)
 
     @slash_command(description="Informacje o Atorinie", guild_ids=config["guild_ids"])
     async def bot(self, ctx: discord.ApplicationContext):
@@ -245,11 +246,12 @@ class Info(commands.Cog, name="ℹ Informacje"):
     async def surname_searcher(ctx: discord.AutocompleteContext):
         if not ctx.value or len(ctx.value) < 2:
             return []
-        r = httpx.get(
-            "https://nazwiska.ijp.pan.pl/public/backend/nwp/ajax/hasla-tab-slownik-starts.php",
-            params={"query": ctx.value.lower()},
-            headers={"User-agent": "Atorin"},
-        )
+        async with httpx.AsyncClient() as client:
+            r = await client.get(
+                "https://nazwiska.ijp.pan.pl/public/backend/nwp/ajax/hasla-tab-slownik-starts.php",
+                params={"query": ctx.value.lower()},
+                headers={"User-agent": "Atorin"},
+            )
         data = r.json()["aaData"]
         return [
             OptionChoice(
@@ -273,19 +275,21 @@ class Info(commands.Cog, name="ℹ Informacje"):
     ):
         await ctx.defer()
         if not surname.isdigit():
-            r = httpx.get(
-                "https://nazwiska.ijp.pan.pl/public/backend/nwp/ajax/hasla-tab-slownik-starts.php",
-                params={"query": surname},
-                headers={"User-agent": "Atorin"},
-            )
+            async with httpx.AsyncClient() as client:
+                r = await client.get(
+                    "https://nazwiska.ijp.pan.pl/public/backend/nwp/ajax/hasla-tab-slownik-starts.php",
+                    params={"query": surname},
+                    headers={"User-agent": "Atorin"},
+                )
             data = r.json()["aaData"]
             if not data:
                 raise commands.BadArgument("Nie znaleziono podanego nazwiska!")
             surname = data[0]["menuID"]
-        r = httpx.get(
-            f"https://nazwiska.ijp.pan.pl/haslo/show/id/{surname.strip()}",
-            headers={"User-agent": "Atorin"},
-        )
+        async with httpx.AsyncClient() as client:
+            r = await client.get(
+                f"https://nazwiska.ijp.pan.pl/haslo/show/id/{surname.strip()}",
+                headers={"User-agent": "Atorin"},
+            )
         soup = BeautifulSoup(r.content, "html.parser")
         embed = discord.Embed()
         embed.title = "Nazwiska w Polsce"

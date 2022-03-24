@@ -3,7 +3,6 @@ import unicodedata
 from io import BytesIO
 from random import randint
 
-import aiohttp
 import discord
 from discord.commands import Option, slash_command
 import qrcode
@@ -26,16 +25,16 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     )
     async def shiba(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        async with aiohttp.ClientSession() as session:
-            async with session.get("http://shibe.online/api/shibes?count=1") as r:
-                if r.status == 200:
-                    data = await r.json()
-                    embed = discord.Embed()
-                    embed.title = "Losowe zdjęcie Shiba Inu"
-                    embed.set_image(url=data[0])
-                    await ctx.send_followup(embed=embed)
-                else:
-                    raise commands.CommandError(await r.text())
+        async with httpx.AsyncClient() as client:
+            r = await client.get("http://shibe.online/api/shibes?count=1")
+        if r.status_code == 200:
+            data = r.json()
+            embed = discord.Embed()
+            embed.title = "Losowe zdjęcie Shiba Inu"
+            embed.set_image(url=data[0])
+            await ctx.send_followup(embed=embed)
+        else:
+            raise commands.CommandError(r.text)
 
     @slash_command(
         description="Stwórz pasek z Wiadomości z własnym tekstem",
@@ -49,22 +48,23 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                 f"Treść paska jest zbyt długa! Max. 48 znaków, podano {len(text)}."
             )
         await ctx.defer()
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
+        async with httpx.AsyncClient() as client:
+            r = await client.post(
                 "https://pasek-tvpis.pl/index.php",
                 data={"fimg": randint(0, 1), "msg": text},
-            ) as r:
-                if r.status == 200:
-                    image = await r.content.read()
-                    embed = discord.Embed()
-                    embed.title = "Twój pasek z Wiadomości"
-                    embed.set_image(url="attachment://tvp.png")
-                    await ctx.send_followup(
-                        embed=embed,
-                        file=discord.File(BytesIO(image), filename="tvp.png"),
-                    )
-                else:
-                    raise commands.CommandError(await r.text())
+                follow_redirects=True,
+            )
+        if r.status_code == 200:
+            image = r.content
+            embed = discord.Embed()
+            embed.title = "Twój pasek z Wiadomości"
+            embed.set_image(url="attachment://tvp.png")
+            await ctx.send_followup(
+                embed=embed,
+                file=discord.File(BytesIO(image), filename="tvp.png"),
+            )
+        else:
+            raise commands.CommandError(r.text)
 
     @slash_command(
         description="Losowe zdjęcie kota",
@@ -72,32 +72,30 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     )
     async def cat(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                "https://api.thecatapi.com/v1/images/search?limit=1"
-            ) as r:
-                if r.status == 200:
-                    data = await r.json()
-                    embed = discord.Embed()
-                    embed.title = "Losowe zdjęcie kota"
-                    embed.set_image(url=data[0]["url"])
-                    await ctx.send_followup(embed=embed)
-                else:
-                    raise commands.CommandError(await r.text())
+        async with httpx.AsyncClient() as client:
+            r = await client.get("https://api.thecatapi.com/v1/images/search?limit=1")
+        if r.status_code == 200:
+            data = r.json()
+            embed = discord.Embed()
+            embed.title = "Losowe zdjęcie kota"
+            embed.set_image(url=data[0]["url"])
+            await ctx.send_followup(embed=embed)
+        else:
+            raise commands.CommandError(r.text)
 
     @slash_command(description="Losowe zdjęcie lisa", guild_ids=config["guild_ids"])
     async def fox(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        async with aiohttp.ClientSession() as session:
-            async with session.get("https://randomfox.ca/floof/") as r:
-                if r.status == 200:
-                    data = await r.json()
-                    embed = discord.Embed()
-                    embed.title = "Losowe zdjęcie lisa"
-                    embed.set_image(url=data["image"])
-                    await ctx.send_followup(embed=embed)
-                else:
-                    raise commands.CommandError(await r.text())
+        async with httpx.AsyncClient() as client:
+            r = await client.get("https://randomfox.ca/floof/")
+        if r.status_code == 200:
+            data = r.json()
+            embed = discord.Embed()
+            embed.title = "Losowe zdjęcie lisa"
+            embed.set_image(url=data["image"])
+            await ctx.send_followup(embed=embed)
+        else:
+            raise commands.CommandError(r.text)
 
     @slash_command(
         description="Wysyła napis stworzony z mniejszych znaków.",
@@ -124,17 +122,16 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     )
     async def commit(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        async with aiohttp.ClientSession() as session:
-            async with session.get("http://whatthecommit.com/index.txt") as r:
-                if r.status == 200:
-                    text = await r.text()
-                    text = text.replace("\n", "")
-                    embed = discord.Embed()
-                    embed.title = "Losowy commit"
-                    embed.description = f"`git commit -m '{text}'`"
-                    await ctx.send_followup(embed=embed)
-                else:
-                    raise commands.CommandError(await r.text())
+        async with httpx.AsyncClient() as client:
+            r = await client.get("http://whatthecommit.com/index.txt")
+        if r.status_code == 200:
+            text = r.text.replace("\n", "")
+            embed = discord.Embed()
+            embed.title = "Losowy commit"
+            embed.description = f"`git commit -m '{text}'`"
+            await ctx.send_followup(embed=embed)
+        else:
+            raise commands.CommandError(r.text)
 
     @slash_command(
         description="Stwórz osiągnięcie z Minecrafta", guild_ids=config["guild_ids"]
@@ -304,16 +301,16 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     @slash_command(description="Losowe zdjęcie psa", guild_ids=config["guild_ids"])
     async def dog(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        async with aiohttp.ClientSession() as session:
-            async with session.get("https://dog.ceo/api/breeds/image/random") as r:
-                if r.status == 200:
-                    data = await r.json()
-                    embed = discord.Embed()
-                    embed.title = "Losowe zdjęcie psa"
-                    embed.set_image(url=data["message"])
-                    await ctx.send_followup(embed=embed)
-                else:
-                    raise commands.CommandError(await r.text())
+        async with httpx.AsyncClient() as client:
+            r = await client.get("https://dog.ceo/api/breeds/image/random")
+        if r.status_code == 200:
+            data = r.json()
+            embed = discord.Embed()
+            embed.title = "Losowe zdjęcie psa"
+            embed.set_image(url=data["message"])
+            await ctx.send_followup(embed=embed)
+        else:
+            raise commands.CommandError(r.text)
 
     @slash_command(description="Rzut monetą", guild_ids=config["guild_ids"])
     async def flip(self, ctx: discord.ApplicationContext):
@@ -359,15 +356,16 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     )
     async def meme(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        while True:
-            r = httpx.get(
-                "https://reddit.com/r/Polska_wpz/random/.json",
-                headers={"User-agent": "Atorin"},
-                follow_redirects=True,
-            )
-            meme = r.json()[0]["data"]["children"][0]["data"]
-            if meme["url"].endswith(".jpg") or meme["url"].endswith(".png"):
-                break
+        async with httpx.AsyncClient() as client:
+            while True:
+                r = await client.get(
+                    "https://reddit.com/r/Polska_wpz/random/.json",
+                    headers={"User-agent": "Atorin"},
+                    follow_redirects=True,
+                )
+                meme = r.json()[0]["data"]["children"][0]["data"]
+                if meme["url"].endswith(".jpg") or meme["url"].endswith(".png"):
+                    break
         embed = discord.Embed()
         embed.title = (
             (meme["title"][:200] + "...") if len(meme["title"]) > 203 else meme["title"]
@@ -378,15 +376,16 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     @slash_command(description="Losowy słodki obrazek", guild_ids=config["guild_ids"])
     async def aww(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        while True:
-            r = httpx.get(
-                "https://reddit.com/r/aww/random/.json",
-                headers={"User-agent": "Atorin"},
-                follow_redirects=True,
-            )
-            post = r.json()[0]["data"]["children"][0]["data"]
-            if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
-                break
+        async with httpx.AsyncClient() as client:
+            while True:
+                r = await client.get(
+                    "https://reddit.com/r/aww/random/.json",
+                    headers={"User-agent": "Atorin"},
+                    follow_redirects=True,
+                )
+                post = r.json()[0]["data"]["children"][0]["data"]
+                if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
+                    break
         embed = discord.Embed()
         embed.title = (
             (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
@@ -397,15 +396,16 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     @slash_command(description="Losowe zdjęcie żółwia", guild_ids=config["guild_ids"])
     async def turtle(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        while True:
-            r = httpx.get(
-                "https://reddit.com/r/turtle/random/.json",
-                headers={"User-agent": "Atorin"},
-                follow_redirects=True,
-            )
-            post = r.json()[0]["data"]["children"][0]["data"]
-            if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
-                break
+        async with httpx.AsyncClient() as client:
+            while True:
+                r = await client.get(
+                    "https://reddit.com/r/turtle/random/.json",
+                    headers={"User-agent": "Atorin"},
+                    follow_redirects=True,
+                )
+                post = r.json()[0]["data"]["children"][0]["data"]
+                if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
+                    break
         embed = discord.Embed()
         embed.title = (
             (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
@@ -416,15 +416,16 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     @slash_command(description="Losowe zdjęcie alpaki", guild_ids=config["guild_ids"])
     async def alpaca(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        while True:
-            r = httpx.get(
-                "https://reddit.com/r/alpaca/random/.json",
-                headers={"User-agent": "Atorin"},
-                follow_redirects=True,
-            )
-            post = r.json()[0]["data"]["children"][0]["data"]
-            if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
-                break
+        async with httpx.AsyncClient() as client:
+            while True:
+                r = await client.get(
+                    "https://reddit.com/r/alpaca/random/.json",
+                    headers={"User-agent": "Atorin"},
+                    follow_redirects=True,
+                )
+                post = r.json()[0]["data"]["children"][0]["data"]
+                if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
+                    break
         embed = discord.Embed()
         embed.title = (
             (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
@@ -435,15 +436,16 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     @slash_command(description="Losowe zdjęcie żaby", guild_ids=config["guild_ids"])
     async def frog(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        while True:
-            r = httpx.get(
-                "https://reddit.com/r/frogs/random/.json",
-                headers={"User-agent": "Atorin"},
-                follow_redirects=True,
-            )
-            post = r.json()[0]["data"]["children"][0]["data"]
-            if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
-                break
+        async with httpx.AsyncClient() as client:
+            while True:
+                r = await client.get(
+                    "https://reddit.com/r/frogs/random/.json",
+                    headers={"User-agent": "Atorin"},
+                    follow_redirects=True,
+                )
+                post = r.json()[0]["data"]["children"][0]["data"]
+                if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
+                    break
         embed = discord.Embed()
         embed.title = (
             (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
@@ -456,7 +458,10 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     )
     async def apod(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        r = httpx.get("https://apod.nasa.gov/apod/", headers={"User-agent": "Atorin"})
+        async with httpx.AsyncClient() as client:
+            r = await client.get(
+                "https://apod.nasa.gov/apod/", headers={"User-agent": "Atorin"}
+            )
         soup = BeautifulSoup(r.content, "html.parser")
         soup.find_all("p")[2].p.clear()
         if r.status_code != 200:
@@ -470,21 +475,22 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             embed.description += (
                 f"\n{soup.find_all('p')[0].iframe['src'].replace('/embed/', '/watch/')}"
             )
-        embed.url = r.url
+        embed.url = str(r.url)
         await ctx.send_followup(embed=embed)
 
     @slash_command(description="Losowe zdjęcie gołębia", guild_ids=config["guild_ids"])
     async def pigeon(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        while True:
-            r = httpx.get(
-                "https://reddit.com/r/pigeon/random/.json",
-                headers={"User-agent": "Atorin"},
-                follow_redirects=True,
-            )
-            post = r.json()[0]["data"]["children"][0]["data"]
-            if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
-                break
+        async with httpx.AsyncClient() as client:
+            while True:
+                r = await client.get(
+                    "https://reddit.com/r/pigeon/random/.json",
+                    headers={"User-agent": "Atorin"},
+                    follow_redirects=True,
+                )
+                post = r.json()[0]["data"]["children"][0]["data"]
+                if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
+                    break
         embed = discord.Embed()
         embed.title = (
             (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
@@ -495,15 +501,16 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     @slash_command(description="Losowe zdjęcie kaczki", guild_ids=config["guild_ids"])
     async def duck(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        while True:
-            r = httpx.get(
-                "https://reddit.com/r/duck/random/.json",
-                headers={"User-agent": "Atorin"},
-                follow_redirects=True,
-            )
-            post = r.json()[0]["data"]["children"][0]["data"]
-            if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
-                break
+        async with httpx.AsyncClient() as client:
+            while True:
+                r = await client.get(
+                    "https://reddit.com/r/duck/random/.json",
+                    headers={"User-agent": "Atorin"},
+                    follow_redirects=True,
+                )
+                post = r.json()[0]["data"]["children"][0]["data"]
+                if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
+                    break
         embed = discord.Embed()
         embed.title = (
             (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
@@ -516,20 +523,22 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     )
     async def xkcd(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        latest = httpx.get(
-            f"https://xkcd.com/info.0.json",
-            headers={"User-agent": "Atorin"},
-        )
+        async with httpx.AsyncClient() as client:
+            latest = await client.get(
+                f"https://xkcd.com/info.0.json",
+                headers={"User-agent": "Atorin"},
+            )
         if not latest.status_code == 200:
             raise commands.CommandError(
                 "Wystąpił błąd przy pobieraniu komiksu, spróbuj ponownie później."
             )
         latest_number = latest.json()["num"]
         random_comic = randint(1, latest_number)
-        comic = httpx.get(
-            f"https://xkcd.com/{random_comic}/info.0.json",
-            headers={"User-agent": "Atorin"},
-        )
+        async with httpx.AsyncClient() as client:
+            comic = await client.get(
+                url=f"https://xkcd.com/{random_comic}/info.0.json",
+                headers={"User-agent": "Atorin"},
+            )
         if not comic.status_code == 200:
             raise commands.CommandError(
                 "Wystąpił błąd przy pobieraniu komiksu, spróbuj ponownie później."

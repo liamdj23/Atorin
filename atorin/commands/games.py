@@ -36,28 +36,28 @@ async def steam_resolve_url(url: str, key: str):
         return nick, nick
     except ValueError:
         pass
-    async with aiohttp.ClientSession() as session:
-        api = "http://api.steampowered.com/ISteamUser/ResolveVanityURL/v1?vanityurl={0}&key={1}".format(
-            quote(nick), key
+    async with httpx.AsyncClient() as client:
+        r = await client.get(
+            "http://api.steampowered.com/ISteamUser/ResolveVanityURL/v1",
+            params={"vanityurl": nick, "key": key},
         )
-        async with session.get(api) as r:
-            if r.status == 200:
-                data = await r.json()
-                if "steamid" not in data["response"]:
-                    return None
-                return data["response"]["steamid"], nick
+    if r.status_code == 200:
+        data = r.json()
+        if "steamid" not in data["response"]:
+            return None
+        return data["response"]["steamid"], nick
 
 
 async def steam_get_stats(app_id: int, key: str, steam_id: int):
-    async with aiohttp.ClientSession() as session:
-        api = "http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid={0}&key={1}&steamid={2}".format(
-            app_id, key, steam_id
+    async with httpx.AsyncClient() as client:
+        r = await client.get(
+            "http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/",
+            params={"appid": app_id, "key": key, "steamid": steam_id},
         )
-        async with session.get(api) as r:
-            if r.status == 200:
-                data = await r.json()
-                if "playerstats" in data and "stats" in data["playerstats"]:
-                    return data["playerstats"]["stats"]
+    if r.status_code == 200:
+        data = r.json()
+        if "playerstats" in data and "stats" in data["playerstats"]:
+            return data["playerstats"]["stats"]
 
 
 class Games(commands.Cog, name="🕹 Gry"):
@@ -71,51 +71,45 @@ class Games(commands.Cog, name="🕹 Gry"):
         self, ctx: discord.ApplicationContext, domain: Option(str, "Adres serwera")
     ):
         await ctx.defer()
-        async with aiohttp.ClientSession() as session:
-            async with session.get(f"https://api.mcsrvstat.us/2/{domain}") as r:
-                r.raise_for_status()
-                data = await r.json()
+        async with httpx.AsyncClient() as client:
+            r = await client.get(f"https://api.mcsrvstat.us/2/{domain}")
+            data = r.json()
+            if not data["online"]:
+                r = await client.get(f"https://api.mcsrvstat.us/bedrock/2/{domain}")
+                data = r.json()
                 if not data["online"]:
-                    async with session.get(
-                        f"https://api.mcsrvstat.us/bedrock/2/{domain}"
-                    ) as r:
-                        r.raise_for_status()
-                        data = await r.json()
-                        if not data["online"]:
-                            raise commands.BadArgument(
-                                "Adres serwera jest niepoprawny lub serwer jest offline!"
-                            )
-                embed = discord.Embed()
-                embed.title = f"Status serwera Minecraft: {domain}"
-                if "version" in data:
-                    embed.add_field(name="⚙️ Wersja", value=data["version"])
-                if "players" in data:
-                    embed.add_field(
-                        name="👥 Liczba graczy",
-                        value=f"{data['players']['online']}/{data['players']['max']}",
+                    raise commands.BadArgument(
+                        "Adres serwera jest niepoprawny lub serwer jest offline!"
                     )
-                if "software" in data:
-                    embed.add_field(
-                        name="🗜 Silnik",
-                        value=f"`{data['software']}`",
-                        inline=False,
-                    )
-                if "plugins" in data:
-                    embed.add_field(
-                        name="🔌 Pluginy",
-                        value=f"`{', '.join(data['plugins']['names'])}`",
-                        inline=False,
-                    )
-                if "motd" in data:
-                    embed.add_field(
-                        name="🔠 MOTD",
-                        value="```yml\n"
-                        + "\n".join(data["motd"]["clean"]).strip()
-                        + "\n```",
-                        inline=False,
-                    )
-                embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{domain}")
-                await ctx.send_followup(embed=embed)
+        embed = discord.Embed()
+        embed.title = f"Status serwera Minecraft: {domain}"
+        if "version" in data:
+            embed.add_field(name="⚙️ Wersja", value=data["version"])
+        if "players" in data:
+            embed.add_field(
+                name="👥 Liczba graczy",
+                value=f"{data['players']['online']}/{data['players']['max']}",
+            )
+        if "software" in data:
+            embed.add_field(
+                name="🗜 Silnik",
+                value=f"`{data['software']}`",
+                inline=False,
+            )
+        if "plugins" in data:
+            embed.add_field(
+                name="🔌 Pluginy",
+                value=f"`{', '.join(data['plugins']['names'])}`",
+                inline=False,
+            )
+        if "motd" in data:
+            embed.add_field(
+                name="🔠 MOTD",
+                value="```yml\n" + "\n".join(data["motd"]["clean"]).strip() + "\n```",
+                inline=False,
+            )
+        embed.set_thumbnail(url=f"https://api.mcsrvstat.us/icon/{domain}")
+        await ctx.send_followup(embed=embed)
 
     @slash_command(
         description="Wyświetla Twojego skina w Minecraft",
@@ -125,10 +119,16 @@ class Games(commands.Cog, name="🕹 Gry"):
         self, ctx: discord.ApplicationContext, nick: Option(str, "Nick w Minecraft")
     ):
         await ctx.defer()
-        mojang = httpx.get(f"https://api.mojang.com/users/profiles/minecraft/{nick}")
+        async with httpx.AsyncClient() as client:
+            mojang = await client.get(
+                f"https://api.mojang.com/users/profiles/minecraft/{nick}"
+            )
         if mojang.status_code == 200:
             data = mojang.json()
-            skin = httpx.get(f"https://crafatar.com/renders/body/{data['id']}")
+            async with httpx.AsyncClient() as client:
+                skin = await client.get(
+                    f"https://crafatar.com/renders/body/{data['id']}"
+                )
             if skin.status_code == 200:
                 embed = discord.Embed()
                 embed.title = f"Skin {nick} w Minecraft"
@@ -162,11 +162,12 @@ class Games(commands.Cog, name="🕹 Gry"):
         nick: Option(str, "Nick gracza"),
     ):
         await ctx.defer()
-        r = httpx.get(
-            url="https://fortnite-api.com/v2/stats/br/v2",
-            params={"name": nick, "accountType": platform},
-            headers={"Authorization": config["fortnite"]},
-        )
+        async with httpx.AsyncClient() as client:
+            r = await client.get(
+                url="https://fortnite-api.com/v2/stats/br/v2",
+                params={"name": nick, "accountType": platform},
+                headers={"Authorization": config["fortnite"]},
+            )
         if r.status_code == 200:
             json = r.json()
             data = json["data"]["stats"]["all"]["overall"]
@@ -188,7 +189,7 @@ class Games(commands.Cog, name="🕹 Gry"):
                 "Podany gracz nie istnieje lub nigdy nie grał w Fortnite!"
             )
         else:
-            raise commands.CommandError(await r.text())
+            raise commands.CommandError(r.text)
 
     @slash_command(description="Statystyki w grze CS:GO", guild_ids=config["guild_ids"])
     async def csgo(
@@ -247,17 +248,18 @@ class Games(commands.Cog, name="🕹 Gry"):
         nick: Option(str, "Nick gracza"),
     ):
         await ctx.defer()
-        r = httpx.get(
-            f"https://{region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{nick}",
-            params={"api_key": config["lol"]},
-        )
-        if r.status_code == 404:
-            raise commands.BadArgument("Nie znaleziono podanego gracza!")
-        summoner = r.json()
-        r2 = httpx.get(
-            f"https://{region}.api.riotgames.com/lol/league/v4/entries/by-summoner/{summoner['id']}",
-            params={"api_key": config["lol"]},
-        )
+        async with httpx.AsyncClient() as client:
+            r = await client.get(
+                f"https://{region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{nick}",
+                params={"api_key": config["lol"]},
+            )
+            if r.status_code == 404:
+                raise commands.BadArgument("Nie znaleziono podanego gracza!")
+            summoner = r.json()
+            r2 = await client.get(
+                f"https://{region}.api.riotgames.com/lol/league/v4/entries/by-summoner/{summoner['id']}",
+                params={"api_key": config["lol"]},
+            )
         stats = r2.json()
         embed = discord.Embed()
         embed.title = "Statystyki w grze League of Legends"
