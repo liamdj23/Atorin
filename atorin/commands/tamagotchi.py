@@ -12,6 +12,8 @@ Made with ❤️ by Piotr Gaździcki.
 
 """
 from random import randint
+import random
+from typing import List
 import discord
 from discord.ext import commands, tasks
 from discord.commands import Option, SlashCommandGroup, slash_command
@@ -43,7 +45,7 @@ hats = {"1": {"name": "Czapka z daszkiem", "cost": 50}}
 async def generate_status(owner: int):
     pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=owner).first()
     template = Image.open("assets/tamagotchi/pet_status.png")
-    if pet.hunger.state == 100:
+    if pet.hunger.state >= 100:
         hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_100.png")
     elif pet.hunger.state <= 99 and pet.hunger.state >= 90:
         hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_90.png")
@@ -67,7 +69,7 @@ async def generate_status(owner: int):
         hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_5.png")
     else:
         hunger_progress_bar = None
-    if pet.thirst.state == 100:
+    if pet.thirst.state >= 100:
         thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_100.png")
     elif pet.thirst.state <= 99 and pet.thirst.state >= 90:
         thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_90.png")
@@ -91,7 +93,7 @@ async def generate_status(owner: int):
         thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_5.png")
     else:
         thirst_progress_bar = None
-    if pet.sleep.state == 100:
+    if pet.sleep.state >= 100:
         sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_100.png")
     elif pet.sleep.state <= 99 and pet.sleep.state >= 90:
         sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_90.png")
@@ -115,7 +117,7 @@ async def generate_status(owner: int):
         sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_5.png")
     else:
         sleep_progress_bar = None
-    if pet.health.state == 100:
+    if pet.health.state >= 100:
         health_progress_bar = Image.open("assets/tamagotchi/pet_progress_100.png")
     elif pet.health.state <= 99 and pet.health.state >= 90:
         health_progress_bar = Image.open("assets/tamagotchi/pet_progress_90.png")
@@ -147,36 +149,38 @@ async def generate_status(owner: int):
         template.paste(sleep_progress_bar, (583, 383))
     if health_progress_bar:
         template.paste(health_progress_bar, (583, 500))
-    # pet_background = Image.new("RGB", (316, 466), (255, 0, 0))
     if pet.wallpaper:
         pet_background = Image.open(f"assets/tamagotchi/wallpapers/{pet.wallpaper}.png")
     else:
         pet_background = Image.open("assets/tamagotchi/wallpapers/0.png")
     pet_image = Image.open("assets/tamagotchi/pet.png")
     pet_background.paste(pet_image, (0, 9), pet_image.split()[3])
+    if pet.sleep.in_bed:
+        sleep_background = Image.open("assets/tamagotchi/sleep_background.png")
+        pet_background.paste(sleep_background, (0, 0), sleep_background.split()[3])
     template.paste(pet_background, (117, 117))
     template_draw = ImageDraw.Draw(template)
     template_draw.text(
         (960, 140),
-        f"{pet.hunger.state}",
+        f"{100 if pet.hunger.state >= 100 else pet.hunger.state}",
         (255, 255, 255),
         ImageFont.truetype("assets/tamagotchi/apasih.ttf", 48),
     )
     template_draw.text(
         (960, 257),
-        f"{pet.thirst.state}",
+        f"{100 if pet.thirst.state >= 100 else pet.thirst.state}",
         (255, 255, 255),
         ImageFont.truetype("assets/tamagotchi/apasih.ttf", 48),
     )
     template_draw.text(
         (960, 375),
-        f"{pet.sleep.state}",
+        f"{100 if pet.sleep.state >= 100 else pet.sleep.state}",
         (255, 255, 255),
         ImageFont.truetype("assets/tamagotchi/apasih.ttf", 48),
     )
     template_draw.text(
         (960, 490),
-        f"{pet.health.state}",
+        f"{100 if pet.health.state >= 100 else pet.health.state}",
         (255, 255, 255),
         ImageFont.truetype("assets/tamagotchi/apasih.ttf", 48),
     )
@@ -194,7 +198,7 @@ async def generate_status(owner: int):
 
 class Confirm(discord.ui.View):
     def __init__(self):
-        super().__init__()
+        super().__init__(timeout=30)
         self.value: bool = None
 
     @discord.ui.button(label="Potwierdź", style=discord.ButtonStyle.green)
@@ -232,14 +236,12 @@ class FoodDropdown(discord.ui.Select):
             await interaction.message.edit(
                 content=f"Pupil nie chce zjeść {item['name']}",
                 view=None,
-                delete_after=10,
+                delete_after=5,
             )
         else:
             pet.hunger.state += item["points"]
         pet.save()
-        await interaction.message.edit(
-            content="Nakarmiono pupila!", view=None, delete_after=5
-        )
+        await interaction.message.delete()
         self.view.stop()
 
 
@@ -265,14 +267,12 @@ class DrinkDropdown(discord.ui.Select):
             await interaction.message.edit(
                 content=f"Pupil nie chce wypić {item['name']}",
                 view=None,
-                delete_after=10,
+                delete_after=5,
             )
         else:
             pet.thirst.state += item["points"]
         pet.save()
-        await interaction.message.edit(
-            content="Napojono pupila!", view=None, delete_after=5
-        )
+        await interaction.message.delete()
         self.view.stop()
 
 
@@ -298,14 +298,12 @@ class PotionDropdown(discord.ui.Select):
             await interaction.message.edit(
                 content=f"Pupil nie chce {item['name']}",
                 view=None,
-                delete_after=10,
+                delete_after=5,
             )
         else:
             pet.health.state += item["points"]
         pet.save()
-        await interaction.message.edit(
-            content="Uleczono pupila!", view=None, delete_after=5
-        )
+        await interaction.message.delete()
         self.view.stop()
 
 
@@ -325,9 +323,7 @@ class WallpaperDropdown(discord.ui.Select):
         id = self.values[0]
         pet.wallpaper = id
         pet.save()
-        await interaction.message.edit(
-            content="Zmieniono tapetę!", view=None, delete_after=5
-        )
+        await interaction.message.delete()
         self.view.stop()
 
 
@@ -341,7 +337,7 @@ class Pet(discord.ui.View):
         await self.message.edit(view=self)
 
     @discord.ui.button(
-        emoji="<:feed:949827709662527548>", style=discord.ButtonStyle.grey
+        emoji="<:feed:956868052794900491>", style=discord.ButtonStyle.grey
     )
     async def foods(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -349,7 +345,7 @@ class Pet(discord.ui.View):
             owner=interaction.user.id
         ).first()
         if pet.hunger.state == 100:
-            await interaction.message.reply("Pupil nie jest głodny!", delete_after=10)
+            await interaction.message.reply("Pupil nie jest głodny!", delete_after=5)
             return
         options: list[discord.SelectOption] = []
         for id in foods:
@@ -370,7 +366,7 @@ class Pet(discord.ui.View):
         await interaction.message.reply(
             content="⬇️ Wybierz czym chcesz nakarmić pupila",
             view=view,
-            delete_after=60,
+            delete_after=30,
         )
         await view.wait()
         status_image = await generate_status(interaction.user.id)
@@ -379,7 +375,7 @@ class Pet(discord.ui.View):
         )
 
     @discord.ui.button(
-        emoji="<:drink:949827709641572352>", style=discord.ButtonStyle.grey
+        emoji="<:drink:956868053126250516>", style=discord.ButtonStyle.grey
     )
     async def drinks(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -387,7 +383,7 @@ class Pet(discord.ui.View):
             owner=interaction.user.id
         ).first()
         if pet.thirst.state == 100:
-            await interaction.message.reply("Pupil nie chce pić!", delete_after=10)
+            await interaction.message.reply("Pupil nie chce pić!", delete_after=5)
             return
         options: list[discord.SelectOption] = []
         for id in drinks:
@@ -408,7 +404,7 @@ class Pet(discord.ui.View):
         await interaction.message.reply(
             content="⬇️ Wybierz czym chcesz napoić pupila",
             view=view,
-            delete_after=60,
+            delete_after=30,
         )
         await view.wait()
         status_image = await generate_status(interaction.user.id)
@@ -417,7 +413,7 @@ class Pet(discord.ui.View):
         )
 
     @discord.ui.button(
-        emoji="<:sleep:949827710014853171>", style=discord.ButtonStyle.grey
+        emoji="<:sleep:956868052996218951>", style=discord.ButtonStyle.grey
     )
     async def sleep(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -427,25 +423,23 @@ class Pet(discord.ui.View):
         if pet.sleep.in_bed:
             pet.sleep.in_bed = False
             pet.save()
-            await interaction.message.reply(
-                content="Pupil się obudził", delete_after=10
-            )
+            await interaction.message.reply(content="Pupil się obudził", delete_after=5)
         else:
-            if pet.sleep.state == 100:
+            if pet.sleep.state >= 100:
                 await interaction.message.reply(
-                    content="Pupil nie chce iść spać", delete_after=10
+                    content="Pupil nie chce iść spać", delete_after=5
                 )
                 return
             pet.sleep.in_bed = True
             pet.save()
-            await interaction.message.reply(content="Pupil zasnął!", delete_after=10)
+            await interaction.message.reply(content="Pupil zasnął!", delete_after=5)
         status_image = await generate_status(interaction.user.id)
         await interaction.message.edit(
             file=discord.File(status_image, "pet_status.png")
         )
 
     @discord.ui.button(
-        emoji="<:health:949827709666742312>", style=discord.ButtonStyle.grey
+        emoji="<:health:956868053436616744>", style=discord.ButtonStyle.grey
     )
     async def potions(
         self, button: discord.ui.Button, interaction: discord.Interaction
@@ -455,7 +449,7 @@ class Pet(discord.ui.View):
             owner=interaction.user.id
         ).first()
         if pet.health.state == 100:
-            await interaction.message.reply("Pupil nie jest chory!", delete_after=10)
+            await interaction.message.reply("Pupil nie jest chory!", delete_after=5)
             return
         options: list[discord.SelectOption] = []
         for id in potions:
@@ -472,11 +466,11 @@ class Pet(discord.ui.View):
                 delete_after=5,
             )
             return
-        view = discord.ui.View(FoodDropdown(options))
+        view = discord.ui.View(PotionDropdown(options))
         await interaction.message.reply(
             content="⬇️ Wybierz czym chcesz uleczyć pupila",
             view=view,
-            delete_after=60,
+            delete_after=30,
         )
         status_image = await generate_status(interaction.user.id)
         await interaction.message.edit(
@@ -506,7 +500,7 @@ class Pet(discord.ui.View):
         await interaction.message.reply(
             content="⬇️ Wybierz tapetę do pokoju pupila",
             view=view,
-            delete_after=60,
+            delete_after=30,
         )
         status_image = await generate_status(interaction.user.id)
         await interaction.message.edit(
@@ -523,19 +517,174 @@ class Pet(discord.ui.View):
             pet.wallet += 100
             pet.daily = datetime.now()
             pet.save()
-            await interaction.message.reply(
-                content="Otrzymano darmowe 100 coinów!",
-                delete_after=5,
-            )
         else:
             await interaction.message.reply(
-                content="Otrzymałeś już darmowe 100 coinów, wróć jutro.",
+                content="❌ Otrzymałeś już darmowe 100 coinów, wróć jutro.",
                 delete_after=5,
             )
         status_image = await generate_status(interaction.user.id)
         await interaction.message.edit(
             file=discord.File(status_image, "pet_status.png")
         )
+
+
+def get_board_copy(board: List):
+    dupeBoard = []
+    for i in board:
+        dupeBoard.append(i)
+    return dupeBoard
+
+
+def ttt_get_computer_move(view):
+    for x in range(3):
+        for y in range(3):
+            board = get_board_copy(view.board)
+            if board[y][x] == 0:
+                board[y][x] = 1
+                winner = view.check_board_winner(board)
+                if winner == view.O:
+                    return (y, x)
+                else:
+                    board[y][x] = 0
+    for x in range(3):
+        for y in range(3):
+            board = get_board_copy(view.board)
+            if board[y][x] == 0:
+                board[y][x] = -1
+                winner = view.check_board_winner(board)
+                if winner == view.X:
+                    return (y, x)
+                else:
+                    board[y][x] = 0
+    board = get_board_copy(view.board)
+    # check corners
+    if board[0][0] == 0:
+        return (0, 0)
+    if board[0][2] == 0:
+        return (0, 2)
+    if board[2][0] == 0:
+        return (2, 0)
+    if board[2][2] == 0:
+        return (2, 2)
+    # check center
+    if board[1][1] == 0:
+        return (1, 1)
+    # others
+    other_moves = []
+    if board[0][1] == 0:
+        other_moves.append((0, 1))
+    if board[1][0] == 0:
+        other_moves.append((1, 0))
+    if board[1][2] == 0:
+        other_moves.append((1, 2))
+    if board[2][1] == 0:
+        other_moves.append((2, 1))
+    if other_moves:
+        return random.choice(other_moves)
+
+
+class TicTacToeButton(discord.ui.Button["TicTacToe"]):
+    def __init__(self, x: int, y: int):
+        super().__init__(style=discord.ButtonStyle.secondary, label="\u200b", row=y)
+        self.x = x
+        self.y = y
+
+    async def callback(self, interaction: discord.Interaction):
+        content = "Kółko i krzyżyk"
+        assert self.view is not None
+        view: TicTacToe = self.view
+        state = view.board[self.y][self.x]
+        if state in (view.X, view.O):
+            return
+
+        self.style = discord.ButtonStyle.danger
+        self.label = "X"
+        view.board[self.y][self.x] = view.X
+
+        try:
+            y, x = ttt_get_computer_move(view)
+            view.board[y][x] = view.O
+            for button in view.children:
+                if button.x == x and button.y == y:
+                    button.label = "O"
+        except TypeError:
+            pass
+
+        self.disabled = True
+        winner = view.check_board_winner()
+        if winner is not None:
+            if winner == view.X:
+                content = "Wygrana! +50 coinów"
+                pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+                    owner=interaction.user.id
+                ).first()
+                pet.wallet += 50
+                pet.save()
+            elif winner == view.O:
+                content = "Przegrana!"
+            else:
+                content = "Remis!"
+
+            for child in view.children:
+                child.disabled = True
+
+            view.stop()
+
+        await interaction.response.edit_message(content=content, view=view)
+
+
+class TicTacToe(discord.ui.View):
+    children: List[TicTacToeButton]
+    X = -1
+    O = 1
+    Tie = 2
+
+    def __init__(self):
+        super().__init__()
+        self.current_player = self.X
+        self.board = [
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+        ]
+
+        for x in range(3):
+            for y in range(3):
+                self.add_item(TicTacToeButton(x, y))
+
+    def check_board_winner(self, board=None):
+        if not board:
+            board = self.board
+        for across in board:
+            value = sum(across)
+            if value == 3:
+                return self.O
+            elif value == -3:
+                return self.X
+
+        for line in range(3):
+            value = board[0][line] + board[1][line] + board[2][line]
+            if value == -3:
+                return self.X
+            elif value == 3:
+                return self.O
+
+        diag = board[0][2] + board[1][1] + board[2][0]
+        if diag == 3:
+            return self.O
+        elif diag == -3:
+            return self.X
+
+        diag = board[0][0] + board[1][1] + board[2][2]
+        if diag == -3:
+            return self.X
+        elif diag == 3:
+            return self.O
+
+        if all(i != 0 for row in board for i in row):
+            return self.Tie
+
+        return None
 
 
 class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
@@ -545,20 +694,6 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         self.check_pets_hanger.start()
         self.check_pets_sleep.start()
         self.check_pets_health.start()
-        self.foods = {
-            "1": {"name": "🍎 Jabłko", "cost": 5, "points": 5},
-            "2": {"name": "🍌 Banan", "cost": 5, "points": 5},
-        }
-        self.drinks = {
-            "1": {"name": "🚰 Woda", "cost": 5, "points": 5},
-            "2": {"name": "🧃 Sok", "cost": 10, "points": 7},
-        }
-        self.potions = {
-            "1": {"name": "💊 Tabletka", "cost": 50, "points": 25},
-            "2": {"name": "💉 Strzykawka", "cost": 200, "points": 100},
-        }
-        self.wallpapers = {"1": {"name": "Zwykła tapeta", "cost": 25}}
-        self.hats = {"1": {"name": "Czapka z daszkiem", "cost": 50}}
 
     @tasks.loop(minutes=1)
     async def check_pets_thirst(self):
@@ -582,7 +717,10 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     async def check_pets_sleep(self):
         for pet in database.tamagotchi.Pet.objects:
             if pet.sleep.in_bed:
-                pet.sleep.state += randint(5, 10)
+                if pet.sleep.state >= 100:
+                    pet.sleep.state = 100
+                else:
+                    pet.sleep.state += randint(5, 10)
             else:
                 if pet.sleep.state >= 5:
                     pet.sleep.state -= randint(1, 5)
@@ -618,13 +756,12 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
             raise commands.CommandError(
                 "Nie posiadasz pupila! Utwórz go komendą /tamagotchi settings start"
             )
-        if ctx.command.name in ("feed", "drink", "sleep") and pet.sleep.in_bed is True:
-            raise commands.CommandError(
-                f"Nie możesz użyć komendy `{ctx.command.name}` kiedy Twój pupil śpi!"
-            )
 
-    tamagotchi_settings = SlashCommandGroup("settings", "Ustawienia")
-    tamagotchi_shop = SlashCommandGroup("shop", "Sklep")
+    tamagotchi_settings = SlashCommandGroup(
+        "settings", "Ustawienia", guild_ids=config["guild_ids"]
+    )
+    tamagotchi_shop = SlashCommandGroup("shop", "Sklep", guild_ids=config["guild_ids"])
+    tamagotchi_games = SlashCommandGroup("games", "Gry", guild_ids=config["guild_ids"])
 
     @tamagotchi_settings.command(
         description="Tworzy pupila", guild_ids=config["guild_ids"]
@@ -684,7 +821,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     async def food_shop_searcher(self, ctx: discord.AutocompleteContext):
         return [
             item["name"]
-            for item in self.foods.values()
+            for item in foods.values()
             if item["name"].lower().startswith(ctx.value.lower())
         ]
 
@@ -702,8 +839,8 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
         ).first()
-        for id in self.foods:
-            item = self.foods[id]
+        for id in foods:
+            item = foods[id]
             if item["name"] == food_name:
                 embed = discord.Embed()
                 embed.title = "Zakup jedzenia"
@@ -711,7 +848,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                 embed.add_field(name="🔢 Ilość:", value=count)
                 embed.add_field(name="🪙 Koszt:", value=item["cost"] * count)
                 embed.add_field(
-                    name="<:feed:949827709662527548> Jedzenie:",
+                    name="<:feed:956868052794900491> Jedzenie:",
                     value=f"+{item['points'] * count}",
                 )
                 confirm_view = Confirm()
@@ -724,7 +861,9 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                 elif confirm_view.value:
                     if pet.wallet < item["cost"] * count:
                         embed.description = f"❌ **Nie posiadasz {item['cost'] * count} coinów, aby zakupić {count} sztuk {item['name']}!**"
-                        return await message.edit(embed=embed, view=None)
+                        return await message.edit(
+                            embed=embed, view=None, delete_after=5
+                        )
                     try:
                         pet.foods[id] += count
                     except KeyError:
@@ -734,12 +873,12 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                     embed.description = f"✅ **Pomyślnie zakupiono {count} {item['name']} za {item['cost'] * count} coinów!**"
                 else:
                     embed.description = "❌ **Anulowano zakup.**"
-                await message.edit(embed=embed, view=None)
+                await message.edit(embed=embed, view=None, delete_after=5)
 
     async def drink_shop_searcher(self, ctx: discord.AutocompleteContext):
         return [
             item["name"]
-            for item in self.drinks.values()
+            for item in drinks.values()
             if item["name"].lower().startswith(ctx.value.lower())
         ]
 
@@ -757,8 +896,8 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
         ).first()
-        for id in self.drinks:
-            item = self.drinks[id]
+        for id in drinks:
+            item = drinks[id]
             if item["name"] == drink_name:
                 embed = discord.Embed()
                 embed.title = "Zakup napoju"
@@ -766,7 +905,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                 embed.add_field(name="🔢 Ilość:", value=count)
                 embed.add_field(name="🪙 Koszt:", value=item["cost"] * count)
                 embed.add_field(
-                    name="<:drink:949827709641572352> Nawodnienie:",
+                    name="<:drink:956868053126250516> Nawodnienie:",
                     value=f"+{item['points'] * count}",
                 )
                 confirm_view = Confirm()
@@ -779,7 +918,9 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                 elif confirm_view.value:
                     if pet.wallet < item["cost"] * count:
                         embed.description = f"❌ **Nie posiadasz {item['cost'] * count} coinów, aby zakupić {count} sztuk {item['name']}!**"
-                        return await message.edit(embed=embed, view=None)
+                        return await message.edit(
+                            embed=embed, view=None, delete_after=5
+                        )
                     try:
                         pet.drinks[id] += count
                     except KeyError:
@@ -789,12 +930,12 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                     embed.description = f"✅ **Pomyślnie zakupiono {count} {item['name']} za {item['cost'] * count} coinów!**"
                 else:
                     embed.description = "❌ **Anulowano zakup.**"
-                await message.edit(embed=embed, view=None)
+                await message.edit(embed=embed, view=None, delete_after=5)
 
     async def wallpapers_shop_searcher(self, ctx: discord.AutocompleteContext):
         return [
             item["name"]
-            for item in self.wallpapers.values()
+            for item in wallpapers.values()
             if item["name"].lower().startswith(ctx.value.lower())
         ]
 
@@ -812,14 +953,14 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
         ).first()
-        for id in self.wallpapers:
-            item = self.wallpapers[id]
+        for id in wallpapers:
+            item = wallpapers[id]
             if item["name"] == wallpaper_name:
                 embed = discord.Embed()
                 embed.title = "Zakup tapety"
                 if id in pet.wallpapers:
                     embed.description = f"❌ **Posiadasz już tę tapetę, sprawdź zakupione tapety komendą `/pet wallpapers`**"
-                    return await ctx.send_followup(embed=embed)
+                    return await ctx.send_followup(embed=embed, delete_after=5)
                 embed.description = f"❓ **Czy na pewno chcesz kupić {item['name']}?**"
                 embed.add_field(name="🪙 Koszt:", value=item["cost"])
                 confirm_view = Confirm()
@@ -832,19 +973,21 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                 elif confirm_view.value:
                     if pet.wallet < item["cost"]:
                         embed.description = f"❌ **Nie posiadasz {item['cost']} coinów, aby zakupić {item['name']}!**"
-                        return await message.edit(embed=embed, view=None)
+                        return await message.edit(
+                            embed=embed, view=None, delete_after=5
+                        )
                     pet.wallpapers.append(id)
                     pet.wallet -= item["cost"]
                     pet.save()
                     embed.description = f"✅ **Pomyślnie zakupiono {item['name']} za {item['cost']} coinów!**"
                 else:
                     embed.description = "❌ **Anulowano zakup.**"
-                await message.edit(embed=embed, view=None)
+                await message.edit(embed=embed, view=None, delete_after=5)
 
     async def potions_shop_searcher(self, ctx: discord.AutocompleteContext):
         return [
             item["name"]
-            for item in self.potions.values()
+            for item in potions.values()
             if item["name"].lower().startswith(ctx.value.lower())
         ]
 
@@ -864,8 +1007,8 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
         ).first()
-        for id in self.potions:
-            item = self.potions[id]
+        for id in potions:
+            item = potions[id]
             if item["name"] == potion_name:
                 embed = discord.Embed()
                 embed.title = "Zakup lekarstwa"
@@ -873,7 +1016,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                 embed.add_field(name="🔢 Ilość:", value=count)
                 embed.add_field(name="🪙 Koszt:", value=item["cost"] * count)
                 embed.add_field(
-                    name="<:health:949827709666742312> Zdrowie:",
+                    name="<:health:956868053436616744> Zdrowie:",
                     value=f"+{item['points'] * count}",
                 )
                 confirm_view = Confirm()
@@ -886,7 +1029,9 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                 elif confirm_view.value:
                     if pet.wallet < item["cost"] * count:
                         embed.description = f"❌ **Nie posiadasz {item['cost'] * count} coinów, aby zakupić {count} sztuk {item['name']}!**"
-                        return await message.edit(embed=embed, view=None)
+                        return await message.edit(
+                            embed=embed, view=None, delete_after=5
+                        )
                     try:
                         pet.potions[id] += count
                     except KeyError:
@@ -896,7 +1041,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                     embed.description = f"✅ **Pomyślnie zakupiono {count} {item['name']} za {item['cost'] * count} coinów!**"
                 else:
                     embed.description = "❌ **Anulowano zakup.**"
-                await message.edit(embed=embed, view=None)
+                await message.edit(embed=embed, view=None, delete_after=5)
 
     # @tamagotchi_shop.command(
     #     description="Kup ubranie dla pupila",
@@ -942,6 +1087,13 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         author_pet.save()
         recipent_pet.save()
         await ctx.send_followup(f"Przekazano {coins} coinów do {user.mention}!")
+
+    @tamagotchi_games.command(
+        description="Kółko i krzyżyk", guild_ids=config["guild_ids"]
+    )
+    async def tictactoe(self, ctx: discord.ApplicationContext):
+        await ctx.defer()
+        await ctx.send_followup("Kółko i krzyżyk:", view=TicTacToe())
 
 
 def setup(bot):
