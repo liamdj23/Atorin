@@ -29,14 +29,38 @@ from ..config import config
 foods = {
     "1": {"name": "🍎 Jabłko", "cost": 5, "points": 5},
     "2": {"name": "🍌 Banan", "cost": 5, "points": 5},
+    "3": {"name": "🍪 Ciastko", "cost": 5, "points": 5},
+    "4": {"name": "🍦 Lody", "cost": 5, "points": 5},
+    "5": {"name": "🍩 Donut", "cost": 6, "points": 5},
+    "6": {"name": "🍉 Arbuz", "cost": 7, "points": 5},
+    "7": {"name": "🍟 Frytki", "cost": 7, "points": 7},
+    "8": {"name": "🥨 Precel", "cost": 8, "points": 6},
+    "9": {"name": "🍫 Czekolada", "cost": 8, "points": 7},
+    "10": {"name": "🌭 Hot-Dog", "cost": 9, "points": 14},
+    "11": {"name": "🍳 Jajecznica", "cost": 10, "points": 10},
+    "12": {"name": "🥓 Bekon", "cost": 15, "points": 10},
+    "13": {"name": "🍗 Kurczak", "cost": 18, "points": 13},
+    "14": {"name": "🥞 Naleśniki", "cost": 20, "points": 15},
+    "15": {"name": "🥗 Sałatka", "cost": 20, "points": 17},
+    "16": {"name": "🍔 Hamburger", "cost": 20, "points": 20},
+    "17": {"name": "🍰 Ciasto", "cost": 20, "points": 20},
+    "18": {"name": "🍝 Spaghetti", "cost": 30, "points": 25},
+    "19": {"name": "🍕 Pizza", "cost": 40, "points": 30},
+    "20": {"name": "🍱 Sushi", "cost": 80, "points": 40},
 }
 drinks = {
     "1": {"name": "🚰 Woda", "cost": 5, "points": 5},
-    "2": {"name": "🧃 Sok", "cost": 10, "points": 7},
+    "2": {"name": "🥛 Mleko", "cost": 10, "points": 7},
+    "3": {"name": "🧃 Sok", "cost": 10, "points": 9},
+    "4": {"name": "☕️ Kawa", "cost": 15, "points": 10},
+    "5": {"name": "🫖 Herbata", "cost": 15, "points": 12},
+    "6": {"name": "🧋 Bubbletea", "cost": 20, "points": 15},
+    "7": {"name": "🥤 Cola", "cost": 20, "points": 20},
 }
 potions = {
-    "1": {"name": "💊 Tabletka", "cost": 50, "points": 25},
-    "2": {"name": "💉 Strzykawka", "cost": 200, "points": 100},
+    "1": {"name": "🩹 Plaster", "cost": 25, "points": 10},
+    "2": {"name": "💊 Tabletka", "cost": 50, "points": 25},
+    "3": {"name": "💉 Strzykawka", "cost": 200, "points": 100},
 }
 wallpapers = {"1": {"name": "Zwykła tapeta", "cost": 25}}
 hats = {"1": {"name": "Czapka z daszkiem", "cost": 50}}
@@ -547,11 +571,11 @@ class TicTacToeButton(discord.ui.Button["TicTacToe"]):
         winner = view.check_board_winner()
         if winner is not None:
             if winner == view.X:
-                content = "Wygrana! +50 coinów"
+                content = "Wygrana! +100 🪙"
                 pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
                     owner=interaction.user.id
                 ).first()
-                pet.wallet += 50
+                pet.wallet += 100
                 pet.save()
             elif winner == view.O:
                 content = "Przegrana!"
@@ -744,6 +768,72 @@ class PotionShopDropdown(discord.ui.Select):
         await interaction.message.edit(embed=embed, view=None)
 
 
+class MemoryGameButton(discord.ui.Button["TicTacToe"]):
+    def __init__(self, x: int, y: int):
+        super().__init__(style=discord.ButtonStyle.secondary, label="\u200b", row=y)
+        self.x = x
+        self.y = y
+
+    async def callback(self, interaction: discord.Interaction):
+        content = "Odkrywaj karty i znajdź parę:"
+        assert self.view is not None
+        view: MemoryGame = self.view
+        item = view.board[self.y][self.x]
+        self.emoji = item
+        if view.current_card is not None:
+            if view.board[view.current_card.y][view.current_card.x] == item:
+                view.current_card.disabled = True
+                self.disabled = True
+                view.current_card = None
+                if not view.empty_cards():
+                    content = "Wygrana! +50 🪙"
+                    pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+                        owner=interaction.user.id
+                    ).first()
+                    pet.wallet += 50
+                    pet.save()
+            else:
+                view.current_card.emoji = None
+                view.current_card = self
+        else:
+            view.current_card = self
+        await interaction.response.edit_message(content=content, view=view)
+
+
+class MemoryGame(discord.ui.View):
+    def __init__(self):
+        super().__init__()
+        self.current_card: MemoryGameButton = None
+        self.board_items = [
+            "🍎",
+            "🍎",
+            "🍐",
+            "🍐",
+            "🍓",
+            "🍓",
+            "🍊",
+            "🍊",
+            "🍇",
+            "🍇",
+            "🍒",
+            "🍒",
+            "🍍",
+            "🍍",
+            "🫐",
+            "🫐",
+        ]
+        random.shuffle(self.board_items)
+        self.board = [
+            self.board_items[x : x + 4] for x in range(0, len(self.board_items), 4)
+        ]
+        for x in range(4):
+            for y in range(4):
+                self.add_item(MemoryGameButton(x, y))
+
+    def empty_cards(self):
+        return [button for button in self.children if not button.disabled]
+
+
 class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     def __init__(self, bot: Atorin):
         self.bot = bot
@@ -894,7 +984,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
             options.append(discord.SelectOption(label=item["name"], value=id))
         view = discord.ui.View(FoodShopDropdown(options), timeout=30)
         message = await ctx.send_followup(embed=embed, view=view)
-        timed_out = view.wait()
+        timed_out = await view.wait()
         if timed_out:
             await message.delete()
 
@@ -917,7 +1007,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
             options.append(discord.SelectOption(label=item["name"], value=id))
         view = discord.ui.View(DrinkShopDropdown(options), timeout=30)
         message = await ctx.send_followup(embed=embed, view=view)
-        timed_out = view.wait()
+        timed_out = await view.wait()
         if timed_out:
             await message.delete()
 
@@ -939,7 +1029,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
             options.append(discord.SelectOption(label=item["name"], value=id))
         view = discord.ui.View(WallpaperShopDropdown(options), timeout=30)
         message = await ctx.send_followup(embed=embed, view=view)
-        timed_out = view.wait()
+        timed_out = await view.wait()
         if timed_out:
             await message.delete()
 
@@ -962,7 +1052,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
             options.append(discord.SelectOption(label=item["name"], value=id))
         view = discord.ui.View(PotionShopDropdown(options), timeout=30)
         message = await ctx.send_followup(embed=embed, view=view)
-        timed_out = view.wait()
+        timed_out = await view.wait()
         if timed_out:
             await message.delete()
 
@@ -1001,6 +1091,13 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     async def tictactoe(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         await ctx.send_followup("Kółko i krzyżyk:", view=TicTacToe())
+
+    @tamagotchi_games.command(
+        description="Odkrywaj karty i znajdź parę", guild_ids=config["guild_ids"]
+    )
+    async def memory(self, ctx: discord.ApplicationContext):
+        await ctx.defer()
+        await ctx.send_followup("Odkrywaj karty i znajdź parę:", view=MemoryGame())
 
 
 def setup(bot):
