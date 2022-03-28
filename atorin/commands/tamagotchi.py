@@ -42,105 +42,40 @@ wallpapers = {"1": {"name": "Zwykła tapeta", "cost": 25}}
 hats = {"1": {"name": "Czapka z daszkiem", "cost": 50}}
 
 
+def get_progress_bar(value: int):
+    if value >= 100:
+        return Image.open("assets/tamagotchi/pet_progress_100.png")
+    elif value <= 99 and value >= 90:
+        return Image.open("assets/tamagotchi/pet_progress_90.png")
+    elif value <= 89 and value >= 80:
+        return Image.open("assets/tamagotchi/pet_progress_80.png")
+    elif value <= 79 and value >= 70:
+        return Image.open("assets/tamagotchi/pet_progress_70.png")
+    elif value <= 69 and value >= 60:
+        return Image.open("assets/tamagotchi/pet_progress_60.png")
+    elif value <= 59 and value >= 50:
+        return Image.open("assets/tamagotchi/pet_progress_50.png")
+    elif value <= 49 and value >= 40:
+        return Image.open("assets/tamagotchi/pet_progress_40.png")
+    elif value <= 39 and value >= 30:
+        return Image.open("assets/tamagotchi/pet_progress_30.png")
+    elif value <= 29 and value >= 20:
+        return Image.open("assets/tamagotchi/pet_progress_20.png")
+    elif value <= 19 and value >= 10:
+        return Image.open("assets/tamagotchi/pet_progress_10.png")
+    elif value <= 9 and value >= 5:
+        return Image.open("assets/tamagotchi/pet_progress_5.png")
+    else:
+        return None
+
+
 async def generate_status(owner: int):
     pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=owner).first()
     template = Image.open("assets/tamagotchi/pet_status.png")
-    if pet.hunger.state >= 100:
-        hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_100.png")
-    elif pet.hunger.state <= 99 and pet.hunger.state >= 90:
-        hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_90.png")
-    elif pet.hunger.state <= 89 and pet.hunger.state >= 80:
-        hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_80.png")
-    elif pet.hunger.state <= 79 and pet.hunger.state >= 70:
-        hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_70.png")
-    elif pet.hunger.state <= 69 and pet.hunger.state >= 60:
-        hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_60.png")
-    elif pet.hunger.state <= 59 and pet.hunger.state >= 50:
-        hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_50.png")
-    elif pet.hunger.state <= 49 and pet.hunger.state >= 40:
-        hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_40.png")
-    elif pet.hunger.state <= 39 and pet.hunger.state >= 30:
-        hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_30.png")
-    elif pet.hunger.state <= 29 and pet.hunger.state >= 20:
-        hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_20.png")
-    elif pet.hunger.state <= 19 and pet.hunger.state >= 10:
-        hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_10.png")
-    elif pet.hunger.state <= 9 and pet.hunger.state >= 5:
-        hunger_progress_bar = Image.open("assets/tamagotchi/pet_progress_5.png")
-    else:
-        hunger_progress_bar = None
-    if pet.thirst.state >= 100:
-        thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_100.png")
-    elif pet.thirst.state <= 99 and pet.thirst.state >= 90:
-        thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_90.png")
-    elif pet.thirst.state <= 89 and pet.thirst.state >= 80:
-        thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_80.png")
-    elif pet.thirst.state <= 79 and pet.thirst.state >= 70:
-        thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_70.png")
-    elif pet.thirst.state <= 69 and pet.thirst.state >= 60:
-        thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_60.png")
-    elif pet.thirst.state <= 59 and pet.thirst.state >= 50:
-        thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_50.png")
-    elif pet.thirst.state <= 49 and pet.thirst.state >= 40:
-        thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_40.png")
-    elif pet.thirst.state <= 39 and pet.thirst.state >= 30:
-        thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_30.png")
-    elif pet.thirst.state <= 29 and pet.thirst.state >= 20:
-        thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_20.png")
-    elif pet.thirst.state <= 19 and pet.thirst.state >= 10:
-        thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_10.png")
-    elif pet.thirst.state <= 9 and pet.thirst.state >= 5:
-        thirst_progress_bar = Image.open("assets/tamagotchi/pet_progress_5.png")
-    else:
-        thirst_progress_bar = None
-    if pet.sleep.state >= 100:
-        sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_100.png")
-    elif pet.sleep.state <= 99 and pet.sleep.state >= 90:
-        sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_90.png")
-    elif pet.sleep.state <= 89 and pet.sleep.state >= 80:
-        sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_80.png")
-    elif pet.sleep.state <= 79 and pet.sleep.state >= 70:
-        sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_70.png")
-    elif pet.sleep.state <= 69 and pet.sleep.state >= 60:
-        sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_60.png")
-    elif pet.sleep.state <= 59 and pet.sleep.state >= 50:
-        sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_50.png")
-    elif pet.sleep.state <= 49 and pet.sleep.state >= 40:
-        sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_40.png")
-    elif pet.sleep.state <= 39 and pet.sleep.state >= 30:
-        sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_30.png")
-    elif pet.sleep.state <= 29 and pet.sleep.state >= 20:
-        sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_20.png")
-    elif pet.sleep.state <= 19 and pet.sleep.state >= 10:
-        sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_10.png")
-    elif pet.sleep.state <= 9 and pet.sleep.state >= 5:
-        sleep_progress_bar = Image.open("assets/tamagotchi/pet_progress_5.png")
-    else:
-        sleep_progress_bar = None
-    if pet.health.state >= 100:
-        health_progress_bar = Image.open("assets/tamagotchi/pet_progress_100.png")
-    elif pet.health.state <= 99 and pet.health.state >= 90:
-        health_progress_bar = Image.open("assets/tamagotchi/pet_progress_90.png")
-    elif pet.health.state <= 89 and pet.health.state >= 80:
-        health_progress_bar = Image.open("assets/tamagotchi/pet_progress_80.png")
-    elif pet.health.state <= 79 and pet.health.state >= 70:
-        health_progress_bar = Image.open("assets/tamagotchi/pet_progress_70.png")
-    elif pet.health.state <= 69 and pet.health.state >= 60:
-        health_progress_bar = Image.open("assets/tamagotchi/pet_progress_60.png")
-    elif pet.health.state <= 59 and pet.health.state >= 50:
-        health_progress_bar = Image.open("assets/tamagotchi/pet_progress_50.png")
-    elif pet.health.state <= 49 and pet.health.state >= 40:
-        health_progress_bar = Image.open("assets/tamagotchi/pet_progress_40.png")
-    elif pet.health.state <= 39 and pet.health.state >= 30:
-        health_progress_bar = Image.open("assets/tamagotchi/pet_progress_30.png")
-    elif pet.health.state <= 29 and pet.health.state >= 20:
-        health_progress_bar = Image.open("assets/tamagotchi/pet_progress_20.png")
-    elif pet.health.state <= 19 and pet.health.state >= 10:
-        health_progress_bar = Image.open("assets/tamagotchi/pet_progress_10.png")
-    elif pet.health.state <= 9 and pet.health.state >= 5:
-        health_progress_bar = Image.open("assets/tamagotchi/pet_progress_5.png")
-    else:
-        health_progress_bar = None
+    hunger_progress_bar = get_progress_bar(pet.hunger.state)
+    thirst_progress_bar = get_progress_bar(pet.thirst.state)
+    sleep_progress_bar = get_progress_bar(pet.sleep.state)
+    health_progress_bar = get_progress_bar(pet.health.state)
     if hunger_progress_bar:
         template.paste(hunger_progress_bar, (583, 150))
     if thirst_progress_bar:
@@ -234,7 +169,7 @@ class FoodDropdown(discord.ui.Select):
             del pet.foods[id]
         if pet.hunger.state + item["points"] > 100:
             await interaction.message.edit(
-                content=f"Pupil nie chce zjeść {item['name']}",
+                content=f"😶 Pupil nie chce zjeść {item['name']}",
                 view=None,
                 delete_after=5,
             )
@@ -265,7 +200,7 @@ class DrinkDropdown(discord.ui.Select):
             del pet.drinks[id]
         if pet.thirst.state + item["points"] > 100:
             await interaction.message.edit(
-                content=f"Pupil nie chce wypić {item['name']}",
+                content=f"😶 Pupil nie chce wypić {item['name']}",
                 view=None,
                 delete_after=5,
             )
@@ -296,7 +231,7 @@ class PotionDropdown(discord.ui.Select):
             del pet.potions[id]
         if pet.health.state + item["points"] > 100:
             await interaction.message.edit(
-                content=f"Pupil nie chce {item['name']}",
+                content=f"😶 Pupil nie chce {item['name']}",
                 view=None,
                 delete_after=5,
             )
@@ -345,7 +280,7 @@ class Pet(discord.ui.View):
             owner=interaction.user.id
         ).first()
         if pet.hunger.state == 100:
-            await interaction.message.reply("Pupil nie jest głodny!", delete_after=5)
+            await interaction.message.reply("😶 Pupil nie jest głodny!", delete_after=5)
             return
         options: list[discord.SelectOption] = []
         for id in foods:
@@ -358,7 +293,7 @@ class Pet(discord.ui.View):
                 )
         if not options:
             await interaction.message.reply(
-                content="❌ Twój pupil nie ma nic do jedzenia, użyj komendy `/pet shop food` aby zakupić jedzenie.",
+                content="❌ Twój pupil nie ma nic do jedzenia, użyj komendy `/shop food` aby zakupić jedzenie.",
                 delete_after=5,
             )
             return
@@ -383,7 +318,7 @@ class Pet(discord.ui.View):
             owner=interaction.user.id
         ).first()
         if pet.thirst.state == 100:
-            await interaction.message.reply("Pupil nie chce pić!", delete_after=5)
+            await interaction.message.reply("😶 Pupil nie chce pić!", delete_after=5)
             return
         options: list[discord.SelectOption] = []
         for id in drinks:
@@ -396,7 +331,7 @@ class Pet(discord.ui.View):
                 )
         if not options:
             await interaction.message.reply(
-                content="❌ Twój pupil nie ma nic do picia, użyj komendy `/pet shop drinks` aby zakupić napoje.",
+                content="❌ Twój pupil nie ma nic do picia, użyj komendy `/shop drinks` aby zakupić napoje.",
                 delete_after=5,
             )
             return
@@ -423,16 +358,14 @@ class Pet(discord.ui.View):
         if pet.sleep.in_bed:
             pet.sleep.in_bed = False
             pet.save()
-            await interaction.message.reply(content="Pupil się obudził", delete_after=5)
         else:
             if pet.sleep.state >= 100:
                 await interaction.message.reply(
-                    content="Pupil nie chce iść spać", delete_after=5
+                    content="😶 Pupil nie chce iść spać", delete_after=5
                 )
                 return
             pet.sleep.in_bed = True
             pet.save()
-            await interaction.message.reply(content="Pupil zasnął!", delete_after=5)
         status_image = await generate_status(interaction.user.id)
         await interaction.message.edit(
             file=discord.File(status_image, "pet_status.png")
@@ -449,7 +382,7 @@ class Pet(discord.ui.View):
             owner=interaction.user.id
         ).first()
         if pet.health.state == 100:
-            await interaction.message.reply("Pupil nie jest chory!", delete_after=5)
+            await interaction.message.reply("😶 Pupil nie jest chory!", delete_after=5)
             return
         options: list[discord.SelectOption] = []
         for id in potions:
@@ -462,7 +395,7 @@ class Pet(discord.ui.View):
                 )
         if not options:
             await interaction.message.reply(
-                content="❌ Twój pupil nie ma lekarstw, użyj komendy `/pet shop potions` aby zakupić lekarstwa.",
+                content="❌ Twój pupil nie ma lekarstw, użyj komendy `/shop potions` aby zakupić lekarstwa.",
                 delete_after=5,
             )
             return
@@ -492,7 +425,7 @@ class Pet(discord.ui.View):
                 options.append(discord.SelectOption(label=item["name"], value=id))
         if not options:
             await interaction.message.reply(
-                content="❌ Twój pupil nie ma tapet, użyj komendy `/pet shop wallpapers` aby zakupić tapety.",
+                content="❌ Twój pupil nie ma tapet, użyj komendy `/shop wallpapers` aby zakupić tapety.",
                 delete_after=5,
             )
             return
