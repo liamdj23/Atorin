@@ -687,6 +687,130 @@ class TicTacToe(discord.ui.View):
         return None
 
 
+class FoodShopDropdown(discord.ui.Select):
+    def __init__(self, options: list[discord.SelectOption]):
+        super().__init__(
+            placeholder="Wybierz jedzenie...",
+            min_values=1,
+            max_values=1,
+            options=options,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+            owner=interaction.user.id
+        ).first()
+        embed = discord.Embed()
+        id = self.values[0]
+        item = foods[id]
+        if pet.wallet < item["cost"]:
+            embed.description = f"❌ **Nie posiadasz {item['cost']} coinów, aby zakupić {item['name']}!**"
+            return await interaction.message.reply(embed=embed, delete_after=5)
+        try:
+            pet.foods[id] += 1
+        except KeyError:
+            pet.foods[id] = 1
+        pet.wallet -= item["cost"]
+        pet.save()
+        embed.description = (
+            f"✅ **Pomyślnie zakupiono {item['name']} za {item['cost']} coinów!**"
+        )
+        await interaction.message.edit(embed=embed, view=None)
+
+
+class DrinkShopDropdown(discord.ui.Select):
+    def __init__(self, options: list[discord.SelectOption]):
+        super().__init__(
+            placeholder="Wybierz napój...",
+            min_values=1,
+            max_values=1,
+            options=options,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+            owner=interaction.user.id
+        ).first()
+        embed = discord.Embed()
+        id = self.values[0]
+        item = drinks[id]
+        if pet.wallet < item["cost"]:
+            embed.description = f"❌ **Nie posiadasz {item['cost']} coinów, aby zakupić {item['name']}!**"
+            return await interaction.message.reply(embed=embed, delete_after=5)
+        try:
+            pet.drinks[id] += 1
+        except KeyError:
+            pet.drinks[id] = 1
+        pet.wallet -= item["cost"]
+        pet.save()
+        embed.description = (
+            f"✅ **Pomyślnie zakupiono {item['name']} za {item['cost']} coinów!**"
+        )
+        await interaction.message.edit(embed=embed, view=None)
+
+
+class WallpaperShopDropdown(discord.ui.Select):
+    def __init__(self, options: list[discord.SelectOption]):
+        super().__init__(
+            placeholder="Wybierz tapetę...",
+            min_values=1,
+            max_values=1,
+            options=options,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+            owner=interaction.user.id
+        ).first()
+        embed = discord.Embed()
+        id = self.values[0]
+        item = wallpapers[id]
+        if id in pet.wallpapers:
+            embed.description = f"❌ **Posiadasz już tę tapetę!**"
+            return await interaction.message.reply(embed=embed, delete_after=5)
+        if pet.wallet < item["cost"]:
+            embed.description = f"❌ **Nie posiadasz {item['cost']} coinów, aby zakupić {item['name']}!**"
+            return await interaction.message.reply(embed=embed, delete_after=5)
+        pet.wallpapers.append(id)
+        pet.wallet -= item["cost"]
+        pet.save()
+        embed.description = (
+            f"✅ **Pomyślnie zakupiono {item['name']} za {item['cost']} coinów!**"
+        )
+        await interaction.message.edit(embed=embed, view=None)
+
+
+class PotionShopDropdown(discord.ui.Select):
+    def __init__(self, options: list[discord.SelectOption]):
+        super().__init__(
+            placeholder="Wybierz lekarstwo...",
+            min_values=1,
+            max_values=1,
+            options=options,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
+            owner=interaction.user.id
+        ).first()
+        embed = discord.Embed()
+        id = self.values[0]
+        item = potions[id]
+        if pet.wallet < item["cost"]:
+            embed.description = f"❌ **Nie posiadasz {item['cost']} coinów, aby zakupić {item['name']}!**"
+            return await interaction.message.reply(embed=embed, delete_after=5)
+        try:
+            pet.potions[id] += 1
+        except KeyError:
+            pet.potions[id] = 1
+        pet.wallet -= item["cost"]
+        pet.save()
+        embed.description = (
+            f"✅ **Pomyślnie zakupiono {item['name']} za {item['cost']} coinów!**"
+        )
+        await interaction.message.edit(embed=embed, view=None)
+
+
 class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     def __init__(self, bot: Atorin):
         self.bot = bot
@@ -818,13 +942,6 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         )
         await message.edit(view=Pet(message))
 
-    async def food_shop_searcher(self, ctx: discord.AutocompleteContext):
-        return [
-            item["name"]
-            for item in foods.values()
-            if item["name"].lower().startswith(ctx.value.lower())
-        ]
-
     @tamagotchi_shop.command(
         description="Kup jedzenie dla pupila",
         guild_ids=config["guild_ids"],
@@ -832,55 +949,21 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     async def food(
         self,
         ctx: discord.ApplicationContext,
-        food_name: Option(str, "Wybierz jedzenie", autocomplete=food_shop_searcher),
-        count: Option(int, "Wpisz ilość", min_value=1, default=1),
     ):
         await ctx.defer()
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=ctx.author.id
-        ).first()
+        embed = discord.Embed(title="<:feed:956868052794900491> Jedzenie")
+        embed.description = ""
+        for item in foods.values():
+            embed.description += f"**{item['name']}** | -{item['cost']} 🪙 | +{item['points']} <:feed:956868052794900491>\n"
+        options: list[discord.SelectOption] = []
         for id in foods:
             item = foods[id]
-            if item["name"] == food_name:
-                embed = discord.Embed()
-                embed.title = "Zakup jedzenia"
-                embed.description = f"❓ **Czy na pewno chcesz kupić {item['name']}?**"
-                embed.add_field(name="🔢 Ilość:", value=count)
-                embed.add_field(name="🪙 Koszt:", value=item["cost"] * count)
-                embed.add_field(
-                    name="<:feed:956868052794900491> Jedzenie:",
-                    value=f"+{item['points'] * count}",
-                )
-                confirm_view = Confirm()
-                message = await ctx.send_followup(embed=embed, view=confirm_view)
-                await confirm_view.wait()
-                embed = discord.Embed()
-                embed.title = "Zakup jedzenia"
-                if confirm_view.value is None:
-                    await message.delete()
-                elif confirm_view.value:
-                    if pet.wallet < item["cost"] * count:
-                        embed.description = f"❌ **Nie posiadasz {item['cost'] * count} coinów, aby zakupić {count} sztuk {item['name']}!**"
-                        return await message.edit(
-                            embed=embed, view=None, delete_after=5
-                        )
-                    try:
-                        pet.foods[id] += count
-                    except KeyError:
-                        pet.foods[id] = count
-                    pet.wallet -= item["cost"] * count
-                    pet.save()
-                    embed.description = f"✅ **Pomyślnie zakupiono {count} {item['name']} za {item['cost'] * count} coinów!**"
-                else:
-                    embed.description = "❌ **Anulowano zakup.**"
-                await message.edit(embed=embed, view=None, delete_after=5)
-
-    async def drink_shop_searcher(self, ctx: discord.AutocompleteContext):
-        return [
-            item["name"]
-            for item in drinks.values()
-            if item["name"].lower().startswith(ctx.value.lower())
-        ]
+            options.append(discord.SelectOption(label=item["name"], value=id))
+        view = discord.ui.View(FoodShopDropdown(options), timeout=30)
+        message = await ctx.send_followup(embed=embed, view=view)
+        timed_out = view.wait()
+        if timed_out:
+            await message.delete()
 
     @tamagotchi_shop.command(
         description="Kup napój dla pupila",
@@ -889,55 +972,21 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     async def drink(
         self,
         ctx: discord.ApplicationContext,
-        drink_name: Option(str, "Wybierz napój", autocomplete=drink_shop_searcher),
-        count: Option(int, "Wpisz ilość", min_value=1, default=1),
     ):
         await ctx.defer()
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=ctx.author.id
-        ).first()
+        embed = discord.Embed(title="<:drink:956868053126250516> Napoje")
+        embed.description = ""
+        for item in drinks.values():
+            embed.description += f"**{item['name']}** | -{item['cost']} 🪙 | +{item['points']} <:drink:956868053126250516>\n"
+        options: list[discord.SelectOption] = []
         for id in drinks:
             item = drinks[id]
-            if item["name"] == drink_name:
-                embed = discord.Embed()
-                embed.title = "Zakup napoju"
-                embed.description = f"❓ **Czy na pewno chcesz kupić {item['name']}?**"
-                embed.add_field(name="🔢 Ilość:", value=count)
-                embed.add_field(name="🪙 Koszt:", value=item["cost"] * count)
-                embed.add_field(
-                    name="<:drink:956868053126250516> Nawodnienie:",
-                    value=f"+{item['points'] * count}",
-                )
-                confirm_view = Confirm()
-                message = await ctx.send_followup(embed=embed, view=confirm_view)
-                await confirm_view.wait()
-                embed = discord.Embed()
-                embed.title = "Zakup napoju"
-                if confirm_view.value is None:
-                    await message.delete()
-                elif confirm_view.value:
-                    if pet.wallet < item["cost"] * count:
-                        embed.description = f"❌ **Nie posiadasz {item['cost'] * count} coinów, aby zakupić {count} sztuk {item['name']}!**"
-                        return await message.edit(
-                            embed=embed, view=None, delete_after=5
-                        )
-                    try:
-                        pet.drinks[id] += count
-                    except KeyError:
-                        pet.drinks[id] = count
-                    pet.wallet -= item["cost"] * count
-                    pet.save()
-                    embed.description = f"✅ **Pomyślnie zakupiono {count} {item['name']} za {item['cost'] * count} coinów!**"
-                else:
-                    embed.description = "❌ **Anulowano zakup.**"
-                await message.edit(embed=embed, view=None, delete_after=5)
-
-    async def wallpapers_shop_searcher(self, ctx: discord.AutocompleteContext):
-        return [
-            item["name"]
-            for item in wallpapers.values()
-            if item["name"].lower().startswith(ctx.value.lower())
-        ]
+            options.append(discord.SelectOption(label=item["name"], value=id))
+        view = discord.ui.View(DrinkShopDropdown(options), timeout=30)
+        message = await ctx.send_followup(embed=embed, view=view)
+        timed_out = view.wait()
+        if timed_out:
+            await message.delete()
 
     @tamagotchi_shop.command(
         description="Kup tapety dla pupila", guild_ids=config["guild_ids"]
@@ -945,51 +994,21 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     async def wallpapers(
         self,
         ctx: discord.ApplicationContext,
-        wallpaper_name: Option(
-            str, "Wybierz tapetę", autocomplete=wallpapers_shop_searcher
-        ),
     ):
         await ctx.defer()
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=ctx.author.id
-        ).first()
+        embed = discord.Embed(title="🖼 Tapety")
+        embed.description = ""
+        for item in wallpapers.values():
+            embed.description += f"**{item['name']}** | -{item['cost']} 🪙 \n"
+        options: list[discord.SelectOption] = []
         for id in wallpapers:
             item = wallpapers[id]
-            if item["name"] == wallpaper_name:
-                embed = discord.Embed()
-                embed.title = "Zakup tapety"
-                if id in pet.wallpapers:
-                    embed.description = f"❌ **Posiadasz już tę tapetę, sprawdź zakupione tapety komendą `/pet wallpapers`**"
-                    return await ctx.send_followup(embed=embed, delete_after=5)
-                embed.description = f"❓ **Czy na pewno chcesz kupić {item['name']}?**"
-                embed.add_field(name="🪙 Koszt:", value=item["cost"])
-                confirm_view = Confirm()
-                message = await ctx.send_followup(embed=embed, view=confirm_view)
-                await confirm_view.wait()
-                embed = discord.Embed()
-                embed.title = "Zakup tapety"
-                if confirm_view.value is None:
-                    await message.delete()
-                elif confirm_view.value:
-                    if pet.wallet < item["cost"]:
-                        embed.description = f"❌ **Nie posiadasz {item['cost']} coinów, aby zakupić {item['name']}!**"
-                        return await message.edit(
-                            embed=embed, view=None, delete_after=5
-                        )
-                    pet.wallpapers.append(id)
-                    pet.wallet -= item["cost"]
-                    pet.save()
-                    embed.description = f"✅ **Pomyślnie zakupiono {item['name']} za {item['cost']} coinów!**"
-                else:
-                    embed.description = "❌ **Anulowano zakup.**"
-                await message.edit(embed=embed, view=None, delete_after=5)
-
-    async def potions_shop_searcher(self, ctx: discord.AutocompleteContext):
-        return [
-            item["name"]
-            for item in potions.values()
-            if item["name"].lower().startswith(ctx.value.lower())
-        ]
+            options.append(discord.SelectOption(label=item["name"], value=id))
+        view = discord.ui.View(WallpaperShopDropdown(options), timeout=30)
+        message = await ctx.send_followup(embed=embed, view=view)
+        timed_out = view.wait()
+        if timed_out:
+            await message.delete()
 
     @tamagotchi_shop.command(
         description="Kup lekarstwa dla pupila",
@@ -998,66 +1017,21 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     async def potions(
         self,
         ctx: discord.ApplicationContext,
-        potion_name: Option(
-            str, "Wybierz lekarstwo", autocomplete=potions_shop_searcher
-        ),
-        count: Option(int, "Wpisz ilość", min_value=1, default=1),
     ):
         await ctx.defer()
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=ctx.author.id
-        ).first()
+        embed = discord.Embed(title="<:health:956868053436616744> Lekarstwa")
+        embed.description = ""
+        for item in potions.values():
+            embed.description += f"**{item['name']}** | -{item['cost']} 🪙 | +{item['points']} <:health:956868053436616744>\n"
+        options: list[discord.SelectOption] = []
         for id in potions:
             item = potions[id]
-            if item["name"] == potion_name:
-                embed = discord.Embed()
-                embed.title = "Zakup lekarstwa"
-                embed.description = f"❓ **Czy na pewno chcesz kupić {item['name']}?**"
-                embed.add_field(name="🔢 Ilość:", value=count)
-                embed.add_field(name="🪙 Koszt:", value=item["cost"] * count)
-                embed.add_field(
-                    name="<:health:956868053436616744> Zdrowie:",
-                    value=f"+{item['points'] * count}",
-                )
-                confirm_view = Confirm()
-                message = await ctx.send_followup(embed=embed, view=confirm_view)
-                await confirm_view.wait()
-                embed = discord.Embed()
-                embed.title = "Zakup lekarstwa"
-                if confirm_view.value is None:
-                    await message.delete()
-                elif confirm_view.value:
-                    if pet.wallet < item["cost"] * count:
-                        embed.description = f"❌ **Nie posiadasz {item['cost'] * count} coinów, aby zakupić {count} sztuk {item['name']}!**"
-                        return await message.edit(
-                            embed=embed, view=None, delete_after=5
-                        )
-                    try:
-                        pet.potions[id] += count
-                    except KeyError:
-                        pet.potions[id] = count
-                    pet.wallet -= item["cost"] * count
-                    pet.save()
-                    embed.description = f"✅ **Pomyślnie zakupiono {count} {item['name']} za {item['cost'] * count} coinów!**"
-                else:
-                    embed.description = "❌ **Anulowano zakup.**"
-                await message.edit(embed=embed, view=None, delete_after=5)
-
-    # @tamagotchi_shop.command(
-    #     description="Kup ubranie dla pupila",
-    #     guild_ids=config["guild_ids"],
-    # )
-    # async def clothes(self, ctx: discord.ApplicationContext):
-    #     await ctx.defer()
-    #     await ctx.send_followup("Zakupiono ubranie dla pupila!")
-
-    # @tamagotchi_shop.command(
-    #     description="Kup ulepszenie dla pupila",
-    #     guild_ids=config["guild_ids"],
-    # )
-    # async def upgrades(self, ctx: discord.ApplicationContext):
-    #     await ctx.defer()
-    #     await ctx.send_followup("Zakupiono ulepszenie dla pupila!")
+            options.append(discord.SelectOption(label=item["name"], value=id))
+        view = discord.ui.View(PotionShopDropdown(options), timeout=30)
+        message = await ctx.send_followup(embed=embed, view=view)
+        timed_out = view.wait()
+        if timed_out:
+            await message.delete()
 
     @tamagotchi_shop.command(
         description="Przekaż coiny",
