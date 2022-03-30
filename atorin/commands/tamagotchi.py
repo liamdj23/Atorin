@@ -188,17 +188,16 @@ class FoodDropdown(discord.ui.Select):
         ).first()
         id = self.values[0]
         item = foods[id]
-        pet.foods[id] -= 1
-        if pet.foods[id] == 0:
-            del pet.foods[id]
         if pet.hunger.state + item["points"] > 100:
-            await interaction.message.edit(
+            return await interaction.message.edit(
                 content=f"😶 Pupil nie chce zjeść {item['name']}",
                 view=None,
                 delete_after=5,
             )
-        else:
-            pet.hunger.state += item["points"]
+        pet.hunger.state += item["points"]
+        pet.foods[id] -= 1
+        if pet.foods[id] == 0:
+            del pet.foods[id]
         pet.save()
         await interaction.message.delete()
         self.view.stop()
@@ -219,17 +218,16 @@ class DrinkDropdown(discord.ui.Select):
         ).first()
         id = self.values[0]
         item = drinks[id]
-        pet.drinks[id] -= 1
-        if pet.drinks[id] == 0:
-            del pet.drinks[id]
         if pet.thirst.state + item["points"] > 100:
-            await interaction.message.edit(
+            return await interaction.message.edit(
                 content=f"😶 Pupil nie chce wypić {item['name']}",
                 view=None,
                 delete_after=5,
             )
-        else:
-            pet.thirst.state += item["points"]
+        pet.drinks[id] -= 1
+        if pet.drinks[id] == 0:
+            del pet.drinks[id]
+        pet.thirst.state += item["points"]
         pet.save()
         await interaction.message.delete()
         self.view.stop()
@@ -250,17 +248,16 @@ class PotionDropdown(discord.ui.Select):
         ).first()
         id = self.values[0]
         item = potions[id]
-        pet.potions[id] -= 1
-        if pet.potions[id] == 0:
-            del pet.potions[id]
         if pet.health.state + item["points"] > 100:
-            await interaction.message.edit(
+            return await interaction.message.edit(
                 content=f"😶 Pupil nie chce {item['name']}",
                 view=None,
                 delete_after=5,
             )
-        else:
-            pet.health.state += item["points"]
+        pet.potions[id] -= 1
+        if pet.potions[id] == 0:
+            del pet.potions[id]
+        pet.health.state += item["points"]
         pet.save()
         await interaction.message.delete()
         self.view.stop()
@@ -303,7 +300,7 @@ class Pet(discord.ui.View):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=interaction.user.id
         ).first()
-        if pet.hunger.state == 100:
+        if pet.hunger.state >= 100:
             await interaction.message.reply("😶 Pupil nie jest głodny!", delete_after=5)
             return
         options: list[discord.SelectOption] = []
@@ -341,7 +338,7 @@ class Pet(discord.ui.View):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=interaction.user.id
         ).first()
-        if pet.thirst.state == 100:
+        if pet.thirst.state >= 100:
             await interaction.message.reply("😶 Pupil nie chce pić!", delete_after=5)
             return
         options: list[discord.SelectOption] = []
@@ -405,7 +402,7 @@ class Pet(discord.ui.View):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=interaction.user.id
         ).first()
-        if pet.health.state == 100:
+        if pet.health.state >= 100:
             await interaction.message.reply("😶 Pupil nie jest chory!", delete_after=5)
             return
         options: list[discord.SelectOption] = []
@@ -842,7 +839,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         self.check_pets_sleep.start()
         self.check_pets_health.start()
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(minutes=15)
     async def check_pets_thirst(self):
         for pet in database.tamagotchi.Pet.objects:
             if pet.thirst.state >= 5:
@@ -851,7 +848,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                 pet.thirst.state = 0
             pet.save()
 
-    @tasks.loop(minutes=2)
+    @tasks.loop(minutes=30)
     async def check_pets_hanger(self):
         for pet in database.tamagotchi.Pet.objects:
             if pet.hunger.state >= 5:
@@ -860,7 +857,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                 pet.hunger.state = 0
             pet.save()
 
-    @tasks.loop(minutes=3)
+    @tasks.loop(minutes=60)
     async def check_pets_sleep(self):
         for pet in database.tamagotchi.Pet.objects:
             if pet.sleep.in_bed:
