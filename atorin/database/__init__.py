@@ -17,6 +17,7 @@ from ..config import config
 from ..logger import log
 import sys
 from . import discord
+from . import tamagotchi
 
 host: str = config["database"]["host"]
 port: int = config["database"]["port"]
