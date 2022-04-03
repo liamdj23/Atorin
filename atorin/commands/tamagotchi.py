@@ -896,9 +896,9 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
             owner=ctx.author.id
         ).first()
-        if not ctx.command.name == "start" and pet is None:
+        if not ctx.command.name == "create" and pet is None:
             raise commands.CommandError(
-                "Nie posiadasz pupila! Utwórz go komendą /tamagotchi settings start"
+                "Nie posiadasz pupila! Utwórz go komendą /settings create"
             )
 
     tamagotchi_settings = SlashCommandGroup(
@@ -910,7 +910,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     @tamagotchi_settings.command(
         description="Tworzy pupila", guild_ids=config["guild_ids"]
     )
-    async def start(self, ctx: discord.ApplicationContext):
+    async def create(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         created: database.tamagotchi.Pet = database.tamagotchi.Pet(
             owner=ctx.author.id
@@ -918,7 +918,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         if created:
             embed = discord.Embed()
             embed.title = "Tworzenie pupila"
-            embed.description = "✅ **Utworzono pupila! Możesz go odwiedzić wpisując komendę `/pet status`**."
+            embed.description = "✅ **Utworzono pupila! Możesz go odwiedzić wpisując komendę `/pet`**."
             await ctx.send_followup(embed=embed)
         else:
             raise commands.CommandError("Nie udało się utworzyć pupila!")
