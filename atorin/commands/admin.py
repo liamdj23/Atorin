@@ -14,11 +14,13 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         self.bot = bot
 
     async def save_to_event_logs(self, guild, action, by, on, reason):
-        database.discord.EventLogs(
-            server=guild, action_name=action, action_by=by, action_on=on, reason=reason
-        ).save()
+        database.discord.EventLogs(server=guild, action_name=action, action_by=by, action_on=on, reason=reason).save()
 
-    @slash_command(description="Czyszczenie kanału", guild_ids=config["guild_ids"])
+    @slash_command(
+        description="Deleting the given number of messages",
+        description_localizations={"pl": "Usuwanie podanej ilości wiadomości"},
+        guild_ids=config["guild_ids"],
+    )
     @commands.has_guild_permissions(manage_messages=True)
     @commands.bot_has_guild_permissions(manage_messages=True)
     @commands.bot_has_guild_permissions(read_message_history=True)
@@ -26,32 +28,31 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def clear(
         self,
         ctx: discord.ApplicationContext,
-        limit: Option(int, "Liczba wiadomości do usunięcia, max. 100"),
+        limit: Option(
+            int,
+            name="amount",
+            name_localizations={"pl": "ilość"},
+            description="Number of messages to be deleted",
+            description_localizations={"pl": "Liczba wiadomości do usunięcia"},
+        ),
     ):
         await ctx.defer()
         if limit > 100:
-            raise commands.BadArgument(
-                "Nie możesz usunąć więcej niż 100 wiadomości naraz!"
-            )
+            raise commands.BadArgument("Nie możesz usunąć więcej niż 100 wiadomości naraz!")
         try:
             await ctx.channel.purge(limit=limit)
         except discord.HTTPException:
-            raise commands.CommandInvokeError(
-                "Nie udało się usunąć wiadomości, spróbuj jeszcze raz."
-            )
+            raise commands.CommandInvokeError("Nie udało się usunąć wiadomości, spróbuj jeszcze raz.")
         embed = discord.Embed()
         embed.title = "Czyszczenie kanału"
-        embed.description = (
-            f"✅ **{limit} wiadomości zostało usuniętych przez {ctx.author.mention}**"
-        )
+        embed.description = f"✅ **{limit} wiadomości zostało usuniętych przez {ctx.author.mention}**"
         await ctx.send(embed=embed)
 
-        await self.save_to_event_logs(
-            ctx.guild.id, "clear", ctx.author.id, ctx.channel.id, None
-        )
+        await self.save_to_event_logs(ctx.guild.id, "clear", ctx.author.id, ctx.channel.id, None)
 
     @slash_command(
-        description="Zbanuj użytkownika",
+        description="Ban user",
+        description_localizations={"pl": "Zbanuj użytkownika"},
         guild_ids=config["guild_ids"],
     )
     @commands.guild_only()
@@ -60,29 +61,43 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def ban(
         self,
         ctx: discord.ApplicationContext,
-        member: Option(discord.Member, "Osoba którą chcesz zbanować"),
-        reason: Option(str, "Powód bana", required=False) = "Brak",
+        member: Option(
+            discord.Member,
+            name="member",
+            name_localizations={"pl": "użytkownik"},
+            description="Member you want to ban",
+            description_localizations={"pl": "Osoba, którą chcesz zbanować"},
+        ),
+        reason: Option(
+            str,
+            name="reason",
+            name_localizations={"pl": "powód"},
+            description="Reason of ban",
+            description_localizations={"pl": "Powód bana"},
+            required=False,
+        ) = "Brak",
         delete_message_days: Option(
             str,
-            "Usuń historię wiadomości",
+            name="days",
+            name_localizations={"pl": "dni"},
+            description="Number of days worth of messages to delete from user in guild.",
+            description_localizations={
+                "pl": "Liczba dni z których wiadomości pochodzące od użytkownika zostaną usunięte",
+            },
             choices=[
-                OptionChoice("Nie usuwaj", "0"),
-                OptionChoice("Ostatnie 24 godziny", "1"),
-                OptionChoice("Ostatni tydzień", "7"),
+                OptionChoice("Don't delete", "0", {"pl": "Nie usuwaj"}),
+                OptionChoice("Last 24 hours", "1", {"pl": "Ostatnie 24 godziny"}),
+                OptionChoice("Last week", "7", {"pl": "Ostatni tydzień"}),
             ],
             required=False,
         ) = "0",
     ):
         await ctx.defer()
         await member.ban(reason=reason, delete_message_days=delete_message_days)
-        await self.save_to_event_logs(
-            ctx.guild.id, "ban", ctx.author.id, member.id, reason
-        )
+        await self.save_to_event_logs(ctx.guild.id, "ban", ctx.author.id, member.id, reason)
         embed = discord.Embed()
         embed.title = "Ban"
-        embed.description = (
-            f"🔨 {ctx.author.mention} **zbanował** {member.mention} z powodu `{reason}`"
-        )
+        embed.description = f"🔨 {ctx.author.mention} **zbanował** {member.mention} z powodu `{reason}`"
         await ctx.send_followup(embed=embed)
         try:
             await member.send(
@@ -93,14 +108,11 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
 
     async def banned_searcher(ctx: discord.AutocompleteContext):
         banned_users = await ctx.interaction.guild.bans()
-        return [
-            str(entry.user)
-            for entry in banned_users
-            if str(entry.user).lower().startswith(ctx.value.lower())
-        ]
+        return [str(entry.user) for entry in banned_users if str(entry.user).lower().startswith(ctx.value.lower())]
 
     @slash_command(
-        description="Odbanuj użytkownika",
+        description="Unban user",
+        description_localizations={"pl": "Odbanuj użytkownika"},
         guild_ids=config["guild_ids"],
     )
     @commands.guild_only()
@@ -110,9 +122,21 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         self,
         ctx: discord.ApplicationContext,
         member: Option(
-            str, "Osoba którą chcesz odbanować", autocomplete=banned_searcher
+            str,
+            name="member",
+            name_localizations={"pl": "użytkownik"},
+            description="Member you want to unban",
+            description_localizations={"pl": "Osoba, którą chcesz odbanować"},
+            autocomplete=banned_searcher,
         ),
-        reason: Option(str, "Powód odbanowania", required=False) = "Brak",
+        reason: Option(
+            str,
+            name="reason",
+            name_localizations={"pl": "powód"},
+            description="Reason of unban",
+            description_localizations={"pl": "Powód odbanowania"},
+            required=False,
+        ) = "Brak",
     ):
         await ctx.defer()
         banned_users = await ctx.guild.bans()
@@ -121,18 +145,15 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         for ban_entry in banned_users:
             if str(ban_entry.user) == member:
                 await ctx.guild.unban(ban_entry.user)
-                await self.save_to_event_logs(
-                    ctx.guild.id, "unban", ctx.author.id, ban_entry.user.id, reason
-                )
+                await self.save_to_event_logs(ctx.guild.id, "unban", ctx.author.id, ban_entry.user.id, reason)
                 embed = discord.Embed()
                 embed.title = "Unban"
-                embed.description = (
-                    f"✅ {ctx.author.mention} **odbanował** {ban_entry.user.mention}"
-                )
+                embed.description = f"✅ {ctx.author.mention} **odbanował** {ban_entry.user.mention}"
                 await ctx.send_followup(embed=embed)
 
     @slash_command(
-        description="Wyrzuć użytkownika",
+        description="Kick member",
+        description_localizations={"pl": "Wyrzuć użytkownika"},
         guild_ids=config["guild_ids"],
     )
     @commands.guild_only()
@@ -141,19 +162,28 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def kick(
         self,
         ctx: discord.ApplicationContext,
-        member: Option(discord.Member, "Osoba którą chcesz wyrzucić"),
-        reason: Option(str, "Powód wyrzucenia", required=False) = "Brak",
+        member: Option(
+            discord.Member,
+            name="member",
+            name_localizations={"pl": "użytkownik"},
+            description="Member you want to kick",
+            description_localizations={"pl": "Osoba, którą chcesz wyrzucić"},
+        ),
+        reason: Option(
+            str,
+            name="reason",
+            name_localizations={"pl": "powód"},
+            description="Reason of kick",
+            description_localizations={"pl": "Powód wyrzucenia"},
+            required=False,
+        ) = "Brak",
     ):
         await ctx.defer()
         await member.kick(reason=reason)
-        await self.save_to_event_logs(
-            ctx.guild.id, "kick", ctx.author.id, member.id, reason
-        )
+        await self.save_to_event_logs(ctx.guild.id, "kick", ctx.author.id, member.id, reason)
         embed = discord.Embed()
         embed.title = "Wyrzucenie"
-        embed.description = (
-            f"🦶 {ctx.author.mention} wyrzucił {member.mention} z powodu `{reason}`"
-        )
+        embed.description = f"🦶 {ctx.author.mention} wyrzucił {member.mention} z powodu `{reason}`"
         await ctx.send_followup(embed=embed)
         try:
             await member.send(
@@ -163,7 +193,8 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             pass
 
     @slash_command(
-        description="Wycisza użytkownika",
+        description="Mute user",
+        description_localizations={"pl": "Wycisza użytkownika"},
         guild_ids=config["guild_ids"],
     )
     @commands.guild_only()
@@ -172,31 +203,34 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def mute(
         self,
         ctx: discord.ApplicationContext,
-        member: Option(discord.Member, "Wybierz osobę, którą chcesz wyciszyć"),
-        reason: Option(str, "Powód wyciszenia", required=False) = "Brak",
+        member: Option(
+            discord.Member,
+            name="member",
+            name_localizations={"pl": "użytkownik"},
+            description="Member you want to mute",
+            description_localizations={"pl": "Osoba, którą chcesz wyciszyć"},
+        ),
+        reason: Option(
+            str,
+            name="reason",
+            name_localizations={"pl": "powód"},
+            description="Reason of mute",
+            description_localizations={"pl": "Powód wyciszenia"},
+            required=False,
+        ) = "Brak",
     ):
         await ctx.defer()
-        mutedrole: discord.Role | None = discord.utils.get(
-            ctx.guild.roles, name="Muted"
-        )
+        mutedrole: discord.Role | None = discord.utils.get(ctx.guild.roles, name="Muted")
         if not mutedrole:
             mutedrole = await ctx.guild.create_role(name="Muted")
             for channel in ctx.guild.channels:
-                if channel.permissions_for(
-                    ctx.guild.get_member(self.bot.user.id)
-                ).manage_roles:
-                    await channel.set_permissions(
-                        mutedrole, speak=False, send_messages=False
-                    )
+                if channel.permissions_for(ctx.guild.get_member(self.bot.user.id)).manage_roles:
+                    await channel.set_permissions(mutedrole, speak=False, send_messages=False)
         await member.add_roles(mutedrole, reason=reason)
-        await self.save_to_event_logs(
-            ctx.guild.id, "mute", ctx.author.id, member.id, reason
-        )
+        await self.save_to_event_logs(ctx.guild.id, "mute", ctx.author.id, member.id, reason)
         embed = discord.Embed()
         embed.title = "Wyciszenie"
-        embed.description = (
-            f"🔇 {ctx.author.mention} wyciszył {member.mention} z powodu `{reason}`"
-        )
+        embed.description = f"🔇 {ctx.author.mention} wyciszył {member.mention} z powodu `{reason}`"
         await ctx.send_followup(embed=embed)
         try:
             await member.send(
@@ -206,7 +240,8 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             pass
 
     @slash_command(
-        description="Odcisza użytkownika",
+        description="Unmute user",
+        description_localizations={"pl": "Odcisza użytkownika"},
         guild_ids=config["guild_ids"],
     )
     @commands.guild_only()
@@ -215,27 +250,30 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def unmute(
         self,
         ctx: discord.ApplicationContext,
-        member: Option(discord.Member, "Osoba, którą chcesz odciszyć"),
+        member: Option(
+            discord.Member,
+            name="member",
+            name_localizations={"pl": "użytkownik"},
+            description="Member you want to unmute",
+            description_localizations={"pl": "Osoba, którą chcesz odciszyć"},
+        ),
     ):
         await ctx.defer()
         mutedrole: discord.Role = discord.utils.get(ctx.guild.roles, name="Muted")
         await member.remove_roles(mutedrole)
-        await self.save_to_event_logs(
-            ctx.guild.id, "unmute", ctx.author.id, member.id, "Brak"
-        )
+        await self.save_to_event_logs(ctx.guild.id, "unmute", ctx.author.id, member.id, "Brak")
         embed = discord.Embed()
         embed.title = "Odciszenie"
         embed.description = f"🔊 {ctx.author.mention} odciszył **{member.mention}**"
         await ctx.send_followup(embed=embed)
         try:
-            await member.send(
-                f"🔊 {ctx.author.mention} odciszył Cię na serwerze **{ctx.guild.name}**"
-            )
+            await member.send(f"🔊 {ctx.author.mention} odciszył Cię na serwerze **{ctx.guild.name}**")
         except discord.Forbidden:
             pass
 
     @slash_command(
-        description="Daje ostrzeżenie użytkownikowi",
+        description="Warn user",
+        description_localizations={"pl": "Daje ostrzeżenie użytkownikowi"},
         guild_ids=config["guild_ids"],
     )
     @commands.guild_only()
@@ -243,8 +281,21 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def warn(
         self,
         ctx: discord.ApplicationContext,
-        member: Option(discord.Member, "Osoba, której chcesz dać ostrzeżenie"),
-        reason: Option(str, "Powód ostrzeżenia", required=False) = "Brak",
+        member: Option(
+            discord.Member,
+            name="member",
+            name_localizations={"pl": "użytkownik"},
+            description="Member you want to warn",
+            description_localizations={"pl": "Osoba, której chcesz dać ostrzeżenie"},
+        ),
+        reason: Option(
+            str,
+            name="reason",
+            name_localizations={"pl": "powód"},
+            description="Reason of warn",
+            description_localizations={"pl": "Powód ostrzeżenia"},
+            required=False,
+        ) = "Brak",
     ):
         await ctx.defer()
         database.discord.Warns(
@@ -253,9 +304,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             given_by=ctx.author.id,
             reason=reason,
         ).save()
-        await self.save_to_event_logs(
-            ctx.guild.id, "warn", ctx.author.id, member.id, reason
-        )
+        await self.save_to_event_logs(ctx.guild.id, "warn", ctx.author.id, member.id, reason)
         embed = discord.Embed()
         embed.title = "Ostrzeżenie"
         embed.description = f"⚠️ {member.mention} został ostrzeżony przez {ctx.author.mention} z powodu `{reason}`"
@@ -263,7 +312,8 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         await ctx.send_followup(embed=embed)
 
     @slash_command(
-        description="Pokazuje ostrzeżenia dane podanemu użytkownikowi",
+        description="See user's warns",
+        description_localizations={"pl": "Pokazuje ostrzeżenia dane podanemu użytkownikowi"},
         guild_ids=config["guild_ids"],
     )
     @commands.guild_only()
@@ -271,43 +321,53 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def warns(
         self,
         ctx: discord.ApplicationContext,
-        member: Option(discord.Member, "Osoba, której ostrzeżenia chcesz wyświetlić"),
+        member: Option(
+            discord.Member,
+            name="member",
+            name_localizations={"pl": "użytkownik"},
+            description="Member which warnings do you want to see",
+            description_localizations={"pl": "Osoba, której ostrzeżenia chcesz zobaczyć"},
+        ),
     ):
         await ctx.defer()
         embed = discord.Embed()
         embed.title = "Ostrzeżenia"
         embed.color = discord.Color.gold()
-        warns: list[database.discord.Warns] = database.discord.Warns.objects(
-            server=ctx.guild.id, member=member.id
-        )
+        warns: list[database.discord.Warns] = database.discord.Warns.objects(server=ctx.guild.id, member=member.id)
         if len(warns) == 0:
             embed.description = "✅ Brak ostrzeżeń"
         elif len(warns) == 1:
             embed.description = f"{member.mention} otrzymał/a **1** ostrzeżenie\n\n"
-            embed.description += f"1. `{warns[0].reason}` od <@{warns[0].given_by}> w dniu {warns[0].date.strftime('%d-%m-%Y %H:%M')}"
+            embed.description += (
+                f"1. `{warns[0].reason}` od <@{warns[0].given_by}> w dniu {warns[0].date.strftime('%d-%m-%Y %H:%M')}"
+            )
         else:
             embed.description = f"{member.mention} otrzymał/a **{len(warns)}** {'ostrzeżenia' if len(warns) % 10 >= 2 or len(warns) % 10 <=4 else 'ostrzeżeń'}\n\n"
             i = 0
             for warn in warns:
                 i += 1
-                embed.description += f"{i}. `{warn.reason}` od <@{warn.given_by}> w dniu {warn.date.strftime('%d-%m-%Y %H:%M')}\n"
+                embed.description += (
+                    f"{i}. `{warn.reason}` od <@{warn.given_by}> w dniu {warn.date.strftime('%d-%m-%Y %H:%M')}\n"
+                )
         await ctx.send_followup(embed=embed)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         if payload.member.bot:
             return
-        reaction_role_message: database.discord.ReactionRole = (
-            database.discord.ReactionRole.objects(message_id=payload.message_id).first()
-        )
+        reaction_role_message: database.discord.ReactionRole = database.discord.ReactionRole.objects(
+            message_id=payload.message_id
+        ).first()
         if reaction_role_message:
             roles = reaction_role_message.roles
-            role = discord.utils.get(
-                self.bot.get_guild(payload.guild_id).roles, id=roles[str(payload.emoji)]
-            )
+            role = discord.utils.get(self.bot.get_guild(payload.guild_id).roles, id=roles[str(payload.emoji)])
             await payload.member.add_roles(role)
 
-    @slash_command(description="Tworzy ogłoszenie", guild_ids=config["guild_ids"])
+    @slash_command(
+        description="Create advert",
+        description_localizations={"pl": "Utwórz ogłoszenie"},
+        guild_ids=config["guild_ids"],
+    )
     @commands.has_guild_permissions(administrator=True)
     @commands.guild_only()
     async def advert(self, ctx: discord.ApplicationContext):

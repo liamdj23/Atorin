@@ -137,10 +137,20 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
         self.rtfm_cache = {}
 
     @slash_command(
-        description="Informacje o bibliotekach z PyPi", guild_ids=config["guild_ids"]
+        description="Informations about libraries from PyPi",
+        description_localizations={"pl": "Informacje o bibliotekach z PyPi"},
+        guild_ids=config["guild_ids"],
     )
     async def pypi(
-        self, ctx: discord.ApplicationContext, package: Option(str, "Nazwa biblioteki")
+        self,
+        ctx: discord.ApplicationContext,
+        package: Option(
+            str,
+            name="library",
+            name_localizations={"pl": "biblioteka"},
+            description="Library name",
+            description_localizations={"pl": "Nazwa biblioteki"},
+        ),
     ):
         await ctx.defer()
         async with httpx.AsyncClient() as client:
@@ -163,9 +173,7 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
             )
             embed.add_field(
                 name="⚙️ Wersja",
-                value=data["info"]["version"]
-                if data["info"]["version"]
-                else "Nieznana",
+                value=data["info"]["version"] if data["info"]["version"] else "Nieznana",
             )
             embed.add_field(
                 name="📜 Licencja",
@@ -174,13 +182,9 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
             if "project_urls" in data["info"]:
                 links = []
                 if "Documentation" in data["info"]["project_urls"]:
-                    links.append(
-                        f"[Dokumentacja]({data['info']['project_urls']['Documentation']})"
-                    )
+                    links.append(f"[Dokumentacja]({data['info']['project_urls']['Documentation']})")
                 if "Homepage" in data["info"]["project_urls"]:
-                    links.append(
-                        f"[Strona]({data['info']['project_urls']['Homepage']})"
-                    )
+                    links.append(f"[Strona]({data['info']['project_urls']['Homepage']})")
                 if "package_url" in data["info"]:
                     links.append(f"[PyPi]({data['info']['package_url']})")
                 embed.add_field(
@@ -194,10 +198,20 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
             raise commands.CommandError(r.text)
 
     @slash_command(
-        description="Informacje o bibliotekach z NPM", guild_ids=config["guild_ids"]
+        description="Informations about libraries from NPM",
+        description_localizations={"pl": "Informacje o bibliotekach z NPM"},
+        guild_ids=config["guild_ids"],
     )
     async def npm(
-        self, ctx: discord.ApplicationContext, package: Option(str, "Nazwa biblioteki")
+        self,
+        ctx: discord.ApplicationContext,
+        package: Option(
+            str,
+            name="library",
+            name_localizations={"pl": "biblioteka"},
+            description="Library name",
+            description_localizations={"pl": "Nazwa biblioteki"},
+        ),
     ):
         await ctx.defer()
         async with httpx.AsyncClient() as client:
@@ -217,9 +231,7 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
             if "author" in data:
                 embed.add_field(
                     name="👨‍💻 Autor",
-                    value=data["author"]
-                    if type(data["author"]) is str
-                    else data["author"]["name"],
+                    value=data["author"] if type(data["author"]) is str else data["author"]["name"],
                 )
             embed.add_field(name="⚙️ Wersja", value=data["dist-tags"]["latest"])
             embed.add_field(
@@ -241,14 +253,27 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
             raise commands.CommandError(r.text)
 
     @slash_command(
-        description="Wyszukiwanie w dokumentacjach bibliotek do Pythona",
+        description="Search through libraries documentation for Python",
+        description_localizations={"pl": "Wyszukiwanie w dokumentacjach bibliotek do Pythona"},
         guild_ids=config["guild_ids"],
     )
     async def rtfm(
         self,
         ctx: discord.ApplicationContext,
-        package: Option(str, "Nazwa biblioteki"),
-        term: Option(str, "Szukana fraza"),
+        package: Option(
+            str,
+            name="library",
+            name_localizations={"pl": "biblioteka"},
+            description="Library name",
+            description_localizations={"pl": "Nazwa biblioteki"},
+        ),
+        term: Option(
+            str,
+            name="phrase",
+            name_localizations={"pl": "fraza"},
+            description="Type what you want to find",
+            description_localizations={"pl": "Wpisz, co chcesz znaleźć"},
+        ),
     ):
         package = package.lower()
         await ctx.defer()
@@ -268,10 +293,7 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
         if not self.rtfm_cache.get(package):
             url = docs.get(package)
             if not url:
-                if (
-                    "project_urls" in data["info"]
-                    and "Documentation" in data["info"]["project_urls"]
-                ):
+                if "project_urls" in data["info"] and "Documentation" in data["info"]["project_urls"]:
                     url = data["info"]["project_urls"]["Documentation"]
                     if "readthedocs.io" in url and not "/en/latest" in url:
                         url = os.path.join(url, "en", "latest")
@@ -283,15 +305,11 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
                     headers={"User-agent": "Atorin"},
                 )
             if r.status_code == 200:
-                self.rtfm_cache[package] = SphinxObjectFileReader(
-                    r.content
-                ).parse_object_inv(url)
+                self.rtfm_cache[package] = SphinxObjectFileReader(r.content).parse_object_inv(url)
             elif r.status_code == 404:
                 raise commands.BadArgument("Nie znaleziono dokumentacji!")
             else:
-                raise commands.CommandError(
-                    f"Wystąpił błąd przy pobieraniu dokumentacji! ({r.status_code})"
-                )
+                raise commands.CommandError(f"Wystąpił błąd przy pobieraniu dokumentacji! ({r.status_code})")
         cache = self.rtfm_cache.get(package)
         results = finder(term, list(cache.items()), key=lambda x: x[0], lazy=False)[:5]
         if results:
@@ -301,7 +319,8 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
         await ctx.send_followup(embed=embed)
 
     @slash_command(
-        description="Uruchamianie kodu",
+        description="Execute code snippet",
+        description_localizations={"pl": "Uruchamianie kodu"},
         guild_ids=config["guild_ids"],
     )
     async def exec(
@@ -309,7 +328,10 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
         ctx: discord.ApplicationContext,
         language: Option(
             str,
-            "Wybierz język programowania",
+            name="language",
+            name_localizations={"pl": "język"},
+            description="Select programming language of your code snippet",
+            description_localizations={"pl": "Wybierz język programowania"},
             choices=[
                 OptionChoice(name="Bash", value="bash"),
                 OptionChoice(name="C#", value="csharp"),
@@ -352,52 +374,67 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
                 data = r.json()
                 embed = discord.Embed()
                 embed.title = f"Uruchamianie kodu {language.capitalize()}"
-                embed.description = f"```{data['output'][:4000] if data['output'] else 'Program wykonany pomyślnie.'}```"
+                embed.description = (
+                    f"```{data['output'][:4000] if data['output'] else 'Program wykonany pomyślnie.'}```"
+                )
                 await interaction.response.send_message(embeds=[embed])
 
         modal = ExecModal()
         await ctx.interaction.response.send_modal(modal)
 
     base64_group = SlashCommandGroup(
-        "base64",
-        "Kodowanie/Dekodowanie tekstu/ciągu w Base64",
+        name="base64",
+        description="Encode/Decode Base64",
+        description_localizations={"pl": "Kodowanie/Dekodowanie tekstu/ciągu w Base64"},
         guild_ids=config["guild_ids"],
     )
 
     @base64_group.command(
         name="encode",
-        description="Kodowanie tekstu w Base64",
+        name_localizations={"pl": "kodowanie"},
+        description="Encode text in Base64",
+        description_localizations={"pl": "Kodowanie tekstu w Base64"},
     )
     async def base64_encode(
         self,
         ctx: discord.ApplicationContext,
-        content: Option(str, "Wprowadź tekst"),
+        content: Option(
+            str,
+            name="text",
+            name_localizations={"pl": "tekst"},
+            description="Type text you want to encode",
+            description_localizations={"pl": "Wpisz tekst, który chcesz zakodować"},
+        ),
     ):
         await ctx.defer()
         embed = discord.Embed()
         embed.title = "Base64"
-        encoded = base64.b64encode(content.encode("utf-8", "ignore")).decode(
-            "utf-8", "ignore"
-        )
+        encoded = base64.b64encode(content.encode("utf-8", "ignore")).decode("utf-8", "ignore")
         embed.add_field(name="📋 Tekst", value=f"```{content}```", inline=False)
         embed.add_field(name="🔠 Base64", value=f"```{encoded}```", inline=False)
         await ctx.send_followup(embed=embed)
 
     @base64_group.command(
         name="decode",
-        description="Dekodowanie ciągu w Base64",
+        name_localizations={"pl": "dekodowanie"},
+        description="Decode from Base64",
+        description_localizations={"pl": "Dekodowanie Base64"},
     )
     async def base64_decode(
         self,
         ctx: discord.ApplicationContext,
-        content: Option(str, "Wprowadź ciąg"),
+        content: Option(
+            str,
+            name="text",
+            name_localizations={"pl": "text"},
+            description="Type or paste text you want to decode",
+            description_localizations={"pl": "Podaj tekst, który chcesz dekodować"},
+        ),
     ):
         await ctx.defer()
         embed = discord.Embed()
         embed.title = "Base64"
-        decoded = base64.b64decode(content.encode("utf-8", "ignore")).decode(
-            "utf-8", "ignore"
-        )
+        decoded = base64.b64decode(content.encode("utf-8", "ignore")).decode("utf-8", "ignore")
         embed.add_field(name="🔠 Base64", value=f"```{content}```", inline=False)
         embed.add_field(name="📋 Tekst", value=f"```{decoded}```", inline=False)
         await ctx.send_followup(embed=embed)

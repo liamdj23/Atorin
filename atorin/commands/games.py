@@ -65,10 +65,20 @@ class Games(commands.Cog, name="🕹 Gry"):
         self.bot = bot
 
     @slash_command(
-        description="Status serwera Minecraft", guild_ids=config["guild_ids"]
+        description="Status of Minecraft server",
+        description_localizations={"pl": "Status serwera Minecraft"},
+        guild_ids=config["guild_ids"],
     )
     async def mcsrv(
-        self, ctx: discord.ApplicationContext, domain: Option(str, "Adres serwera")
+        self,
+        ctx: discord.ApplicationContext,
+        domain: Option(
+            str,
+            name="address",
+            name_localizations={"pl": "adres"},
+            description="Server address",
+            description_localizations={"pl": "Adres serwera"},
+        ),
     ):
         await ctx.defer()
         async with httpx.AsyncClient() as client:
@@ -78,9 +88,7 @@ class Games(commands.Cog, name="🕹 Gry"):
                 r = await client.get(f"https://api.mcsrvstat.us/bedrock/2/{domain}")
                 data = r.json()
                 if not data["online"]:
-                    raise commands.BadArgument(
-                        "Adres serwera jest niepoprawny lub serwer jest offline!"
-                    )
+                    raise commands.BadArgument("Adres serwera jest niepoprawny lub serwer jest offline!")
         embed = discord.Embed()
         embed.title = f"Status serwera Minecraft: {domain}"
         if "version" in data:
@@ -112,23 +120,28 @@ class Games(commands.Cog, name="🕹 Gry"):
         await ctx.send_followup(embed=embed)
 
     @slash_command(
-        description="Wyświetla Twojego skina w Minecraft",
+        description="Show your skin in Minecraft",
+        description_localizations={"pl": "Wysyła Twojego skina w Minecraft"},
         guild_ids=config["guild_ids"],
     )
     async def mcskin(
-        self, ctx: discord.ApplicationContext, nick: Option(str, "Nick w Minecraft")
+        self,
+        ctx: discord.ApplicationContext,
+        nick: Option(
+            str,
+            name="nickname",
+            name_localizations={"pl": "nick"},
+            description="Your nickname in Minecraft",
+            description_localizations={"pl": "Twój nick w Minecraft"},
+        ),
     ):
         await ctx.defer()
         async with httpx.AsyncClient() as client:
-            mojang = await client.get(
-                f"https://api.mojang.com/users/profiles/minecraft/{nick}"
-            )
+            mojang = await client.get(f"https://api.mojang.com/users/profiles/minecraft/{nick}")
         if mojang.status_code == 200:
             data = mojang.json()
             async with httpx.AsyncClient() as client:
-                skin = await client.get(
-                    f"https://crafatar.com/renders/body/{data['id']}"
-                )
+                skin = await client.get(f"https://crafatar.com/renders/body/{data['id']}")
             if skin.status_code == 200:
                 embed = discord.Embed()
                 embed.title = f"Skin {nick} w Minecraft"
@@ -145,21 +158,32 @@ class Games(commands.Cog, name="🕹 Gry"):
             raise commands.CommandError(mojang.text)
 
     @slash_command(
-        description="Statystyki w grze Fortnite", guild_ids=config["guild_ids"]
+        description="Your statistics in Fortnite",
+        description_localizations={"pl": "Twoje statystyki w grze Fortnite"},
+        guild_ids=config["guild_ids"],
     )
     async def fortnite(
         self,
         ctx: discord.ApplicationContext,
         platform: Option(
             str,
-            "Wybierz platformę na której grasz",
+            name="platform",
+            name_localizations={"pl": "platforma"},
+            description="Select platform you are playing on",
+            description_localizations={"pl": "Wybierz platformę na której grasz"},
             choices=[
                 OptionChoice("Epic Games", "epic"),
                 OptionChoice("Playstation Network", "psn"),
                 OptionChoice("Xbox Live", "xbl"),
             ],
         ),
-        nick: Option(str, "Nick gracza"),
+        nick: Option(
+            str,
+            name="nickname",
+            name_localizations={"pl": "nick"},
+            description="Your nickname in Fortnite",
+            description_localizations={"pl": "Twój nick w Fortnite"},
+        ),
     ):
         await ctx.defer()
         async with httpx.AsyncClient() as client:
@@ -178,22 +202,30 @@ class Games(commands.Cog, name="🕹 Gry"):
             embed.add_field(name="🏆 Wygrane", value=humanize.intcomma(data["wins"]))
             embed.add_field(name="⚔ Zabójstwa", value=humanize.intcomma(data["kills"]))
             embed.add_field(name="☠ Śmierci", value=humanize.intcomma(data["deaths"]))
-            embed.add_field(
-                name="🕹 Rozegranych meczy", value=humanize.intcomma(data["matches"])
-            )
+            embed.add_field(name="🕹 Rozegranych meczy", value=humanize.intcomma(data["matches"]))
             await ctx.send_followup(embed=embed)
         elif r.status_code == 403:
             raise commands.BadArgument(f"Statystyki gracza __{nick}__ są **prywatne**!")
         elif r.status_code == 404:
-            raise commands.BadArgument(
-                "Podany gracz nie istnieje lub nigdy nie grał w Fortnite!"
-            )
+            raise commands.BadArgument("Podany gracz nie istnieje lub nigdy nie grał w Fortnite!")
         else:
             raise commands.CommandError(r.text)
 
-    @slash_command(description="Statystyki w grze CS:GO", guild_ids=config["guild_ids"])
+    @slash_command(
+        description="Your statistics in CS:GO",
+        description_localizations={"pl": "Twoje statystyki w grze CS:GO"},
+        guild_ids=config["guild_ids"],
+    )
     async def csgo(
-        self, ctx: discord.ApplicationContext, url: Option(str, "Link do profilu Steam")
+        self,
+        ctx: discord.ApplicationContext,
+        url: Option(
+            str,
+            name="url",
+            name_localizations={"pl": "link"},
+            description="URL to your Steam profile",
+            description_localizations={"pl": "Link do Twojego profilu Steam"},
+        ),
     ):
         await ctx.defer()
         if "steamcommunity.com/id/" in url or "steamcommunity.com/profiles/" in url:
@@ -217,20 +249,23 @@ class Games(commands.Cog, name="🕹 Gry"):
             elif i["name"] == "total_matches_played":
                 embed.add_field(name="⚔ Rozegranych meczy", value=i["value"])
             elif i["name"] == "total_matches_won":
-                embed.add_field(
-                    name="🏆 Wygranych meczy", value=i["value"], inline=False
-                )
+                embed.add_field(name="🏆 Wygranych meczy", value=i["value"], inline=False)
         await ctx.send_followup(embed=embed)
 
     @slash_command(
-        description="Statystyki w grze League of Legends", guild_ids=config["guild_ids"]
+        description="Your statistics in League of Legends",
+        description_localizations={"pl": "Twoje statystki w grze League of Legends"},
+        guild_ids=config["guild_ids"],
     )
     async def lol(
         self,
         ctx: discord.ApplicationContext,
         region: Option(
             str,
-            "Wybierz region na którym grasz",
+            name="region",
+            name_localizations={"pl": "region"},
+            description="Select region you are playing on",
+            description_localizations={"pl": "Wybierz region na którym grasz"},
             choices=[
                 OptionChoice("EUNE", "eun1"),
                 OptionChoice("BR", "br1"),
@@ -245,7 +280,13 @@ class Games(commands.Cog, name="🕹 Gry"):
                 OptionChoice("TR", "tr1"),
             ],
         ),
-        nick: Option(str, "Nick gracza"),
+        nick: Option(
+            str,
+            name="nickname",
+            name_localizations={"pl": "nick"},
+            description="Your nickname in League of Legends",
+            description_localizations={"pl": "Twój nick w League of Legends"},
+        ),
     ):
         await ctx.defer()
         async with httpx.AsyncClient() as client:
@@ -263,7 +304,9 @@ class Games(commands.Cog, name="🕹 Gry"):
         stats = r2.json()
         embed = discord.Embed()
         embed.title = "Statystyki w grze League of Legends"
-        embed.description = f"🧑 Gracz: **{summoner['name']}**\n🏆 Poziom: **{summoner['summonerLevel']}**\n🌍 Region: **{region}**"
+        embed.description = (
+            f"🧑 Gracz: **{summoner['name']}**\n🏆 Poziom: **{summoner['summonerLevel']}**\n🌍 Region: **{region}**"
+        )
         embed.set_thumbnail(
             url=f"https://ddragon.leagueoflegends.com/cdn/10.15.1/img/profileicon/{summoner['profileIconId']}.png"
         )

@@ -110,9 +110,7 @@ async def get_song_from_spotify(id: str) -> str:
         else:
             raise commands.CommandError("Nie znaleziono podanego utworu!")
     else:
-        raise commands.CommandError(
-            "Nie udało się uzyskać tokenu z API Spotify, spróbuj ponownie później."
-        )
+        raise commands.CommandError("Nie udało się uzyskać tokenu z API Spotify, spróbuj ponownie później.")
 
 
 class Music(commands.Cog, name="🎵 Muzyka (beta)"):
@@ -123,9 +121,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             lavalink.add_event_hook(self.track_hook)
             self.bot.lavalink = lavalink.Client(config["dashboard"]["client_id"])
             self.bot.lavalink.add_node(address, port, password, region, node)
-            self.bot.add_listener(
-                self.bot.lavalink.voice_update_handler, "on_socket_response"
-            )
+            self.bot.add_listener(self.bot.lavalink.voice_update_handler, "on_socket_response")
 
     def cog_unload(self):
         """Cog unload handler. This removes any event hooks that were registered."""
@@ -149,9 +145,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             return True
 
         """This check ensures that the bot and command author are in the same voicechannel."""
-        player = self.bot.lavalink.player_manager.create(
-            ctx.guild.id, endpoint=str(ctx.guild.region)
-        )
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, endpoint=str(ctx.guild.region))
         # Create returns a player if one exists, otherwise creates.
 
         # These are commands that require the bot to join a voicechannel (i.e. initiating playback).
@@ -180,9 +174,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             await ctx.author.voice.channel.connect(cls=LavalinkVoiceClient)
         else:
             if int(player.channel_id) != ctx.author.voice.channel.id:
-                raise commands.CommandError(
-                    "Nie jesteś połączony do kanału na którym jest Atorin!"
-                )
+                raise commands.CommandError("Nie jesteś połączony do kanału na którym jest Atorin!")
 
     async def track_hook(self, event):
         if isinstance(event, lavalink.events.QueueEndEvent):
@@ -208,34 +200,35 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             else:
                 embed.add_field(name="🛤️ Długość", value="🔴 Na żywo")
             embed.add_field(name="💃 Zaproponowany przez", value=f"<@{song.requester}>")
-            embed.set_thumbnail(
-                url=f"https://img.youtube.com/vi/{song.identifier}/maxresdefault.jpg"
-            )
+            embed.set_thumbnail(url=f"https://img.youtube.com/vi/{song.identifier}/maxresdefault.jpg")
             await channel.send(embed=embed)
 
     @slash_command(
-        description="Odtwarza utwór lub playlistę z YT/Twitch/MP3 na kanale głosowym",
+        description="Play music from YT/Spotify/Twitch/MP3",
+        description_localizations={"pl": "Odtwarza utwór lub playlistę z YT/Spotify/Twitch/MP3 na kanale głosowym"},
         guild_ids=config["guild_ids"],
     )
     async def play(
         self,
         ctx: discord.ApplicationContext,
-        query: Option(str, "Tytuł lub link do Youtube/Twitch/MP3"),
+        query: Option(
+            str,
+            name="song",
+            name_localizations={"pl": "piosenka"},
+            description="Title or url to YT/Spotify/Twitch/MP3",
+            description_localizations={"pl": "Tytuł lub link do Youtube/Spotify/Twitch/MP3"},
+        ),
     ):
         """Searches and plays a song from a given query."""
         await ctx.defer()
-        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
-            ctx.guild.id
-        )
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         query = query.strip("<>")
 
         if not url_rx.match(query):
             query = f"ytsearch:{query}"
         else:
             if "open.spotify.com/track/" in query:
-                song = await get_song_from_spotify(
-                    query.split("open.spotify.com/track/")[1].split("?")[0]
-                )
+                song = await get_song_from_spotify(query.split("open.spotify.com/track/")[1].split("?")[0])
                 query = f"ytsearch:{song}"
             elif "spotify:track:" in query:
                 song = await get_song_from_spotify(query.split("spotify:track:")[1])
@@ -261,16 +254,12 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
                 player.add(requester=ctx.author.id, track=track)
 
             embed.title = "Dodano playlistę do kolejki!"
-            embed.description = (
-                f'{results["playlistInfo"]["name"]} - {len(tracks)} utworów'
-            )
+            embed.description = f'{results["playlistInfo"]["name"]} - {len(tracks)} utworów'
         else:
             track = results["tracks"][0]
             embed.title = "Dodano do kolejki"
             embed.description = f'[{track["info"]["title"]}]({track["info"]["uri"]})'
-            embed.set_thumbnail(
-                url=f"https://img.youtube.com/vi/{track['info']['identifier']}/maxresdefault.jpg"
-            )
+            embed.set_thumbnail(url=f"https://img.youtube.com/vi/{track['info']['identifier']}/maxresdefault.jpg")
             track = lavalink.models.AudioTrack(track, ctx.author.id)
             player.add(requester=ctx.author.id, track=track)
 
@@ -280,14 +269,14 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             await player.play()
 
     @slash_command(
-        description="Rozłącza bota z kanału głosowego", guild_ids=config["guild_ids"]
+        description="Disconnects Atorin from voice channel",
+        description_localizations={"pl": "Rozłącza bota z kanału głosowego"},
+        guild_ids=config["guild_ids"],
     )
     async def stop(self, ctx: discord.ApplicationContext):
         """Disconnects the player from the voice channel and clears its queue."""
         await ctx.defer()
-        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
-            ctx.guild.id
-        )
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         if player.is_playing:
             player.queue.clear()
             await player.stop()
@@ -299,31 +288,29 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             raise commands.CommandError("Atorin nie odtwarza muzyki!")
 
     @slash_command(
-        description="Wstrzymuje odtwarzanie muzyki", guild_ids=config["guild_ids"]
+        description="Pause music",
+        description_localizations={"pl": "Wstrzymuje odtwarzanie muzyki"},
+        guild_ids=config["guild_ids"],
     )
     async def pause(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
-            ctx.guild.id
-        )
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         if not player.paused:
             await player.set_pause(True)
             embed = discord.Embed()
-            embed.description = (
-                "⏸ **Wstrzymano odtwarzanie. Aby wznowić wpisz `/resume`.**"
-            )
+            embed.description = "⏸ **Wstrzymano odtwarzanie. Aby wznowić wpisz `/resume`.**"
             await ctx.send_followup(embed=embed)
         else:
             raise commands.CommandError("Atorin nie odtwarza muzyki!")
 
     @slash_command(
-        description="Wznawia odtwarzanie muzyki", guild_ids=config["guild_ids"]
+        description="Resume music",
+        description_localizations={"pl": "Wznawia odtwarzanie muzyki"},
+        guild_ids=config["guild_ids"],
     )
     async def resume(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
-            ctx.guild.id
-        )
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         if player.paused:
             await player.set_pause(False)
             embed = discord.Embed()
@@ -333,19 +320,24 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             raise commands.CommandError("Atorin nie odtwarza muzyki!")
 
     @slash_command(
-        description="Pomija aktualnie odtwarzany utwór", guild_ids=config["guild_ids"]
+        description="Skip song",
+        description_localizations={"pl": "Pomija aktualnie odtwarzany utwór"},
+        guild_ids=config["guild_ids"],
     )
     async def skip(
         self,
         ctx: discord.ApplicationContext,
         number: Option(
-            int, "Podaj numer utworu który chcesz odtworzyć", min_value=1
+            int,
+            name="number",
+            name_localizations={"pl": "numer"},
+            description="Type numer of song you want to play",
+            description_localizations={"pl": "Podaj numer utworu który chcesz odtworzyć"},
+            min_value=1,
         ) = None,
     ):
         await ctx.defer()
-        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
-            ctx.guild.id
-        )
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         if player.is_playing:
             if number:
                 if number > len(player.queue):
@@ -361,20 +353,27 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             raise commands.CommandError("Atorin nie odtwarza muzyki!")
 
     @slash_command(
-        description="Ustawia głośność aktualnie odtwarzanego utworu",
+        description="Set volume",
+        description_localizations={"pl": "Ustawia głośność aktualnie odtwarzanego utworu"},
         guild_ids=config["guild_ids"],
     )
     async def volume(
         self,
         ctx: discord.ApplicationContext,
-        vol: Option(int, "Głośność od 1 do 100", min_value=1, max_value=100),
+        vol: Option(
+            int,
+            name="volume",
+            name_localizations={"pl": "głośność"},
+            description="Volume from 1 to 100",
+            description_localizations={"pl": "Głośność od 1 do 100"},
+            min_value=1,
+            max_value=100,
+        ),
     ):
         await ctx.defer()
         if vol > 100 or vol < 0:
             raise commands.BadArgument("Wartość musi być w przedziale od 1 do 100!")
-        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
-            ctx.guild.id
-        )
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         if player.is_playing:
             await player.set_volume(vol)
             embed = discord.Embed()
@@ -384,14 +383,16 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             raise commands.CommandError("Atorin nie odtwarza muzyki!")
 
     queue_group = SlashCommandGroup(
-        "queue",
-        "Komendy do zarządzania kolejką odtwarzania",
+        name="queue",
+        description="Queue management commands",
+        description_localizations={"pl": "Komendy do zarządzania kolejką odtwarzania"},
         guild_ids=config["guild_ids"],
     )
 
     @queue_group.command(
         name="view",
-        description="Wyświetla kolejkę utworów do odtworzenia",
+        description="Show queue",
+        description_localizations={"pl": "Wyświetla kolejkę utworów do odtworzenia"},
     )
     async def queue_view(self, ctx: discord.ApplicationContext):
         emoji_numbers = {
@@ -407,54 +408,52 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             10: "🔟",
         }
         await ctx.defer()
-        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
-            ctx.guild.id
-        )
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         embed = discord.Embed()
         if not player.queue:
             embed.description = "🕳️ **Kolejka jest pusta!**"
             return await ctx.send_followup(embed=embed)
-        fmt = "\n".join(
-            f"{emoji_numbers[i]} **{song.title}**"
-            for i, song in enumerate(player.queue, start=1)
-        )
+        fmt = "\n".join(f"{emoji_numbers[i]} **{song.title}**" for i, song in enumerate(player.queue, start=1))
         embed.title = f"Utwory w kolejce: {len(player.queue)}"
         embed.description = fmt
         await ctx.send_followup(embed=embed)
 
     @queue_group.command(
         name="clear",
-        description="Czyści kolejkę",
+        description="Clear queue",
+        description_localizations={"pl": "Czyści kolejkę"},
     )
     async def queue_clear(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
-            ctx.guild.id
-        )
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         embed = discord.Embed()
         if not player.queue:
             embed.description = "🕳️ **Kolejka jest pusta!**"
             return await ctx.send_followup(embed=embed)
         embed.title = "Wyczyszczono kolejkę"
-        embed.description = (
-            f"✅  **Pomyślnie usunięto *{len(player.queue)}* utworów z kolejki.**"
-        )
+        embed.description = f"✅  **Pomyślnie usunięto *{len(player.queue)}* utworów z kolejki.**"
         player.queue = []
         await ctx.send_followup(embed=embed)
 
     @queue_group.command(
         name="remove",
-        description="Usuwa z kolejki podany utwór",
+        description="Remove selected song from queue",
+        description_localizations={"pl": "Usuwa z kolejki podany utwór"},
     )
     async def queue_remove(
         self,
         ctx: discord.ApplicationContext,
-        number: Option(int, "Wpisz numer utworu w kolejce", min_value=1),
+        number: Option(
+            int,
+            name="number",
+            name_localizations={"pl": "numer"},
+            description="Type song number in queue",
+            description_localizations={"pl": "Wpisz numer utworu w kolejce"},
+            min_value=1,
+        ),
     ):
         await ctx.defer()
-        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
-            ctx.guild.id
-        )
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         embed = discord.Embed()
         if not player.queue:
             embed.description = "🕳️ **Kolejka jest pusta!**"
@@ -462,22 +461,19 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         try:
             song: lavalink.AudioTrack = player.queue.pop(number - 1)
         except IndexError:
-            raise commands.BadArgument(
-                "Podano niepoprawny numer utworu! Sprawdź kolejkę komendą `/queue view`"
-            )
+            raise commands.BadArgument("Podano niepoprawny numer utworu! Sprawdź kolejkę komendą `/queue view`")
         embed.title = "Usunięto z kolejki"
         embed.description = f"🗑 {song.title}"
         await ctx.send_followup(embed=embed)
 
     @slash_command(
-        description="Wyświetla aktualnie odtwarzany utwór",
+        description="Show currently playing song",
+        description_localizations={"pl": "Wyświetla aktualnie odtwarzany utwór"},
         guild_ids=config["guild_ids"],
     )
     async def nowplaying(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
-            ctx.guild.id
-        )
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         if player.is_playing:
             song: lavalink.AudioTrack = player.current
             embed = discord.Embed()
@@ -485,12 +481,8 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             embed.add_field(name="🎧 Utwór", value=song.title, inline=False)
             if not song.duration == 9223372036854775807:
                 duration = str(timedelta(milliseconds=song.duration))
-                position = str(timedelta(milliseconds=round(player.position))).split(
-                    "."
-                )[0]
-                progress = progress_bar(round(player.position) / song.duration * 100)[
-                    :-5
-                ]
+                position = str(timedelta(milliseconds=round(player.position))).split(".")[0]
+                progress = progress_bar(round(player.position) / song.duration * 100)[:-5]
                 embed.add_field(
                     name="🛤️ Postęp",
                     value=f"```css\n{progress} {position}/{duration}```",
@@ -508,29 +500,24 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
                 name="🎚 Bass Boost",
                 value="✅ Włączony" if player.fetch("bassboost") else "❌ Wyłączony",
             )
-            embed.add_field(
-                name="🔀 Losowo", value="✅ Włączony" if player.shuffle else "❌ Wyłączony"
-            )
+            embed.add_field(name="🔀 Losowo", value="✅ Włączony" if player.shuffle else "❌ Wyłączony")
             embed.add_field(
                 name="💃 Zaproponowany przez",
                 value=f"<@{song.requester}>",
             )
-            embed.set_thumbnail(
-                url=f"https://img.youtube.com/vi/{song.identifier}/maxresdefault.jpg"
-            )
+            embed.set_thumbnail(url=f"https://img.youtube.com/vi/{song.identifier}/maxresdefault.jpg")
             await ctx.send_followup(embed=embed)
         else:
             raise commands.CommandError("Atorin nie odtwarza muzyki!")
 
     @slash_command(
-        description="Ustawia powtarzanie aktualnie odtwarzanego utworu",
+        description="Set song repeat",
+        description_localizations={"pl": "Ustawia powtarzanie aktualnie odtwarzanego utworu"},
         guild_ids=config["guild_ids"],
     )
     async def loop(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
-            ctx.guild.id
-        )
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         if player.repeat:
             player.repeat = False
         else:
@@ -540,13 +527,13 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         )
 
     @slash_command(
-        description="Ustawia losowe odtwarzanie kolejki", guild_ids=config["guild_ids"]
+        description="Play queue randomly",
+        description_localizations={"pl": "Ustawia losowe odtwarzanie kolejki"},
+        guild_ids=config["guild_ids"],
     )
     async def shuffle(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
-            ctx.guild.id
-        )
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         if player.shuffle:
             player.shuffle = False
         else:
@@ -558,9 +545,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
     @slash_command(description="Bass Boost", guild_ids=config["guild_ids"])
     async def bassboost(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
-            ctx.guild.id
-        )
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         equalizer = lavalink.filters.Equalizer()
         if not player.fetch("bassboost"):
             bands = [(0, 0.25), (1, 0.25), (2, 0.25)]
@@ -570,29 +555,30 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         else:
             await player.remove_filter(equalizer)
             player.store("bassboost", False)
-        await ctx.send_followup(
-            f"🎚 Bass boost został **{'włączony' if player.fetch('bassboost') else 'wyłączony'}**."
-        )
+        await ctx.send_followup(f"🎚 Bass boost został **{'włączony' if player.fetch('bassboost') else 'wyłączony'}**.")
 
-    @slash_command(description="Tekst piosenki", guild_ids=config["guild_ids"])
+    @slash_command(
+        description="Lyrics", description_localizations={"pl": "Tekst piosenki"}, guild_ids=config["guild_ids"]
+    )
     async def lyrics(
         self,
         ctx: discord.ApplicationContext,
         title: Option(
             str,
-            "Podaj tytuł utworu lub pozostaw puste, jeśli chcesz tekst aktualnie odtwarzanego utworu",
+            name="title",
+            name_localizations={"pl": "tytuł"},
+            description="Song title, leave blank if you want lyrics of currently playing song",
+            description_localizations={
+                "pl": "Podaj tytuł utworu lub pozostaw puste, jeśli chcesz tekst aktualnie odtwarzanego utworu"
+            },
         ) = None,
     ):
         await ctx.defer()
         from_player: bool = False
         if not title:
-            player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
-                ctx.guild.id
-            )
+            player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
             if not player or not player.is_playing:
-                raise commands.BadArgument(
-                    "Atorin nie odtwarza muzyki, musisz podać tytuł utworu!"
-                )
+                raise commands.BadArgument("Atorin nie odtwarza muzyki, musisz podać tytuł utworu!")
             song: lavalink.AudioTrack = player.current
             title: str = song.title.split(" (")[0]
             from_player = True
@@ -603,9 +589,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
                 headers={"User-agent": "Atorin"},
             )
         if not search.status_code == 200:
-            raise commands.CommandError(
-                f"Wystąpił błąd podczas wyszukiwania tekstu piosenki! [{search.status_code}]"
-            )
+            raise commands.CommandError(f"Wystąpił błąd podczas wyszukiwania tekstu piosenki! [{search.status_code}]")
         search_data = search.json()["response"]["sections"]
         if not search_data:
             if from_player:
@@ -622,17 +606,11 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         lyrics_title = lyrics_data["title"]
         lyrics_thumbnail = lyrics_data["song_art_image_url"]
         async with httpx.AsyncClient() as client:
-            r = await client.get(
-                f"https://genius.com{lyrics_url}", headers={"User-agent": "Atorin"}
-            )
+            r = await client.get(f"https://genius.com{lyrics_url}", headers={"User-agent": "Atorin"})
         if not r.status_code == 200:
-            raise commands.CommandError(
-                f"Wystąpił błąd podczas pobierania tekstu piosenki! [{r.status_code}]"
-            )
+            raise commands.CommandError(f"Wystąpił błąd podczas pobierania tekstu piosenki! [{r.status_code}]")
         soup = BeautifulSoup(r.content, "html.parser")
-        containers: list[Tag] = soup.find_all(
-            "div", attrs={"data-lyrics-container": "true"}
-        )
+        containers: list[Tag] = soup.find_all("div", attrs={"data-lyrics-container": "true"})
         if not containers:
             raise commands.CommandError(f"Wystąpił błąd podczas przetwarzania tekstu!")
         lyrics: str = ""

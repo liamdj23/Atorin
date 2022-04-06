@@ -161,9 +161,7 @@ class Confirm(discord.ui.View):
         self.value: bool = None
 
     @discord.ui.button(label="Potwierdź", style=discord.ButtonStyle.green)
-    async def confirm(
-        self, button: discord.ui.Button, interaction: discord.Interaction
-    ):
+    async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.value = True
         self.stop()
 
@@ -183,9 +181,7 @@ class FoodDropdown(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=interaction.user.id
-        ).first()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=interaction.user.id).first()
         id = self.values[0]
         item = foods[id]
         if pet.hunger.state + item["points"] > 100:
@@ -213,9 +209,7 @@ class DrinkDropdown(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=interaction.user.id
-        ).first()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=interaction.user.id).first()
         id = self.values[0]
         item = drinks[id]
         if pet.thirst.state + item["points"] > 100:
@@ -243,9 +237,7 @@ class PotionDropdown(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=interaction.user.id
-        ).first()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=interaction.user.id).first()
         id = self.values[0]
         item = potions[id]
         if pet.health.state + item["points"] > 100:
@@ -273,9 +265,7 @@ class WallpaperDropdown(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=interaction.user.id
-        ).first()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=interaction.user.id).first()
         id = self.values[0]
         pet.wallpaper = id
         pet.save()
@@ -292,14 +282,10 @@ class Pet(discord.ui.View):
         self.clear_items()
         await self.message.edit(view=self)
 
-    @discord.ui.button(
-        emoji="<:feed:956868052794900491>", style=discord.ButtonStyle.grey
-    )
+    @discord.ui.button(emoji="<:feed:956868052794900491>", style=discord.ButtonStyle.grey)
     async def foods(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.defer()
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=interaction.user.id
-        ).first()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=interaction.user.id).first()
         if pet.hunger.state >= 100:
             await interaction.message.reply("😶 Pupil nie jest głodny!", delete_after=5)
             return
@@ -307,11 +293,7 @@ class Pet(discord.ui.View):
         for id in foods:
             if id in pet.foods:
                 item = foods[id]
-                options.append(
-                    discord.SelectOption(
-                        label=item["name"], description=f"+{item['points']}", value=id
-                    )
-                )
+                options.append(discord.SelectOption(label=item["name"], description=f"+{item['points']}", value=id))
         if not options:
             await interaction.message.reply(
                 content="❌ Twój pupil nie ma nic do jedzenia, użyj komendy `/shop food` aby zakupić jedzenie.",
@@ -326,18 +308,12 @@ class Pet(discord.ui.View):
         )
         await view.wait()
         status_image = await generate_status(interaction.user.id)
-        await interaction.message.edit(
-            file=discord.File(status_image, "pet_status.png")
-        )
+        await interaction.message.edit(file=discord.File(status_image, "pet_status.png"))
 
-    @discord.ui.button(
-        emoji="<:drink:956868053126250516>", style=discord.ButtonStyle.grey
-    )
+    @discord.ui.button(emoji="<:drink:956868053126250516>", style=discord.ButtonStyle.grey)
     async def drinks(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.defer()
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=interaction.user.id
-        ).first()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=interaction.user.id).first()
         if pet.thirst.state >= 100:
             await interaction.message.reply("😶 Pupil nie chce pić!", delete_after=5)
             return
@@ -345,11 +321,7 @@ class Pet(discord.ui.View):
         for id in drinks:
             if id in pet.drinks:
                 item = drinks[id]
-                options.append(
-                    discord.SelectOption(
-                        label=item["name"], description=f"+{item['points']}", value=id
-                    )
-                )
+                options.append(discord.SelectOption(label=item["name"], description=f"+{item['points']}", value=id))
         if not options:
             await interaction.message.reply(
                 content="❌ Twój pupil nie ma nic do picia, użyj komendy `/shop drinks` aby zakupić napoje.",
@@ -364,44 +336,28 @@ class Pet(discord.ui.View):
         )
         await view.wait()
         status_image = await generate_status(interaction.user.id)
-        await interaction.message.edit(
-            file=discord.File(status_image, "pet_status.png")
-        )
+        await interaction.message.edit(file=discord.File(status_image, "pet_status.png"))
 
-    @discord.ui.button(
-        emoji="<:sleep:956868052996218951>", style=discord.ButtonStyle.grey
-    )
+    @discord.ui.button(emoji="<:sleep:956868052996218951>", style=discord.ButtonStyle.grey)
     async def sleep(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.defer()
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=interaction.user.id
-        ).first()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=interaction.user.id).first()
         if pet.sleep.in_bed:
             pet.sleep.in_bed = False
             pet.save()
         else:
             if pet.sleep.state >= 100:
-                await interaction.message.reply(
-                    content="😶 Pupil nie chce iść spać", delete_after=5
-                )
+                await interaction.message.reply(content="😶 Pupil nie chce iść spać", delete_after=5)
                 return
             pet.sleep.in_bed = True
             pet.save()
         status_image = await generate_status(interaction.user.id)
-        await interaction.message.edit(
-            file=discord.File(status_image, "pet_status.png")
-        )
+        await interaction.message.edit(file=discord.File(status_image, "pet_status.png"))
 
-    @discord.ui.button(
-        emoji="<:health:956868053436616744>", style=discord.ButtonStyle.grey
-    )
-    async def potions(
-        self, button: discord.ui.Button, interaction: discord.Interaction
-    ):
+    @discord.ui.button(emoji="<:health:956868053436616744>", style=discord.ButtonStyle.grey)
+    async def potions(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.defer()
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=interaction.user.id
-        ).first()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=interaction.user.id).first()
         if pet.health.state >= 100:
             await interaction.message.reply("😶 Pupil nie jest chory!", delete_after=5)
             return
@@ -409,11 +365,7 @@ class Pet(discord.ui.View):
         for id in potions:
             if id in pet.potions:
                 item = potions[id]
-                options.append(
-                    discord.SelectOption(
-                        label=item["name"], description=f"+{item['points']}", value=id
-                    )
-                )
+                options.append(discord.SelectOption(label=item["name"], description=f"+{item['points']}", value=id))
         if not options:
             await interaction.message.reply(
                 content="❌ Twój pupil nie ma lekarstw, użyj komendy `/shop potions` aby zakupić lekarstwa.",
@@ -427,18 +379,12 @@ class Pet(discord.ui.View):
             delete_after=30,
         )
         status_image = await generate_status(interaction.user.id)
-        await interaction.message.edit(
-            file=discord.File(status_image, "pet_status.png")
-        )
+        await interaction.message.edit(file=discord.File(status_image, "pet_status.png"))
 
     @discord.ui.button(emoji="🖼", style=discord.ButtonStyle.grey)
-    async def wallpapers(
-        self, button: discord.ui.Button, interaction: discord.Interaction
-    ):
+    async def wallpapers(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.defer()
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=interaction.user.id
-        ).first()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=interaction.user.id).first()
         options: list[discord.SelectOption] = []
         for id in wallpapers:
             if id in pet.wallpapers and not id == pet.wallpaper:
@@ -457,16 +403,12 @@ class Pet(discord.ui.View):
             delete_after=30,
         )
         status_image = await generate_status(interaction.user.id)
-        await interaction.message.edit(
-            file=discord.File(status_image, "pet_status.png")
-        )
+        await interaction.message.edit(file=discord.File(status_image, "pet_status.png"))
 
     @discord.ui.button(emoji="🎁", style=discord.ButtonStyle.grey)
     async def daily(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.defer()
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=interaction.user.id
-        ).first()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=interaction.user.id).first()
         if pet.daily is None or (datetime.now() - pet.daily) > timedelta(1):
             pet.wallet += 100
             pet.daily = datetime.now()
@@ -477,9 +419,7 @@ class Pet(discord.ui.View):
                 delete_after=5,
             )
         status_image = await generate_status(interaction.user.id)
-        await interaction.message.edit(
-            file=discord.File(status_image, "pet_status.png")
-        )
+        await interaction.message.edit(file=discord.File(status_image, "pet_status.png"))
 
 
 def get_board_copy(board: List):
@@ -569,9 +509,7 @@ class TicTacToeButton(discord.ui.Button["TicTacToe"]):
         if winner is not None:
             if winner == view.X:
                 content = "Wygrana! +100 🪙"
-                pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-                    owner=interaction.user.id
-                ).first()
+                pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=interaction.user.id).first()
                 pet.wallet += 100
                 pet.save()
             elif winner == view.O:
@@ -651,9 +589,7 @@ class FoodShopDropdown(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=interaction.user.id
-        ).first()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=interaction.user.id).first()
         embed = discord.Embed()
         id = self.values[0]
         item = foods[id]
@@ -666,9 +602,7 @@ class FoodShopDropdown(discord.ui.Select):
             pet.foods[id] = 1
         pet.wallet -= item["cost"]
         pet.save()
-        embed.description = (
-            f"✅ **Pomyślnie zakupiono {item['name']} za {item['cost']} coinów!**"
-        )
+        embed.description = f"✅ **Pomyślnie zakupiono {item['name']} za {item['cost']} coinów!**"
         await interaction.message.edit(embed=embed, view=None)
 
 
@@ -682,9 +616,7 @@ class DrinkShopDropdown(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=interaction.user.id
-        ).first()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=interaction.user.id).first()
         embed = discord.Embed()
         id = self.values[0]
         item = drinks[id]
@@ -697,9 +629,7 @@ class DrinkShopDropdown(discord.ui.Select):
             pet.drinks[id] = 1
         pet.wallet -= item["cost"]
         pet.save()
-        embed.description = (
-            f"✅ **Pomyślnie zakupiono {item['name']} za {item['cost']} coinów!**"
-        )
+        embed.description = f"✅ **Pomyślnie zakupiono {item['name']} za {item['cost']} coinów!**"
         await interaction.message.edit(embed=embed, view=None)
 
 
@@ -713,9 +643,7 @@ class WallpaperShopDropdown(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=interaction.user.id
-        ).first()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=interaction.user.id).first()
         embed = discord.Embed()
         id = self.values[0]
         item = wallpapers[id]
@@ -728,9 +656,7 @@ class WallpaperShopDropdown(discord.ui.Select):
         pet.wallpapers.append(id)
         pet.wallet -= item["cost"]
         pet.save()
-        embed.description = (
-            f"✅ **Pomyślnie zakupiono {item['name']} za {item['cost']} coinów!**"
-        )
+        embed.description = f"✅ **Pomyślnie zakupiono {item['name']} za {item['cost']} coinów!**"
         await interaction.message.edit(embed=embed, view=None)
 
 
@@ -744,9 +670,7 @@ class PotionShopDropdown(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=interaction.user.id
-        ).first()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=interaction.user.id).first()
         embed = discord.Embed()
         id = self.values[0]
         item = potions[id]
@@ -759,9 +683,7 @@ class PotionShopDropdown(discord.ui.Select):
             pet.potions[id] = 1
         pet.wallet -= item["cost"]
         pet.save()
-        embed.description = (
-            f"✅ **Pomyślnie zakupiono {item['name']} za {item['cost']} coinów!**"
-        )
+        embed.description = f"✅ **Pomyślnie zakupiono {item['name']} za {item['cost']} coinów!**"
         await interaction.message.edit(embed=embed, view=None)
 
 
@@ -784,9 +706,7 @@ class MemoryGameButton(discord.ui.Button["TicTacToe"]):
                 view.current_card = None
                 if not view.empty_cards():
                     content = "Wygrana! +50 🪙"
-                    pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-                        owner=interaction.user.id
-                    ).first()
+                    pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=interaction.user.id).first()
                     pet.wallet += 50
                     pet.save()
             else:
@@ -820,9 +740,7 @@ class MemoryGame(discord.ui.View):
             "🫐",
         ]
         random.shuffle(self.board_items)
-        self.board = [
-            self.board_items[x : x + 4] for x in range(0, len(self.board_items), 4)
-        ]
+        self.board = [self.board_items[x : x + 4] for x in range(0, len(self.board_items), 4)]
         for x in range(4):
             for y in range(4):
                 self.add_item(MemoryGameButton(x, y))
@@ -893,28 +811,35 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
             pet.save()
 
     async def cog_before_invoke(self, ctx: discord.ApplicationContext):
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=ctx.author.id
-        ).first()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=ctx.author.id).first()
         if not ctx.command.name == "create" and pet is None:
-            raise commands.CommandError(
-                "Nie posiadasz pupila! Utwórz go komendą /settings create"
-            )
+            raise commands.CommandError("Nie posiadasz pupila! Utwórz go komendą /settings create")
 
     tamagotchi_settings = SlashCommandGroup(
-        "settings", "Ustawienia", guild_ids=config["guild_ids"]
+        name="settings",
+        description="Pet settings",
+        description_localizations={"pl": "Ustawienia pupila"},
+        guild_ids=config["guild_ids"],
     )
-    tamagotchi_shop = SlashCommandGroup("shop", "Sklep", guild_ids=config["guild_ids"])
-    tamagotchi_games = SlashCommandGroup("games", "Gry", guild_ids=config["guild_ids"])
+    tamagotchi_shop = SlashCommandGroup(
+        name="shop",
+        description="Pet shop",
+        description_localizations={"pl": "Sklep pupila"},
+        guild_ids=config["guild_ids"],
+    )
+    tamagotchi_games = SlashCommandGroup(
+        name="games",
+        description="Pet games",
+        description_localizations={"pl": "Gry pupila"},
+        guild_ids=config["guild_ids"],
+    )
 
     @tamagotchi_settings.command(
-        description="Tworzy pupila", guild_ids=config["guild_ids"]
+        description="Create pet", description_localizations={"pl": "Utwórz pupila"}, guild_ids=config["guild_ids"]
     )
     async def create(self, ctx: discord.ApplicationContext):
         await ctx.defer()
-        created: database.tamagotchi.Pet = database.tamagotchi.Pet(
-            owner=ctx.author.id
-        ).save()
+        created: database.tamagotchi.Pet = database.tamagotchi.Pet(owner=ctx.author.id).save()
         if created:
             embed = discord.Embed()
             embed.title = "Tworzenie pupila"
@@ -924,7 +849,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
             raise commands.CommandError("Nie udało się utworzyć pupila!")
 
     @tamagotchi_settings.command(
-        description="Usuwa pupila", guild_ids=config["guild_ids"]
+        description="Remove pet", description_localizations={"pl": "Usuń pupila"}, guild_ids=config["guild_ids"]
     )
     async def remove(self, ctx: discord.ApplicationContext):
         await ctx.defer()
@@ -948,7 +873,8 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
             await message.edit(embed=embed, view=None)
 
     @slash_command(
-        description="Twój pupil",
+        description="Your pet",
+        description_localizations={"pl": "Twój pupil"},
         guild_ids=config["guild_ids"],
     )
     async def pet(self, ctx: discord.ApplicationContext):
@@ -957,13 +883,12 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         embed = discord.Embed()
         embed.title = f"Pupil {ctx.author}"
         embed.set_image(url="attachment://pet_status.png")
-        message = await ctx.send_followup(
-            embed=embed, file=discord.File(img, "pet_status.png")
-        )
+        message = await ctx.send_followup(embed=embed, file=discord.File(img, "pet_status.png"))
         await message.edit(view=Pet(message))
 
     @tamagotchi_shop.command(
-        description="Kup jedzenie dla pupila",
+        description="Buy food for pet",
+        description_localizations={"pl": "Kup jedzenie dla pupila"},
         guild_ids=config["guild_ids"],
     )
     async def food(
@@ -974,7 +899,9 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         embed = discord.Embed(title="<:feed:956868052794900491> Jedzenie")
         embed.description = ""
         for item in foods.values():
-            embed.description += f"**{item['name']}** | -{item['cost']} 🪙 | +{item['points']} <:feed:956868052794900491>\n"
+            embed.description += (
+                f"**{item['name']}** | -{item['cost']} 🪙 | +{item['points']} <:feed:956868052794900491>\n"
+            )
         options: list[discord.SelectOption] = []
         for id in foods:
             item = foods[id]
@@ -986,7 +913,8 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
             await message.delete()
 
     @tamagotchi_shop.command(
-        description="Kup napój dla pupila",
+        description="Buy drink for pet",
+        description_localizations={"pl": "Kup napój dla pupila"},
         guild_ids=config["guild_ids"],
     )
     async def drink(
@@ -997,7 +925,9 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         embed = discord.Embed(title="<:drink:956868053126250516> Napoje")
         embed.description = ""
         for item in drinks.values():
-            embed.description += f"**{item['name']}** | -{item['cost']} 🪙 | +{item['points']} <:drink:956868053126250516>\n"
+            embed.description += (
+                f"**{item['name']}** | -{item['cost']} 🪙 | +{item['points']} <:drink:956868053126250516>\n"
+            )
         options: list[discord.SelectOption] = []
         for id in drinks:
             item = drinks[id]
@@ -1009,7 +939,9 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
             await message.delete()
 
     @tamagotchi_shop.command(
-        description="Kup tapety dla pupila", guild_ids=config["guild_ids"]
+        description="Buy wallpaper for pet",
+        description_localizations={"pl": "Kup tapetę dla pupila"},
+        guild_ids=config["guild_ids"],
     )
     async def wallpapers(
         self,
@@ -1031,7 +963,8 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
             await message.delete()
 
     @tamagotchi_shop.command(
-        description="Kup lekarstwa dla pupila",
+        description="Buy medicines for pet",
+        description_localizations={"pl": "Kup lekarstwa dla pupila"},
         guild_ids=config["guild_ids"],
     )
     async def potions(
@@ -1042,7 +975,9 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         embed = discord.Embed(title="<:health:956868053436616744> Lekarstwa")
         embed.description = ""
         for item in potions.values():
-            embed.description += f"**{item['name']}** | -{item['cost']} 🪙 | +{item['points']} <:health:956868053436616744>\n"
+            embed.description += (
+                f"**{item['name']}** | -{item['cost']} 🪙 | +{item['points']} <:health:956868053436616744>\n"
+            )
         options: list[discord.SelectOption] = []
         for id in potions:
             item = potions[id]
@@ -1054,7 +989,8 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
             await message.delete()
 
     @tamagotchi_shop.command(
-        description="Przekaż coiny",
+        description="Give coins",
+        description_localizations={"pl": "Przekaż coiny"},
         guild_ids=config["guild_ids"],
     )
     async def give(
@@ -1066,14 +1002,10 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         await ctx.defer()
         if user.id == ctx.author.id:
             raise commands.BadArgument("Nie możesz przekazać coinów samemu sobie!")
-        author_pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=ctx.author.id
-        ).first()
+        author_pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=ctx.author.id).first()
         if author_pet.wallet < coins:
             raise commands.BadArgument("Nie masz takiej ilości coinów!")
-        recipent_pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(
-            owner=ctx.author.id
-        ).first()
+        recipent_pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=ctx.author.id).first()
         if not recipent_pet:
             raise commands.BadArgument("Odbiorca nie posiada pupila!")
         author_pet.wallet -= coins
@@ -1083,14 +1015,16 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         await ctx.send_followup(f"Przekazano {coins} coinów do {user.mention}!")
 
     @tamagotchi_games.command(
-        description="Kółko i krzyżyk", guild_ids=config["guild_ids"]
+        description="Tic Tac Toe", description_localizations={"pl": "Kółko i krzyżyk"}, guild_ids=config["guild_ids"]
     )
     async def tictactoe(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         await ctx.send_followup("Kółko i krzyżyk:", view=TicTacToe())
 
     @tamagotchi_games.command(
-        description="Odkrywaj karty i znajdź parę", guild_ids=config["guild_ids"]
+        description="Memory",
+        description_localizations={"pl": "Odkrywaj karty i znajdź parę"},
+        guild_ids=config["guild_ids"],
     )
     async def memory(self, ctx: discord.ApplicationContext):
         await ctx.defer()

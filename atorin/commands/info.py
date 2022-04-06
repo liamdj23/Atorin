@@ -20,12 +20,8 @@ from ..utils import get_weather_emoji, progress_bar, convert_size, user_counter
 class HelpButtons(discord.ui.View):
     def __init__(self):
         super().__init__()
-        self.add_item(
-            discord.ui.Button(label="Wsparcie", url="https://buycoffee.to/liamdj23")
-        )
-        self.add_item(
-            discord.ui.Button(label="Discord", url="https://liamdj23.ovh/discord")
-        )
+        self.add_item(discord.ui.Button(label="Wsparcie", url="https://buycoffee.to/liamdj23"))
+        self.add_item(discord.ui.Button(label="Discord", url="https://liamdj23.ovh/discord"))
 
 
 class Info(commands.Cog, name="ℹ Informacje"):
@@ -33,7 +29,9 @@ class Info(commands.Cog, name="ℹ Informacje"):
         self.bot = bot
 
     @slash_command(
-        description="Zdjęcie profilowe użytkownika", guild_ids=config["guild_ids"]
+        description="User profile picture",
+        description_localizations={"pl": "Zdjęcie profilowe użytkownika"},
+        guild_ids=config["guild_ids"],
     )
     async def avatar(
         self,
@@ -55,7 +53,11 @@ class Info(commands.Cog, name="ℹ Informacje"):
         embed.set_image(url=user.display_avatar.url)
         await ctx.respond(embed=embed)
 
-    @slash_command(description="Informacje o serwerze", guild_ids=config["guild_ids"])
+    @slash_command(
+        description="Informations about guild",
+        description_localizations={"pl": "Informacje o serwerze"},
+        guild_ids=config["guild_ids"],
+    )
     @commands.guild_only()
     async def server(self, ctx: discord.ApplicationContext):
         guild = ctx.guild
@@ -82,14 +84,19 @@ class Info(commands.Cog, name="ℹ Informacje"):
         await ctx.respond(embed=embed)
 
     @slash_command(
-        description="Informacje o użytkowniku", guild_ids=config["guild_ids"]
+        description="Informations about user",
+        description_localizations={"pl": "Informacje o użytkowniku"},
+        guild_ids=config["guild_ids"],
     )
     async def user(
         self,
         ctx: discord.ApplicationContext,
         member: Option(
             discord.Member,
-            "Osoba której informacje chcesz wyświetlić",
+            name="member",
+            name_localizations={"pl": "użytkownik"},
+            description="Select user you want information about",
+            description_localizations={"pl": "Osoba której informacje chcesz wyświetlić"},
             required=False,
         ),
     ):
@@ -117,13 +124,20 @@ class Info(commands.Cog, name="ℹ Informacje"):
         await ctx.respond(embed=embed)
 
     @slash_command(
-        description="Sprawdź pogodę w Twojej miejscowości",
+        description="Check weather forecast in your city",
+        description_localizations={"pl": "Sprawdź pogodę w Twojej miejscowości"},
         guild_ids=config["guild_ids"],
     )
     async def weather(
         self,
         ctx: discord.ApplicationContext,
-        city: Option(str, "Miejscowość lub kod pocztowy"),
+        city: Option(
+            str,
+            name="city",
+            name_localizations={"pl": "miejscowość"},
+            description="Type city name or postal code",
+            description_localizations={"pl": "Podaj nazwę miejscowości lub kod pocztowy"},
+        ),
     ):
         token = config["weather"]
         await ctx.defer()
@@ -137,9 +151,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
             data = r.json()
             embed.title = "Pogoda w " + data["name"]
             emoji = get_weather_emoji(data["weather"][0]["id"])
-            embed.description = (
-                f"{emoji} __**{data['weather'][0]['description'].capitalize()}**__"
-            )
+            embed.description = f"{emoji} __**{data['weather'][0]['description'].capitalize()}**__"
             embed.add_field(
                 name="🌡️ Temperatura",
                 value=f"{data['main']['temp']}°C",
@@ -182,15 +194,14 @@ class Info(commands.Cog, name="ℹ Informacje"):
         else:
             raise commands.CommandError(r.text)
 
-    @slash_command(description="Informacje o Atorinie", guild_ids=config["guild_ids"])
+    @slash_command(
+        description="Informations about Atorin",
+        description_localizations={"pl": "Informacje o Atorinie"},
+        guild_ids=config["guild_ids"],
+    )
     async def bot(self, ctx: discord.ApplicationContext):
-        if (
-            hasattr(self.bot, "lavalink")
-            and self.bot.lavalink.node_manager.nodes[0].stats
-        ):
-            lavalink_stats = self.bot.lavalink.node_manager.nodes[
-                0
-            ].stats.playing_players
+        if hasattr(self.bot, "lavalink") and self.bot.lavalink.node_manager.nodes[0].stats:
+            lavalink_stats = self.bot.lavalink.node_manager.nodes[0].stats.playing_players
         else:
             lavalink_stats = "Niedostępne"
         embed = discord.Embed()
@@ -217,19 +228,22 @@ class Info(commands.Cog, name="ℹ Informacje"):
         )
         await ctx.respond(embed=embed)
 
-    @slash_command(description="Lista komend AtorinBot", guild_ids=config["guild_ids"])
+    @slash_command(
+        description="List of Atorin commands",
+        description_localizations={"pl": "Lista komend Atorina"},
+        guild_ids=config["guild_ids"],
+    )
     async def help(self, ctx: discord.ApplicationContext):
         embed = discord.Embed()
         embed.title = "Lista komend AtorinBot"
         for name, cog in self.bot.cogs.items():
-            embed.add_field(
-                name=name, value=f"`{', '.join([c.name for c in cog.get_commands()])}`"
-            )
+            embed.add_field(name=name, value=f"`{', '.join([c.name for c in cog.get_commands()])}`")
         buttons = HelpButtons()
         await ctx.respond(embed=embed, view=buttons)
 
     @slash_command(
-        description="Wsparcie bota",
+        description="Donations",
+        description_localizations={"pl": "Wsparcie bota"},
         guild_ids=config["guild_ids"],
     )
     async def support(self, ctx: discord.ApplicationContext):
@@ -253,15 +267,11 @@ class Info(commands.Cog, name="ℹ Informacje"):
                 headers={"User-agent": "Atorin"},
             )
         data = r.json()["aaData"]
-        return [
-            OptionChoice(
-                name=entry["nazwisko"].lower().capitalize(), value=entry["menuID"]
-            )
-            for entry in data
-        ]
+        return [OptionChoice(name=entry["nazwisko"].lower().capitalize(), value=entry["menuID"]) for entry in data]
 
     @slash_command(
-        description="Nazwiska w Polsce",
+        description="Informations about surnames in Poland",
+        description_localizations={"pl": "Nazwiska w Polsce"},
         guild_ids=config["guild_ids"],
     )
     async def surnames(
@@ -269,7 +279,10 @@ class Info(commands.Cog, name="ℹ Informacje"):
         ctx: discord.ApplicationContext,
         surname: Option(
             str,
-            "Podaj nazwisko o którym chcesz dostać informacje",
+            name="surname",
+            name_localizations={"pl": "nazwisko"},
+            description="Type surname you want information about",
+            description_localizations={"pl": "Podaj nazwisko, o którym chcesz uzyskać informacje"},
             autocomplete=surname_searcher,
         ),
     ):
@@ -294,30 +307,15 @@ class Info(commands.Cog, name="ℹ Informacje"):
         embed = discord.Embed()
         embed.title = "Nazwiska w Polsce"
         embed.description = f"🧑 **Nazwisko: {soup.find('h1', class_='title').text.lower().capitalize()}**\n{soup.find(id='collapse-liczba').text.strip()}"
-        voivodships = (
-            soup.find(id="collapse-geografia")
-            .text.strip()
-            .split("\n\n\n\n")[0]
-            .split("\n")[2:]
-        )
+        voivodships = soup.find(id="collapse-geografia").text.strip().split("\n\n\n\n")[0].split("\n")[2:]
         for i, _ in enumerate(voivodships):
             name, count = voivodships[i].split(" /")
             voivodships[i] = f"{name.lower().capitalize()}: **{count}**"
-        counties = (
-            soup.find(id="collapse-geografia")
-            .text.strip()
-            .split("\n\n\n\n")[1]
-            .split("\n")[2:]
-        )
+        counties = soup.find(id="collapse-geografia").text.strip().split("\n\n\n\n")[1].split("\n")[2:]
         for i, _ in enumerate(counties):
             name, count = counties[i].split(" /")
             counties[i] = f"{name.lower().capitalize()}: **{count}**"
-        municipalities = (
-            soup.find(id="collapse-geografia")
-            .text.strip()
-            .split("\n\n\n\n")[2]
-            .split("\n")[2:]
-        )
+        municipalities = soup.find(id="collapse-geografia").text.strip().split("\n\n\n\n")[2].split("\n")[2:]
         for i, _ in enumerate(municipalities):
             name, count = municipalities[i].split(" /")
             municipalities[i] = f"{name.lower().capitalize()}: **{count}**"

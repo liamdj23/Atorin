@@ -21,7 +21,9 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         self.bot = bot
 
     @slash_command(
-        description="Losowe zdjęcie Shiba Inu", guild_ids=config["guild_ids"]
+        description="Random photo of Shiba Inu",
+        description_localizations={"pl": "Losowe zdjęcie Shiba Inu"},
+        guild_ids=config["guild_ids"],
     )
     async def shiba(self, ctx: discord.ApplicationContext):
         await ctx.defer()
@@ -37,16 +39,23 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             raise commands.CommandError(r.text)
 
     @slash_command(
-        description="Stwórz pasek z Wiadomości z własnym tekstem",
+        description="Generate headline from Polish TV news program",
+        description_localizations={"pl": "Stwórz pasek z Wiadomości z własnym tekstem"},
         guild_ids=config["guild_ids"],
     )
     async def tvp(
-        self, ctx: discord.ApplicationContext, text: Option(str, "Treść paska")
+        self,
+        ctx: discord.ApplicationContext,
+        text: Option(
+            str,
+            name="text",
+            name_localizations={"pl": "tekst"},
+            description="Type content of headline",
+            description_localizations={"pl": "Wpisz treść paska"},
+        ),
     ):
         if len(text) > 48:
-            raise commands.BadArgument(
-                f"Treść paska jest zbyt długa! Max. 48 znaków, podano {len(text)}."
-            )
+            raise commands.BadArgument(f"Treść paska jest zbyt długa! Max. 48 znaków, podano {len(text)}.")
         await ctx.defer()
         async with httpx.AsyncClient() as client:
             r = await client.post(
@@ -67,7 +76,8 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             raise commands.CommandError(r.text)
 
     @slash_command(
-        description="Losowe zdjęcie kota",
+        description="Random photo of cat",
+        description_localizations={"pl": "Losowe zdjęcie kota"},
         guild_ids=config["guild_ids"],
     )
     async def cat(self, ctx: discord.ApplicationContext):
@@ -83,7 +93,11 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         else:
             raise commands.CommandError(r.text)
 
-    @slash_command(description="Losowe zdjęcie lisa", guild_ids=config["guild_ids"])
+    @slash_command(
+        description="Random photo of fox",
+        description_localizations={"pl": "Losowe zdjęcie lisa"},
+        guild_ids=config["guild_ids"],
+    )
     async def fox(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         async with httpx.AsyncClient() as client:
@@ -98,26 +112,34 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             raise commands.CommandError(r.text)
 
     @slash_command(
-        description="Wysyła napis stworzony z mniejszych znaków.",
+        description="Creates ASCII art from text",
+        description_localizations={"pl": "Wysyła napis stworzony z mniejszych znaków"},
         guild_ids=config["guild_ids"],
     )
     async def figlet(
-        self, ctx: discord.ApplicationContext, text: Option(str, "Treść figletu")
+        self,
+        ctx: discord.ApplicationContext,
+        text: Option(
+            str,
+            name="text",
+            name_localizations={"pl": "tekst"},
+            description="Type content of figlet",
+            description_localizations={"pl": "Wpisz treść figletu"},
+        ),
     ):
         await ctx.defer()
         f = Figlet()
         figlet = f.renderText(text)
         if len(figlet) > 1990:
-            raise commands.BadArgument(
-                "Wygenerowany figlet jest za długi. Wybierz inny tekst i spróbuj ponownie."
-            )
+            raise commands.BadArgument("Wygenerowany figlet jest za długi. Wybierz inny tekst i spróbuj ponownie.")
         embed = discord.Embed()
         embed.title = "Figlet"
         embed.description = f"```{figlet}```"
         await ctx.send_followup(embed=embed)
 
     @slash_command(
-        description="Losowy commit",
+        description="Random commit title",
+        description_localizations={"pl": "Losowy commit"},
         guild_ids=config["guild_ids"],
     )
     async def commit(self, ctx: discord.ApplicationContext):
@@ -134,15 +156,23 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             raise commands.CommandError(r.text)
 
     @slash_command(
-        description="Stwórz osiągnięcie z Minecrafta", guild_ids=config["guild_ids"]
+        description="Create achievement from Minecraft",
+        description_localizations={"pl": "Stwórz osiągnięcie z Minecrafta"},
+        guild_ids=config["guild_ids"],
     )
     async def achievement(
-        self, ctx: discord.ApplicationContext, text: Option(str, "Treść osiągnięcia")
+        self,
+        ctx: discord.ApplicationContext,
+        text: Option(
+            str,
+            name="text",
+            name_localizations={"pl": "tekst"},
+            description="Type content of achievement",
+            description_localizations={"pl": "Wpisz treść osiągnięcia"},
+        ),
     ):
         if len(text) > 25:
-            raise commands.BadArgument(
-                f"Treść osiągnięcia jest zbyt długa! Max. 25 znaków, podano {len(text)}."
-            )
+            raise commands.BadArgument(f"Treść osiągnięcia jest zbyt długa! Max. 25 znaków, podano {len(text)}.")
         await ctx.defer()
         text = (
             unicodedata.normalize("NFKD", text)
@@ -162,18 +192,30 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         embed = discord.Embed()
         embed.title = "Twoje Minecraftowe osiągnięcie"
         embed.set_image(url="attachment://achievement.png")
-        await ctx.send_followup(
-            embed=embed, file=discord.File(img, filename="achievement.png")
-        )
+        await ctx.send_followup(embed=embed, file=discord.File(img, filename="achievement.png"))
 
     @slash_command(
-        description="Stwórz własnego mema z Drake", guild_ids=config["guild_ids"]
+        description="Create Drake meme",
+        description_localizations={"pl": "Stwórz własnego mema z Drake"},
+        guild_ids=config["guild_ids"],
     )
     async def drake(
         self,
         ctx: discord.ApplicationContext,
-        upper_text: Option(str, "Tekst górny"),
-        bottom_text: Option(str, "Tekst dolny"),
+        upper_text: Option(
+            str,
+            name="upper_text",
+            name_localizations={"pl": "tekst_górny"},
+            description="Upper text",
+            description_localizations={"pl": "Tekst górny"},
+        ),
+        bottom_text: Option(
+            str,
+            name="bottom_text",
+            name_localizations={"pl": "tekst_dolny"},
+            description="Bottom text",
+            description_localizations={"pl": "Tekst dolny"},
+        ),
     ):
         lines = [upper_text, bottom_text]
         await ctx.defer()
@@ -194,16 +236,23 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         embed = discord.Embed()
         embed.title = "Twój mem z Drake"
         embed.set_image(url="attachment://drake.png")
-        await ctx.send_followup(
-            embed=embed, file=discord.File(img, filename="drake.png")
-        )
+        await ctx.send_followup(embed=embed, file=discord.File(img, filename="drake.png"))
 
     @slash_command(
-        description="Stwórz kod QR z tekstem lub linkiem",
+        description="Create QR Code",
+        description_localizations={"pl": "Stwórz kod QR z tekstem lub linkiem"},
         guild_ids=config["guild_ids"],
     )
     async def codeqr(
-        self, ctx: discord.ApplicationContext, content: Option(str, "Treść kodu QR")
+        self,
+        ctx: discord.ApplicationContext,
+        content: Option(
+            str,
+            name="content",
+            name_localizations={"pl": "zawartość"},
+            description="Enter data",
+            description_localizations={"pl": "Wpisz zawartość kodu QR"},
+        ),
     ):
         await ctx.defer()
         qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
@@ -274,13 +323,20 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     #     await ctx.send_followup(embed=embed)
 
     @slash_command(
-        description="Tworzy plakat WANTED z wybraną osobą",
+        description="Create WANTED poster with selected person",
+        description_localizations={"pl": "Tworzy plakat WANTED z wybraną osobą"},
         guild_ids=config["guild_ids"],
     )
     async def wanted(
         self,
         ctx: discord.ApplicationContext,
-        user: Option(discord.Member, "Osoba poszukiwana"),
+        user: Option(
+            discord.Member,
+            name="user",
+            name_localizations={"pl": "osoba"},
+            description="Select person to be wanted",
+            description_localizations={"pl": "Wybierz osobę, która ma być poszukiwana"},
+        ),
     ):
         await ctx.defer()
         template = Image.open("assets/wanted/wanted.jpg")
@@ -294,11 +350,13 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         embed = discord.Embed()
         embed.title = f"Twój plakat WANTED z {user}"
         embed.set_image(url="attachment://wanted.png")
-        await ctx.send_followup(
-            embed=embed, file=discord.File(img, filename="wanted.png")
-        )
+        await ctx.send_followup(embed=embed, file=discord.File(img, filename="wanted.png"))
 
-    @slash_command(description="Losowe zdjęcie psa", guild_ids=config["guild_ids"])
+    @slash_command(
+        description="Random photo of dog",
+        description_localizations={"pl": "Losowe zdjęcie psa"},
+        guild_ids=config["guild_ids"],
+    )
     async def dog(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         async with httpx.AsyncClient() as client:
@@ -312,7 +370,9 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         else:
             raise commands.CommandError(r.text)
 
-    @slash_command(description="Rzut monetą", guild_ids=config["guild_ids"])
+    @slash_command(
+        description="Coin flip", description_localizations={"pl": "Rzut monetą"}, guild_ids=config["guild_ids"]
+    )
     async def flip(self, ctx: discord.ApplicationContext):
         embed = discord.Embed()
         embed.title = "Rzut monetą"
@@ -320,15 +380,23 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         await ctx.respond(embed=embed)
 
     @slash_command(
-        description="Generuje mema Change my mind", guild_ids=config["guild_ids"]
+        description="Create Change my mind meme",
+        description_localizations={"pl": "Generuje mema Change my mind"},
+        guild_ids=config["guild_ids"],
     )
     async def changemymind(
-        self, ctx: discord.ApplicationContext, text: Option(str, "Treść mema")
+        self,
+        ctx: discord.ApplicationContext,
+        text: Option(
+            str,
+            name="text",
+            name_localizations={"pl": "tekst"},
+            description="Type content of meme",
+            description_localizations={"pl": "Wpisz treść mema"},
+        ),
     ):
         if len(text) > 140:
-            raise commands.BadArgument(
-                f"Treść mema jest zbyt długa! Max. 140 znaków, podano {len(text)}"
-            )
+            raise commands.BadArgument(f"Treść mema jest zbyt długa! Max. 140 znaków, podano {len(text)}")
         await ctx.defer()
         template = Image.open("assets/changemymind/changemymind.jpg")
         txt = Image.new("RGBA", (700, 350), (0, 0, 0, 0))
@@ -346,12 +414,11 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         embed = discord.Embed()
         embed.title = "Change my mind"
         embed.set_image(url="attachment://changemymind.png")
-        await ctx.send_followup(
-            embed=embed, file=discord.File(img, filename="changemymind.png")
-        )
+        await ctx.send_followup(embed=embed, file=discord.File(img, filename="changemymind.png"))
 
     @slash_command(
-        description="Wysyła losowego mema z /r/Polska_wpz",
+        description="Random meme from r/Polska_wpz",
+        description_localizations={"pl": "Wysyła losowego mema z /r/Polska_wpz"},
         guild_ids=config["guild_ids"],
     )
     async def meme(self, ctx: discord.ApplicationContext):
@@ -367,13 +434,15 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                 if meme["url"].endswith(".jpg") or meme["url"].endswith(".png"):
                     break
         embed = discord.Embed()
-        embed.title = (
-            (meme["title"][:200] + "...") if len(meme["title"]) > 203 else meme["title"]
-        )
+        embed.title = (meme["title"][:200] + "...") if len(meme["title"]) > 203 else meme["title"]
         embed.set_image(url=meme["url"])
         await ctx.send_followup(embed=embed)
 
-    @slash_command(description="Losowy słodki obrazek", guild_ids=config["guild_ids"])
+    @slash_command(
+        description="Random cute picture",
+        description_localizations={"pl": "Losowy słodki obrazek"},
+        guild_ids=config["guild_ids"],
+    )
     async def aww(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         async with httpx.AsyncClient() as client:
@@ -387,13 +456,15 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                 if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
                     break
         embed = discord.Embed()
-        embed.title = (
-            (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
-        )
+        embed.title = (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
         embed.set_image(url=post["url"])
         await ctx.send_followup(embed=embed)
 
-    @slash_command(description="Losowe zdjęcie żółwia", guild_ids=config["guild_ids"])
+    @slash_command(
+        description="Random photo of turtle",
+        description_localizations={"pl": "Losowe zdjęcie żółwia"},
+        guild_ids=config["guild_ids"],
+    )
     async def turtle(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         async with httpx.AsyncClient() as client:
@@ -407,13 +478,15 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                 if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
                     break
         embed = discord.Embed()
-        embed.title = (
-            (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
-        )
+        embed.title = (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
         embed.set_image(url=post["url"])
         await ctx.send_followup(embed=embed)
 
-    @slash_command(description="Losowe zdjęcie alpaki", guild_ids=config["guild_ids"])
+    @slash_command(
+        description="Random photo of alpaca",
+        description_localizations={"pl": "Losowe zdjęcie alpaki"},
+        guild_ids=config["guild_ids"],
+    )
     async def alpaca(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         async with httpx.AsyncClient() as client:
@@ -427,13 +500,15 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                 if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
                     break
         embed = discord.Embed()
-        embed.title = (
-            (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
-        )
+        embed.title = (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
         embed.set_image(url=post["url"])
         await ctx.send_followup(embed=embed)
 
-    @slash_command(description="Losowe zdjęcie żaby", guild_ids=config["guild_ids"])
+    @slash_command(
+        description="Random photo of frog",
+        description_localizations={"pl": "Losowe zdjęcie żaby"},
+        guild_ids=config["guild_ids"],
+    )
     async def frog(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         async with httpx.AsyncClient() as client:
@@ -447,21 +522,19 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                 if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
                     break
         embed = discord.Embed()
-        embed.title = (
-            (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
-        )
+        embed.title = (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
         embed.set_image(url=post["url"])
         await ctx.send_followup(embed=embed)
 
     @slash_command(
-        description="Astronomiczne zdjęcie dnia", guild_ids=config["guild_ids"]
+        ddescription="Astronomy Picture of the Day",
+        description_localizations={"pl": "Astronomiczne zdjęcie dnia"},
+        guild_ids=config["guild_ids"],
     )
     async def apod(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         async with httpx.AsyncClient() as client:
-            r = await client.get(
-                "https://apod.nasa.gov/apod/", headers={"User-agent": "Atorin"}
-            )
+            r = await client.get("https://apod.nasa.gov/apod/", headers={"User-agent": "Atorin"})
         soup = BeautifulSoup(r.content, "html.parser")
         soup.find_all("p")[2].p.clear()
         if r.status_code != 200:
@@ -472,13 +545,15 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         try:
             embed.set_image(url=f"{r.url}{soup.find_all('p')[0].img['src']}")
         except TypeError:
-            embed.description += (
-                f"\n{soup.find_all('p')[0].iframe['src'].replace('/embed/', '/watch/')}"
-            )
+            embed.description += f"\n{soup.find_all('p')[0].iframe['src'].replace('/embed/', '/watch/')}"
         embed.url = str(r.url)
         await ctx.send_followup(embed=embed)
 
-    @slash_command(description="Losowe zdjęcie gołębia", guild_ids=config["guild_ids"])
+    @slash_command(
+        description="Random photo of pigeon",
+        description_localizations={"pl": "Losowe zdjęcie gołębia"},
+        guild_ids=config["guild_ids"],
+    )
     async def pigeon(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         async with httpx.AsyncClient() as client:
@@ -492,13 +567,15 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                 if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
                     break
         embed = discord.Embed()
-        embed.title = (
-            (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
-        )
+        embed.title = (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
         embed.set_image(url=post["url"])
         await ctx.send_followup(embed=embed)
 
-    @slash_command(description="Losowe zdjęcie kaczki", guild_ids=config["guild_ids"])
+    @slash_command(
+        description="Random photo of duck",
+        description_localizations={"pl": "Losowe zdjęcie kaczki"},
+        guild_ids=config["guild_ids"],
+    )
     async def duck(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         async with httpx.AsyncClient() as client:
@@ -512,14 +589,14 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                 if post["url"].endswith(".jpg") or post["url"].endswith(".png"):
                     break
         embed = discord.Embed()
-        embed.title = (
-            (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
-        )
+        embed.title = (post["title"][:200] + "...") if len(post["title"]) > 203 else post["title"]
         embed.set_image(url=post["url"])
         await ctx.send_followup(embed=embed)
 
     @slash_command(
-        description="Losowy komiks z xkcd.com", guild_ids=config["guild_ids"]
+        description="Random comic from xkcd.com",
+        description_localizations={"pl": "Losowy komiks z xkcd.com"},
+        guild_ids=config["guild_ids"],
     )
     async def xkcd(self, ctx: discord.ApplicationContext):
         await ctx.defer()
@@ -529,9 +606,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                 headers={"User-agent": "Atorin"},
             )
         if not latest.status_code == 200:
-            raise commands.CommandError(
-                "Wystąpił błąd przy pobieraniu komiksu, spróbuj ponownie później."
-            )
+            raise commands.CommandError("Wystąpił błąd przy pobieraniu komiksu, spróbuj ponownie później.")
         latest_number = latest.json()["num"]
         random_comic = randint(1, latest_number)
         async with httpx.AsyncClient() as client:
@@ -540,9 +615,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                 headers={"User-agent": "Atorin"},
             )
         if not comic.status_code == 200:
-            raise commands.CommandError(
-                "Wystąpił błąd przy pobieraniu komiksu, spróbuj ponownie później."
-            )
+            raise commands.CommandError("Wystąpił błąd przy pobieraniu komiksu, spróbuj ponownie później.")
         comic_data = comic.json()
         embed = discord.Embed()
         embed.title = comic_data["title"]
