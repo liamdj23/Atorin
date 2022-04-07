@@ -2,28 +2,28 @@
 {% block title %}Komendy{% endblock %}
 {% block head %}
 <style>
-#tab-content div {
-  display: none;
-}
+  #tab-content div {
+    display: none;
+  }
 
-#tab-content div.is-active {
-  display: block;
-}
+  #tab-content div.is-active {
+    display: block;
+  }
 </style>
 {% endblock %}
 {% block scripts %}
 <script>
-$(document).ready(function() {
-  $('.menu-list li a').on('click', function() {
-    var tab = $(this).parent().data('tab');
+  $(document).ready(function () {
+    $('.menu-list li a').on('click', function () {
+      var tab = $(this).parent().data('tab');
 
-    $('.menu-list li a').removeClass('is-active');
-    $(this).addClass('is-active');
+      $('.menu-list li a').removeClass('is-active');
+      $(this).addClass('is-active');
 
-    $('#tab-content div').removeClass('is-active');
-    $('div[data-content="' + tab + '"]').addClass('is-active');
+      $('#tab-content div').removeClass('is-active');
+      $('div[data-content="' + tab + '"]').addClass('is-active');
+    });
   });
-});
 </script>
 {% endblock %}
 {% block content %}
@@ -37,7 +37,7 @@ $(document).ready(function() {
       <ul class="menu-list">
         {% for cog in cogs %}
         <li data-tab="{{ loop.index }}">
-          <a {% if loop.index == 1 %}class="is-active"{% endif %}>{{ cog.__cog_name__ }}</a>
+          <a {% if loop.index==1 %}class="is-active" {% endif %}>{{ cog.__cog_name__ }}</a>
         </li>
         {% endfor %}
       </ul>
@@ -48,22 +48,22 @@ $(document).ready(function() {
       {% for cog in cogs %}
       <div class="content {% if loop.index == 1 %}is-active{% endif %}" data-content="{{ loop.index }}">
         {% for command in cog.get_commands() %}
-          {% if command.subcommands %}
-            {% for subcommand in command.subcommands %}
-              {% if subcommand.subcommands %}
-                {% for nested in subcommand.subcommands %}
-                <p class="title">/{{ nested.qualified_name }}</p>
-                <p class="subtitle pb-4">{{ nested.description }}</p>
-                {% endfor %}
-              {% else %}
-              <p class="title">/{{ subcommand.qualified_name }}</p>
-              <p class="subtitle pb-4">{{ subcommand.description }}</p>
-              {% endif %}
-            {% endfor %}
-          {% else %}
-          <p class="title">/{{ command.qualified_name }}</p>
-          <p class="subtitle pb-4">{{ command.description }}</p>
-          {% endif %}  
+        {% if command.subcommands %}
+        {% for subcommand in command.subcommands %}
+        {% if subcommand.subcommands %}
+        {% for nested in subcommand.subcommands %}
+        <p class="title">/{{ nested.qualified_name }}</p>
+        <p class="subtitle pb-4">{{ nested.description_localizations['pl'] }}</p>
+        {% endfor %}
+        {% else %}
+        <p class="title">/{{ subcommand.qualified_name }}</p>
+        <p class="subtitle pb-4">{{ subcommand.description_localizations['pl'] }}</p>
+        {% endif %}
+        {% endfor %}
+        {% else %}
+        <p class="title">/{{ command.qualified_name }}</p>
+        <p class="subtitle pb-4">{{ command.description_localizations['pl'] }}</p>
+        {% endif %}
         {% endfor %}
       </div>
       {% endfor %}
