@@ -38,7 +38,10 @@ class Info(commands.Cog, name="ℹ Informacje"):
         ctx: discord.ApplicationContext,
         user: Option(
             discord.User,
-            "Nazwa osoby której awatar chcesz wyświetlić",
+            name="user",
+            name_localizations={"pl": "osoba"},
+            description="Select user whose avatar you want to see",
+            description_localizations={"pl": "Osoba, której awatar chcesz zobaczyć"},
             required=False,
         ),
     ):
@@ -47,9 +50,11 @@ class Info(commands.Cog, name="ℹ Informacje"):
         if type(user) is int:
             user = await self.bot.fetch_user(user)
             if not user:
-                raise commands.CommandError("Nie znaleziono użytkownika!")
+                raise commands.CommandError(
+                    "Nie znaleziono użytkownika!" if ctx.interaction.locale == "pl" else "User not found!"
+                )
         embed = discord.Embed()
-        embed.title = f"Zdjęcie profilowe {user}"
+        embed.title = f"Zdjęcie profilowe {user}" if ctx.interaction.locale == "pl" else f"{user}'s profile picture"
         embed.set_image(url=user.display_avatar.url)
         await ctx.respond(embed=embed)
 
@@ -62,22 +67,25 @@ class Info(commands.Cog, name="ℹ Informacje"):
     async def server(self, ctx: discord.ApplicationContext):
         guild = ctx.guild
         embed = discord.Embed()
-        embed.title = f"Informacje o {guild}"
+        embed.title = f"Informacje o {guild}" if ctx.interaction.locale == "pl" else f"Informations about {guild}"
         if guild.owner:
-            embed.add_field(name="👑 Właściciel", value=f"{guild.owner.mention}")
+            embed.add_field(
+                name="👑 Właściciel" if ctx.interaction.locale == "pl" else "👑 Owner", value=f"{guild.owner.mention}"
+            )
+        if guild.description:
+            embed.add_field(
+                name="🔤 Opis" if ctx.interaction.locale == "pl" else "🔤 Description",
+                value=f"**{guild.description}**",
+                inline=False,
+            )
         embed.add_field(
-            name="🔤 Opis",
-            value=f"**{guild.description if guild.description else 'Brak'}**",
-            inline=False,
-        )
-        embed.add_field(
-            name="👶 Data utworzenia",
+            name="👶 Data utworzenia" if ctx.interaction.locale == "pl" else "👶 Created at",
             value=f"<t:{int(datetime.timestamp(guild.created_at))}>",
         )
-        embed.add_field(name="🆔 ID", value=f"`{guild.id}`", inline=False)
+        embed.add_field(name="🆔 ID", value=f"`{guild.id}`")
         embed.add_field(
-            name="📊 Statystyki",
-            value=f"**💬 Liczba kanałów: `{len(guild.channels)}`\n👥 Liczba członków: `{guild.member_count}`\n🤪 Liczba emotek: `{len(guild.emojis) if guild.emojis else 0}`\n🚀 Liczba ulepszeń: `{guild.premium_subscription_count}`\n📛 Liczba ról: `{len(guild.roles)}`**",
+            name="📊 Statystyki" if ctx.interaction.locale == "pl" else "📊 Statistics",
+            value=f"**💬 {'Liczba kanałów' if ctx.interaction.locale == 'pl' else 'Channels'}: `{len(guild.channels)}`\n👥 {'Liczba członków' if ctx.interaction.locale == 'pl' else 'Members'}: `{guild.member_count}`\n🤪 {'Liczba emotek' if ctx.interaction.locale == 'pl' else 'Emotes'}: `{len(guild.emojis) if guild.emojis else 0}`\n🚀 {'Liczba ulepszeń' if ctx.interaction.locale == 'pl' else 'Boosts'}: `{guild.premium_subscription_count}`\n📛 {'Liczba ról' if ctx.interaction.locale == 'pl' else 'Roles'}: `{len(guild.roles)}`**",
             inline=False,
         )
         embed.set_thumbnail(url=str(guild.icon))
@@ -103,21 +111,21 @@ class Info(commands.Cog, name="ℹ Informacje"):
         if member is None:
             member = ctx.author
         embed = discord.Embed()
-        embed.title = f"Informacje o {member}"
+        embed.title = f"Informacje o {member}" if ctx.interaction.locale == "pl" else f"Informations about {member}"
         embed.add_field(name="🆔 ID", value=f"`{member.id}`", inline=False)
         if member.nick:
-            embed.add_field(name="🎭 Pseudonim", value=member.nick)
+            embed.add_field(name="🎭 Pseudonim" if ctx.interaction.locale == "pl" else "🎭 Nickname", value=member.nick)
         embed.add_field(
-            name="🏅 Role",
+            name="🏅 Role" if ctx.interaction.locale == "pl" else "🏅 Roles",
             value=", ".join(role.mention for role in member.roles),
             inline=False,
         )
         embed.add_field(
-            name="👶 Data utworzenia konta",
+            name="👶 Data utworzenia konta" if ctx.interaction.locale == "pl" else "👶 Created at",
             value=f"<t:{int(datetime.timestamp(member.created_at))}>",
         )
         embed.add_field(
-            name="🤝 Data dołączenia",
+            name="🤝 Data dołączenia" if ctx.interaction.locale == "pl" else "🤝 Joined at",
             value=f"<t:{int(datetime.timestamp(member.joined_at))}>",
         )
         embed.set_thumbnail(url=str(member.display_avatar))
@@ -144,53 +152,62 @@ class Info(commands.Cog, name="ℹ Informacje"):
         async with httpx.AsyncClient() as client:
             r = await client.get(
                 "http://api.openweathermap.org/data/2.5/weather",
-                params={"appid": token, "units": "metric", "lang": "pl", "q": city},
+                params={
+                    "appid": token,
+                    "units": "metric",
+                    "lang": "pl" if ctx.interaction.locale == "pl" else "en",
+                    "q": city,
+                },
             )
         embed = discord.Embed()
         if r.status_code == 200:
             data = r.json()
-            embed.title = "Pogoda w " + data["name"]
+            embed.title = (
+                f"Pogoda w {data['name']}" if ctx.interaction.locale == "pl" else f"Weather in {data['name']}"
+            )
             emoji = get_weather_emoji(data["weather"][0]["id"])
             embed.description = f"{emoji} __**{data['weather'][0]['description'].capitalize()}**__"
             embed.add_field(
-                name="🌡️ Temperatura",
+                name="🌡️ Temperatura" if ctx.interaction.locale == "pl" else "🌡️ Temperature",
                 value=f"{data['main']['temp']}°C",
             )
             embed.add_field(
-                name="👐 Odczuwalna",
+                name="👐 Odczuwalna" if ctx.interaction.locale == "pl" else "👐 Feels like",
                 value=f"{data['main']['feels_like']}°C",
             )
             embed.add_field(
-                name="🥶 Najniższa",
+                name="🥶 Najniższa" if ctx.interaction.locale == "pl" else "🥶 Low",
                 value=f"{data['main']['temp_min']}°C",
             )
             embed.add_field(
-                name="🥵 Najwyższa",
+                name="🥵 Najwyższa" if ctx.interaction.locale == "pl" else "🥵 High",
                 value=f"{data['main']['temp_max']}°C",
             )
             embed.add_field(
-                name="🎈 Ciśnienie",
+                name="🎈 Ciśnienie" if ctx.interaction.locale == "pl" else "🎈 Pressure",
                 value=f"{data['main']['pressure']}hPa",
             )
             embed.add_field(
-                name="💧 Wilgotność",
+                name="💧 Wilgotność" if ctx.interaction.locale == "pl" else "💧 Humidity",
                 value=f"{data['main']['humidity']}%",
             )
             embed.add_field(
-                name="💨 Wiatr",
+                name="💨 Wiatr" if ctx.interaction.locale == "pl" else "💨 Wind",
                 value=f"{int(data['wind']['speed'] * 3.6)}km/h",
             )
             embed.add_field(
-                name="🌅 Wschód słońca",
+                name="🌅 Wschód słońca" if ctx.interaction.locale == "pl" else "🌅 Sunrise",
                 value=f"<t:{data['sys']['sunrise']}:t>",
             )
             embed.add_field(
-                name="🌇 Zachód słońca",
+                name="🌇 Zachód słońca" if ctx.interaction.locale == "pl" else "🌇 Sunset",
                 value=f"<t:{data['sys']['sunset']}:t>",
             )
             await ctx.send_followup(embed=embed)
         elif r.status_code == 404:
-            raise commands.BadArgument("Nie odnaleziono podanej miejscowości.")
+            raise commands.BadArgument(
+                "Nie odnaleziono podanej miejscowości!" if ctx.interaction.locale == "pl" else "City not found!"
+            )
         else:
             raise commands.CommandError(r.text)
 
@@ -203,16 +220,16 @@ class Info(commands.Cog, name="ℹ Informacje"):
         if hasattr(self.bot, "lavalink") and self.bot.lavalink.node_manager.nodes[0].stats:
             lavalink_stats = self.bot.lavalink.node_manager.nodes[0].stats.playing_players
         else:
-            lavalink_stats = "Niedostępne"
+            lavalink_stats = "Niedostępne" if ctx.interaction.locale == "pl" else "Unavailable"
         embed = discord.Embed()
-        embed.title = "Informacje o Atorinie"
-        embed.description = "**👨‍💻 Autor: <@272324980522614784>**"
+        embed.title = "Informacje o Atorinie" if ctx.interaction.locale == "pl" else "Informations about Atorin"
+        embed.description = f"**👨‍💻 {'Autor' if ctx.interaction.locale == 'pl' else 'Author'}: <@272324980522614784>**"
         embed.add_field(
-            name=f"🌐 Liczba serwerów: {len(self.bot.guilds)}",
-            value=f"**#️⃣ Liczba kanałów: {len(list(self.bot.get_all_channels()))}\n🧑‍🤝‍🧑 Liczba użytkowników: {sum(user_counter(self.bot))}\n🎵 Liczba odtwarzaczy: {lavalink_stats}\n⏱ Uptime: {humanize.naturaldelta(timedelta(seconds=self.bot.get_uptime()))}**",
+            name=f"🌐 {'Liczba serwerów' if ctx.interaction.locale == 'pl' else 'Servers'}: {len(self.bot.guilds)}",
+            value=f"**#️⃣ {'Liczba kanałów' if ctx.interaction.locale == 'pl' else 'Channels'}: {len(list(self.bot.get_all_channels()))}\n🧑‍🤝‍🧑 {'Liczba użytkowników' if ctx.interaction.locale == 'pl' else 'Users'}: {sum(user_counter(self.bot))}\n🎵 {'Liczba odtwarzaczy' if ctx.interaction.locale == 'pl' else 'Players'}: {lavalink_stats}\n⏱ Uptime: {humanize.naturaldelta(timedelta(seconds=self.bot.get_uptime()))}**",
         )
         embed.add_field(
-            name="⚙️ Środowisko",
+            name="⚙️ Środowisko" if ctx.interaction.locale == "pl" else "⚙️ Environment",
             value=f"Atorin: `{self.bot.get_version()}`\nPython: `{platform.python_version()}`\nOS: `{platform.system()}`\nPy-cord: `{discord.__version__}`",
         )
         ram = psutil.virtual_memory()
@@ -222,9 +239,9 @@ class Info(commands.Cog, name="ℹ Informacje"):
         total_disk = convert_size(disk.total)
         used_disk = convert_size(disk.used)
         embed.add_field(
-            name="🖥 Użycie zasobów",
+            name="🖥 Użycie zasobów" if ctx.interaction.locale == "pl" else "🖥 Resource usage",
             inline=False,
-            value=f"```css\n{progress_bar(int(psutil.cpu_percent()), 'CPU')}\n{progress_bar(int((ram.used / ram.total) * 100), f'RAM {used_ram}/{total_ram}')}\n{progress_bar(int(disk.percent), f'Dysk {used_disk}/{total_disk}')}```",
+            value=f"```css\n{progress_bar(int(psutil.cpu_percent()), 'CPU')}\n{progress_bar(int((ram.used / ram.total) * 100), f'RAM {used_ram}/{total_ram}')}\n{progress_bar(int(disk.percent), 'Dysk' if ctx.interaction.locale == 'pl' else 'Disk' + f' {used_disk}/{total_disk}')}```",
         )
         await ctx.respond(embed=embed)
 
@@ -235,7 +252,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
     )
     async def help(self, ctx: discord.ApplicationContext):
         embed = discord.Embed()
-        embed.title = "Lista komend AtorinBot"
+        embed.title = "Lista komend AtorinBot" if ctx.interaction.locale == "pl" else "List of Atorin commands"
         for name, cog in self.bot.cogs.items():
             embed.add_field(name=name, value=f"`{', '.join([c.name for c in cog.get_commands()])}`")
         buttons = HelpButtons()
@@ -248,10 +265,14 @@ class Info(commands.Cog, name="ℹ Informacje"):
     )
     async def support(self, ctx: discord.ApplicationContext):
         embed = discord.Embed()
-        embed.title = "Wsparcie bota"
-        embed.description = "☕️ Jeśli chcesz wesprzeć rozwój Atorina, możesz postawić kawę jego twórcy na stronie https://buycoffee.to/liamdj23\n**Dziękuję.**"
+        embed.title = "Wsparcie bota" if ctx.interaction.locale == "pl" else "Donations"
+        embed.description = (
+            "💵 Jeśli chcesz wesprzeć rozwój Atorina, możesz postawić kawę jego twórcy na stronie https://buycoffee.to/liamdj23\n**Dziękuję.**"
+            if ctx.interaction.locale == "pl"
+            else "💵 If you want to support the development of Atorin, buy the author a coffee on https://buycoffee.to/liamdj23\n**Thank you.**"
+        )
         embed.add_field(
-            name="🎉 Wspierający 🎉",
+            name="🎉 Wspierający 🎉" if ctx.interaction.locale == "pl" else "🎉 Special thanks to 🎉",
             value="`Leaf#7075, KMatuszak#2848, Golden_Girl00#0055, HunterAzar#1387, koosek#2618, Vretu#2855`",
         )
         buttons = HelpButtons()
@@ -296,7 +317,9 @@ class Info(commands.Cog, name="ℹ Informacje"):
                 )
             data = r.json()["aaData"]
             if not data:
-                raise commands.BadArgument("Nie znaleziono podanego nazwiska!")
+                raise commands.BadArgument(
+                    "Nie znaleziono podanego nazwiska!" if ctx.interaction.locale == "pl" else "Surname not found!"
+                )
             surname = data[0]["menuID"]
         async with httpx.AsyncClient() as client:
             r = await client.get(
@@ -305,8 +328,8 @@ class Info(commands.Cog, name="ℹ Informacje"):
             )
         soup = BeautifulSoup(r.content, "html.parser")
         embed = discord.Embed()
-        embed.title = "Nazwiska w Polsce"
-        embed.description = f"🧑 **Nazwisko: {soup.find('h1', class_='title').text.lower().capitalize()}**\n{soup.find(id='collapse-liczba').text.strip()}"
+        embed.title = "Nazwiska w Polsce" if ctx.interaction.locale == "pl" else "Surnames in Poland"
+        embed.description = f"🧑 **{'Nazwisko' if ctx.interaction.locale == 'pl' else 'Surname'}: {soup.find('h1', class_='title').text.lower().capitalize()}**\n{soup.find(id='collapse-liczba').text.strip()}"
         voivodships = soup.find(id="collapse-geografia").text.strip().split("\n\n\n\n")[0].split("\n")[2:]
         for i, _ in enumerate(voivodships):
             name, count = voivodships[i].split(" /")
@@ -320,15 +343,17 @@ class Info(commands.Cog, name="ℹ Informacje"):
             name, count = municipalities[i].split(" /")
             municipalities[i] = f"{name.lower().capitalize()}: **{count}**"
         embed.add_field(
-            name="🏢 Województwa",
+            name="🏢 Województwa" if ctx.interaction.locale == "pl" else "🏢 Voivodships",
             value="\n".join(voivodships),
         )
-        embed.add_field(name="🏘️ Powiaty", value="\n".join(counties))
         embed.add_field(
-            name="🏡 Gminy",
+            name="🏘️ Powiaty" if ctx.interaction.locale == "pl" else "🏘️ Counties", value="\n".join(counties)
+        )
+        embed.add_field(
+            name="🏡 Gminy" if ctx.interaction.locale == "pl" else "🏡 Municipalities",
             value="\n".join(municipalities),
         )
-        embed.set_footer(text="Źródło: nazwiska.ijp.pan.pl")
+        embed.set_footer(text=f"{'Źródło' if ctx.interaction.locale == 'pl' else 'Source'}: nazwiska.ijp.pan.pl")
         await ctx.send_followup(embed=embed)
 
 

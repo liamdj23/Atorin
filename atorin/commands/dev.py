@@ -163,37 +163,53 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
             embed = discord.Embed()
             embed.title = f"PyPi - {data['info']['name']}"
             embed.add_field(
-                name=f"{data['info']['summary'] if data['info']['summary'] else 'Brak opisu'}",
+                name=data["info"]["summary"]
+                if data["info"]["summary"]
+                else f"{'Brak opisu' if ctx.interaction.locale == 'pl' else 'No description'}",
                 value=f"```bash\npip install {data['info']['name']}```",
                 inline=False,
             )
             embed.add_field(
-                name="👨‍💻 Autor",
-                value=data["info"]["author"] if data["info"]["author"] else "Nieznany",
+                name="👨‍💻 Autor" if ctx.interaction.locale == "pl" else "👨‍💻 Author",
+                value=data["info"]["author"]
+                if data["info"]["author"]
+                else f"{'Nieznany' if ctx.interaction.locale == 'pl' else 'Unknown'}",
             )
             embed.add_field(
-                name="⚙️ Wersja",
-                value=data["info"]["version"] if data["info"]["version"] else "Nieznana",
+                name="⚙️ Wersja" if ctx.interaction.locale == "pl" else "⚙️ Version",
+                value=data["info"]["version"]
+                if data["info"]["version"]
+                else f"{'Nieznana' if ctx.interaction.locale == 'pl' else 'Unknown'}",
             )
             embed.add_field(
-                name="📜 Licencja",
-                value=data["info"]["license"] if data["info"]["license"] else "Brak",
+                name="📜 Licencja" if ctx.interaction.locale == "pl" else "📜 License",
+                value=data["info"]["license"]
+                if data["info"]["license"]
+                else f"{'Brak' if ctx.interaction.locale == 'pl' else 'Missing'}",
             )
             if "project_urls" in data["info"]:
                 links = []
                 if "Documentation" in data["info"]["project_urls"]:
-                    links.append(f"[Dokumentacja]({data['info']['project_urls']['Documentation']})")
+                    links.append(
+                        f"[{'Dokumentacja' if ctx.interaction.locale == 'pl' else 'Documentation'}]({data['info']['project_urls']['Documentation']})"
+                    )
                 if "Homepage" in data["info"]["project_urls"]:
-                    links.append(f"[Strona]({data['info']['project_urls']['Homepage']})")
+                    links.append(
+                        f"[{'Strona' if ctx.interaction.locale == 'pl' else 'Website'}]({data['info']['project_urls']['Homepage']})"
+                    )
                 if "package_url" in data["info"]:
                     links.append(f"[PyPi]({data['info']['package_url']})")
                 embed.add_field(
-                    name="🔗 Linki",
+                    name="🔗 Linki" if ctx.interaction.locale == "pl" else "🔗 Links",
                     value=f"**{' | '.join(links)}**",
                 )
             await ctx.send_followup(embed=embed)
         elif r.status_code == 404:
-            raise commands.BadArgument("Nie znaleziono biblioteki o podanej nazwie!")
+            raise commands.BadArgument(
+                "Nie znaleziono biblioteki o podanej nazwie!"
+                if ctx.interaction.locale == "pl"
+                else "Library with the given name was not found!"
+            )
         else:
             raise commands.CommandError(r.text)
 
@@ -224,31 +240,39 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
             embed = discord.Embed()
             embed.title = f"NPM - {data['name']}"
             embed.add_field(
-                name=f"{data['description'] if data['description'] else 'Brak opisu'}",
+                name=data["description"]
+                if data["description"]
+                else f"{'Brak opisu' if ctx.interaction.locale == 'pl' else 'No description'}",
                 value=f"```bash\nnpm i {data['name']}```",
                 inline=False,
             )
             if "author" in data:
                 embed.add_field(
-                    name="👨‍💻 Autor",
+                    name="👨‍💻 Autor" if ctx.interaction.locale == "pl" else "👨‍💻 Author",
                     value=data["author"] if type(data["author"]) is str else data["author"]["name"],
                 )
-            embed.add_field(name="⚙️ Wersja", value=data["dist-tags"]["latest"])
             embed.add_field(
-                name="📜 Licencja",
+                name="⚙️ Wersja" if ctx.interaction.locale == "pl" else "⚙️ Version", value=data["dist-tags"]["latest"]
+            )
+            embed.add_field(
+                name="📜 Licencja" if ctx.interaction.locale == "pl" else "📜 License",
                 value=data["license"] if data["license"] else "Brak",
             )
             links = []
             if "homepage" in data:
-                links.append(f"[Strona]({data['homepage']})")
+                links.append(f"[{'Strona' if ctx.interaction.locale == 'pl' else 'Website'}]({data['homepage']})")
             links.append(f"[NPM](https://npmjs.com/package/{data['name']})")
             embed.add_field(
-                name="🔗 Linki",
+                name="🔗 Linki" if ctx.interaction.locale == "pl" else "🔗 Links",
                 value=f"**{' | '.join(links)}**",
             )
             await ctx.send_followup(embed=embed)
         elif r.status_code == 404:
-            raise commands.BadArgument("Nie znaleziono biblioteki o podanej nazwie!")
+            raise commands.BadArgument(
+                "Nie znaleziono biblioteki o podanej nazwie!"
+                if ctx.interaction.locale == "pl"
+                else "Library with the given name was not found!"
+            )
         else:
             raise commands.CommandError(r.text)
 
@@ -286,10 +310,14 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
             )
         if pypi.status_code == 200:
             data = pypi.json()
-            embed.add_field(name="🔤 Biblioteka", value=data["info"]["name"])
-            embed.add_field(name="⚙️ Wersja", value=data["info"]["version"])
+            embed.add_field(
+                name="🔤 Biblioteka" if ctx.interaction.locale == "pl" else "🔤 Package", value=data["info"]["name"]
+            )
+            embed.add_field(
+                name="⚙️ Wersja" if ctx.interaction.locale == "pl" else "⚙️ Version", value=data["info"]["version"]
+            )
         else:
-            embed.add_field(name="🔤 Biblioteka", value=package)
+            embed.add_field(name="🔤 Biblioteka" if ctx.interaction.locale == "pl" else "🔤 Package", value=package)
         if not self.rtfm_cache.get(package):
             url = docs.get(package)
             if not url:
@@ -307,15 +335,21 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
             if r.status_code == 200:
                 self.rtfm_cache[package] = SphinxObjectFileReader(r.content).parse_object_inv(url)
             elif r.status_code == 404:
-                raise commands.BadArgument("Nie znaleziono dokumentacji!")
+                raise commands.BadArgument(
+                    "Nie znaleziono dokumentacji!" if ctx.interaction.locale == "pl" else "Documentation not found!"
+                )
             else:
-                raise commands.CommandError(f"Wystąpił błąd przy pobieraniu dokumentacji! ({r.status_code})")
+                raise commands.CommandError(
+                    f"Wystąpił błąd przy pobieraniu dokumentacji! ({r.status_code})"
+                    if ctx.interaction.locale == "pl"
+                    else f"Error has occurred while retrieving documentation! ({r.status_code})"
+                )
         cache = self.rtfm_cache.get(package)
         results = finder(term, list(cache.items()), key=lambda x: x[0], lazy=False)[:5]
         if results:
             embed.description = "\n".join([f"[`{key}`]({url})" for key, url in results])
         else:
-            embed.description = "Brak wyników wyszukiwania"
+            embed.description = "Brak wyników wyszukiwania" if ctx.interaction.locale == "pl" else "No search results"
         await ctx.send_followup(embed=embed)
 
     @slash_command(
@@ -351,10 +385,10 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
     ):
         class ExecModal(Modal):
             def __init__(self) -> None:
-                super().__init__("Uruchamianie kodu")
+                super().__init__("Uruchamianie kodu" if ctx.interaction.locale == "pl" else "Execute code snippet")
                 self.add_item(
                     InputText(
-                        label="Twój kod",
+                        label="Twój kod" if ctx.interaction.locale == "pl" else "Your code",
                         placeholder="print('Hello world!')",
                         style=discord.InputTextStyle.multiline,
                     )
@@ -373,10 +407,17 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
                     raise commands.CommandError(r.text)
                 data = r.json()
                 embed = discord.Embed()
-                embed.title = f"Uruchamianie kodu {language.capitalize()}"
-                embed.description = (
-                    f"```{data['output'][:4000] if data['output'] else 'Program wykonany pomyślnie.'}```"
+                embed.title = (
+                    f"Uruchamianie kodu {language.capitalize()}"
+                    if ctx.interaction.locale == "pl"
+                    else f"Executing code {language.capitalize()}"
                 )
+                result: str = (
+                    data["output"][:4000]
+                    if data["output"]
+                    else f"{'Program wykonany pomyślnie' if ctx.interaction.locale == 'pl' else 'Code executed successfully'}"
+                )
+                embed.description = f"```{result}```"
                 await interaction.response.send_message(embeds=[embed])
 
         modal = ExecModal()
@@ -410,7 +451,9 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
         embed = discord.Embed()
         embed.title = "Base64"
         encoded = base64.b64encode(content.encode("utf-8", "ignore")).decode("utf-8", "ignore")
-        embed.add_field(name="📋 Tekst", value=f"```{content}```", inline=False)
+        embed.add_field(
+            name="📋 Tekst" if ctx.interaction.locale == "pl" else "📋 Text", value=f"```{content}```", inline=False
+        )
         embed.add_field(name="🔠 Base64", value=f"```{encoded}```", inline=False)
         await ctx.send_followup(embed=embed)
 
@@ -436,7 +479,9 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
         embed.title = "Base64"
         decoded = base64.b64decode(content.encode("utf-8", "ignore")).decode("utf-8", "ignore")
         embed.add_field(name="🔠 Base64", value=f"```{content}```", inline=False)
-        embed.add_field(name="📋 Tekst", value=f"```{decoded}```", inline=False)
+        embed.add_field(
+            name="📋 Tekst" if ctx.interaction.locale == "pl" else "📋 Text", value=f"```{decoded}```", inline=False
+        )
         await ctx.send_followup(embed=embed)
 
 

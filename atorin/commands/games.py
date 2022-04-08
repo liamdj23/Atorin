@@ -88,25 +88,35 @@ class Games(commands.Cog, name="🕹 Gry"):
                 r = await client.get(f"https://api.mcsrvstat.us/bedrock/2/{domain}")
                 data = r.json()
                 if not data["online"]:
-                    raise commands.BadArgument("Adres serwera jest niepoprawny lub serwer jest offline!")
+                    raise commands.BadArgument(
+                        "Adres serwera jest niepoprawny lub serwer jest offline!"
+                        if ctx.interaction.locale == "pl"
+                        else "Server address is not valid or server is offline!"
+                    )
         embed = discord.Embed()
-        embed.title = f"Status serwera Minecraft: {domain}"
+        embed.title = (
+            f"Status serwera Minecraft: {domain}"
+            if ctx.interaction.locale == "pl"
+            else f"Minecraft server status: {domain}"
+        )
         if "version" in data:
-            embed.add_field(name="⚙️ Wersja", value=data["version"])
+            embed.add_field(
+                name="⚙️ Wersja" if ctx.interaction.locale == "pl" else "⚙️ Version", value=data["version"]
+            )
         if "players" in data:
             embed.add_field(
-                name="👥 Liczba graczy",
+                name="👥 Liczba graczy" if ctx.interaction.locale == "pl" else "👥 Players",
                 value=f"{data['players']['online']}/{data['players']['max']}",
             )
         if "software" in data:
             embed.add_field(
-                name="🗜 Silnik",
+                name="🗜 Silnik" if ctx.interaction.locale == "pl" else "🗜 Software",
                 value=f"`{data['software']}`",
                 inline=False,
             )
         if "plugins" in data:
             embed.add_field(
-                name="🔌 Pluginy",
+                name="🔌 Pluginy" if ctx.interaction.locale == "pl" else "🔌 Plugins",
                 value=f"`{', '.join(data['plugins']['names'])}`",
                 inline=False,
             )
@@ -144,7 +154,9 @@ class Games(commands.Cog, name="🕹 Gry"):
                 skin = await client.get(f"https://crafatar.com/renders/body/{data['id']}")
             if skin.status_code == 200:
                 embed = discord.Embed()
-                embed.title = f"Skin {nick} w Minecraft"
+                embed.title = (
+                    f"Skin {nick} w Minecraft" if ctx.interaction.locale == "pl" else f"{nick}'s skin in Minecraft"
+                )
                 embed.set_image(url="attachment://skin.png")
                 await ctx.send_followup(
                     embed=embed,
@@ -153,7 +165,9 @@ class Games(commands.Cog, name="🕹 Gry"):
             else:
                 raise commands.CommandError(skin.text)
         elif mojang.status_code == 204:
-            raise commands.BadArgument("Nie znaleziono podanego gracza!")
+            raise commands.BadArgument(
+                "Nie znaleziono podanego gracza!" if ctx.interaction.locale == "pl" else "Player not found!"
+            )
         else:
             raise commands.CommandError(mojang.text)
 
@@ -196,18 +210,40 @@ class Games(commands.Cog, name="🕹 Gry"):
             json = r.json()
             data = json["data"]["stats"]["all"]["overall"]
             embed = discord.Embed()
-            embed.title = "Statystyki w grze Fortnite"
-            embed.description = "🧑 Gracz: **{}**".format(nick)
-            embed.add_field(name="⭐️ Punkty", value=humanize.intcomma(data["score"]))
-            embed.add_field(name="🏆 Wygrane", value=humanize.intcomma(data["wins"]))
-            embed.add_field(name="⚔ Zabójstwa", value=humanize.intcomma(data["kills"]))
-            embed.add_field(name="☠ Śmierci", value=humanize.intcomma(data["deaths"]))
-            embed.add_field(name="🕹 Rozegranych meczy", value=humanize.intcomma(data["matches"]))
+            embed.title = "Statystyki w grze Fortnite" if ctx.interaction.locale == "pl" else "Statistics in Fortnite"
+            embed.description = f"🧑 Gracz: **{nick}**" if ctx.interaction.locale == "pl" else f"🧑 Player: **{nick}**"
+            embed.add_field(
+                name="⭐️ Punkty" if ctx.interaction.locale == "pl" else "⭐️ Score",
+                value=humanize.intcomma(data["score"]),
+            )
+            embed.add_field(
+                name="🏆 Wygrane" if ctx.interaction.locale == "pl" else "🏆 Wins", value=humanize.intcomma(data["wins"])
+            )
+            embed.add_field(
+                name="⚔ Zabójstwa" if ctx.interaction.locale == "pl" else "⚔ Kills",
+                value=humanize.intcomma(data["kills"]),
+            )
+            embed.add_field(
+                name="☠ Śmierci" if ctx.interaction.locale == "pl" else "☠ Deaths",
+                value=humanize.intcomma(data["deaths"]),
+            )
+            embed.add_field(
+                name="🕹 Rozegranych meczy" if ctx.interaction.locale == "pl" else "🕹 Matches played",
+                value=humanize.intcomma(data["matches"]),
+            )
             await ctx.send_followup(embed=embed)
         elif r.status_code == 403:
-            raise commands.BadArgument(f"Statystyki gracza __{nick}__ są **prywatne**!")
+            raise commands.BadArgument(
+                f"Statystyki gracza __{nick}__ są **prywatne**!"
+                if ctx.interaction.locale == "pl"
+                else f"Statistics of __{nick}__ are **private**!"
+            )
         elif r.status_code == 404:
-            raise commands.BadArgument("Podany gracz nie istnieje lub nigdy nie grał w Fortnite!")
+            raise commands.BadArgument(
+                "Podany gracz nie istnieje lub nigdy nie grał w Fortnite!"
+                if ctx.interaction.locale == "pl"
+                else "Player not found or never played Fortnite!"
+            )
         else:
             raise commands.CommandError(r.text)
 
@@ -232,24 +268,41 @@ class Games(commands.Cog, name="🕹 Gry"):
             try:
                 steam_id, nick = await steam_resolve_url(url, config["steam"])
             except TypeError:
-                raise commands.BadArgument("Nie odnaleziono podanego gracza!")
+                raise commands.BadArgument(
+                    "Nie odnaleziono podanego gracza!" if ctx.interaction.locale == "pl" else "Player not found!"
+                )
         else:
-            raise commands.BadArgument("Podany link jest nieprawidłowy!")
+            raise commands.BadArgument(
+                "Podany link jest nieprawidłowy!" if ctx.interaction.locale == "pl" else "URL is not valid!"
+            )
         stats = await steam_get_stats(730, config["steam"], steam_id)
         if not stats:
-            raise commands.BadArgument("Podany profil musi być publiczny!")
+            raise commands.BadArgument(
+                "Podany profil musi być publiczny!" if ctx.interaction.locale == "pl" else "Profile must be public!"
+            )
         embed = discord.Embed()
-        embed.title = "Statystyki w grze CS:GO"
-        embed.description = "🧑 Gracz: **{}**".format(nick)
+        embed.title = "Statystyki w grze CS:GO" if ctx.interaction.locale == "pl" else "Statistics in CS:GO"
+        embed.description = f"🧑 Gracz: **{nick}**" if ctx.interaction.locale == "pl" else f"🧑 Player: **{nick}**"
         for i in stats:
             if i["name"] == "total_kills":
-                embed.add_field(name="🔫 Liczba zabójstw", value=i["value"])
+                embed.add_field(
+                    name="🔫 Liczba zabójstw" if ctx.interaction.locale == "pl" else "🔫 Kills", value=i["value"]
+                )
             elif i["name"] == "total_deaths":
-                embed.add_field(name="☠ Liczba śmierci", value=i["value"])
+                embed.add_field(
+                    name="☠ Liczba śmierci" if ctx.interaction.locale == "pl" else "☠ Deaths", value=i["value"]
+                )
             elif i["name"] == "total_matches_played":
-                embed.add_field(name="⚔ Rozegranych meczy", value=i["value"])
+                embed.add_field(
+                    name="⚔ Rozegranych meczy" if ctx.interaction.locale == "pl" else "⚔ Matches played",
+                    value=i["value"],
+                )
             elif i["name"] == "total_matches_won":
-                embed.add_field(name="🏆 Wygranych meczy", value=i["value"], inline=False)
+                embed.add_field(
+                    name="🏆 Wygranych meczy" if ctx.interaction.locale == "pl" else "🏆 Matches won",
+                    value=i["value"],
+                    inline=False,
+                )
         await ctx.send_followup(embed=embed)
 
     @slash_command(
@@ -295,7 +348,9 @@ class Games(commands.Cog, name="🕹 Gry"):
                 params={"api_key": config["lol"]},
             )
             if r.status_code == 404:
-                raise commands.BadArgument("Nie znaleziono podanego gracza!")
+                raise commands.BadArgument(
+                    "Nie znaleziono podanego gracza!" if ctx.interaction.locale == "pl" else "Player not found!"
+                )
             summoner = r.json()
             r2 = await client.get(
                 f"https://{region}.api.riotgames.com/lol/league/v4/entries/by-summoner/{summoner['id']}",
@@ -303,9 +358,15 @@ class Games(commands.Cog, name="🕹 Gry"):
             )
         stats = r2.json()
         embed = discord.Embed()
-        embed.title = "Statystyki w grze League of Legends"
+        embed.title = (
+            "Statystyki w grze League of Legends"
+            if ctx.interaction.locale == "pl"
+            else "Statistics in League of Legends"
+        )
         embed.description = (
             f"🧑 Gracz: **{summoner['name']}**\n🏆 Poziom: **{summoner['summonerLevel']}**\n🌍 Region: **{region}**"
+            if ctx.interaction.locale == "pl"
+            else f"🧑 Player: **{summoner['name']}**\n🏆 Level: **{summoner['summonerLevel']}**\n🌍 Region: **{region}**"
         )
         embed.set_thumbnail(
             url=f"https://ddragon.leagueoflegends.com/cdn/10.15.1/img/profileicon/{summoner['profileIconId']}.png"
@@ -313,11 +374,11 @@ class Games(commands.Cog, name="🕹 Gry"):
         for gamemode in stats:
             value = ""
             if "tier" in gamemode:
-                value += f"🎌 **Ranga:** `{gamemode['tier']} {gamemode['rank']}`\n"
-            value += f"✅ **Wygrane:** `{gamemode['wins']}`\n"
-            value += f"❌ **Przegrane:** `{gamemode['losses']}`\n"
+                value += f"🎌 **{'Ranga' if ctx.interaction.locale == 'pl' else 'Rank'}:** `{gamemode['tier']} {gamemode['rank']}`\n"
+            value += f"✅ **{'Wygrane' if ctx.interaction.locale == 'pl' else 'Wins'}:** `{gamemode['wins']}`\n"
+            value += f"❌ **{'Przegrane' if ctx.interaction.locale == 'pl' else 'Losses'}:** `{gamemode['losses']}`\n"
             embed.add_field(
-                name=f"🏟 Tryb gry: `{gamemode['queueType'].replace('_', ' ')}`",
+                name=f"🏟 {'Tryb gry' if ctx.interaction.locale == 'pl' else 'Gamemode'}: `{gamemode['queueType'].replace('_', ' ')}`",
                 value=value,
             )
         await ctx.send_followup(embed=embed)

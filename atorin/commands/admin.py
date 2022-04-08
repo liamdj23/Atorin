@@ -38,16 +38,27 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     ):
         await ctx.defer()
         if limit > 100:
-            raise commands.BadArgument("Nie możesz usunąć więcej niż 100 wiadomości naraz!")
+            raise commands.BadArgument(
+                "Nie możesz usunąć więcej niż 100 wiadomości naraz!"
+                if ctx.interaction.locale == "pl"
+                else "You can't remove more than 100 messages at once!"
+            )
         try:
             await ctx.channel.purge(limit=limit)
         except discord.HTTPException:
-            raise commands.CommandInvokeError("Nie udało się usunąć wiadomości, spróbuj jeszcze raz.")
+            raise commands.CommandInvokeError(
+                "Nie udało się usunąć wiadomości, spróbuj jeszcze raz."
+                if ctx.interaction.locale == "pl"
+                else "Unable to delete messages, try again."
+            )
         embed = discord.Embed()
-        embed.title = "Czyszczenie kanału"
-        embed.description = f"✅ **{limit} wiadomości zostało usuniętych przez {ctx.author.mention}**"
+        embed.title = "Czyszczenie kanału" if ctx.interaction.guild_locale == "pl" else "Clear channel"
+        embed.description = (
+            f"✅ **{limit} wiadomości zostało usuniętych przez {ctx.author.mention}**"
+            if ctx.interaction.guild_locale == "pl"
+            else f"✅ **{limit} messages cleared by {ctx.author.mention}**"
+        )
         await ctx.send(embed=embed)
-
         await self.save_to_event_logs(ctx.guild.id, "clear", ctx.author.id, ctx.channel.id, None)
 
     @slash_command(
@@ -97,11 +108,17 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         await self.save_to_event_logs(ctx.guild.id, "ban", ctx.author.id, member.id, reason)
         embed = discord.Embed()
         embed.title = "Ban"
-        embed.description = f"🔨 {ctx.author.mention} **zbanował** {member.mention} z powodu `{reason}`"
+        embed.description = (
+            f"🔨 {ctx.author.mention} **zbanował** {member.mention} z powodu `{reason}`"
+            if ctx.interaction.guild_locale == "pl"
+            else f"🔨 {ctx.author.mention} **banned** {member.mention} because of `{reason}`"
+        )
         await ctx.send_followup(embed=embed)
         try:
             await member.send(
                 f"🔨 Zostałeś zbanowany na serwerze {ctx.guild.name} przez {ctx.author.mention} z powodu `{reason}`"
+                if ctx.interaction.guild_locale == "pl"
+                else f"🔨 You are banned on {ctx.guild.name} by {ctx.author.mention} because of `{reason}`"
             )
         except discord.Forbidden:
             pass
@@ -141,14 +158,20 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         await ctx.defer()
         banned_users = await ctx.guild.bans()
         if not banned_users:
-            raise commands.BadArgument("Lista zbanowanych jest pusta!")
+            raise commands.BadArgument(
+                "Lista zbanowanych jest pusta!" if ctx.interaction.locale == "pl" else "Banned list is empty!"
+            )
         for ban_entry in banned_users:
             if str(ban_entry.user) == member:
                 await ctx.guild.unban(ban_entry.user)
                 await self.save_to_event_logs(ctx.guild.id, "unban", ctx.author.id, ban_entry.user.id, reason)
                 embed = discord.Embed()
                 embed.title = "Unban"
-                embed.description = f"✅ {ctx.author.mention} **odbanował** {ban_entry.user.mention}"
+                embed.description = (
+                    f"✅ {ctx.author.mention} **odbanował** {ban_entry.user.mention}"
+                    if ctx.interaction.guild_locale == "pl"
+                    else f"✅ {ctx.author.mention} **unbanned** {ban_entry.user.mention}"
+                )
                 await ctx.send_followup(embed=embed)
 
     @slash_command(
@@ -182,12 +205,18 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         await member.kick(reason=reason)
         await self.save_to_event_logs(ctx.guild.id, "kick", ctx.author.id, member.id, reason)
         embed = discord.Embed()
-        embed.title = "Wyrzucenie"
-        embed.description = f"🦶 {ctx.author.mention} wyrzucił {member.mention} z powodu `{reason}`"
+        embed.title = "Wyrzucenie" if ctx.interaction.guild_locale == "pl" else "Kick"
+        embed.description = (
+            f"🦶 {ctx.author.mention} wyrzucił {member.mention} z powodu `{reason}`"
+            if ctx.interaction.guild_locale == "pl"
+            else f"🦶 {ctx.author.mention} kicked {member.mention} because of `{reason}`"
+        )
         await ctx.send_followup(embed=embed)
         try:
             await member.send(
                 f"🦶 Zostałeś **wyrzucony** z serwera **{ctx.guild.name}** przez {ctx.author.mention} z powodu `{reason}`"
+                if ctx.interaction.guild_locale == "pl"
+                else f"🦶 You are **kicked out** of **{ctx.guild.name}** by {ctx.author.mention} because of `{reason}`"
             )
         except discord.Forbidden:
             pass
@@ -229,12 +258,18 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         await member.add_roles(mutedrole, reason=reason)
         await self.save_to_event_logs(ctx.guild.id, "mute", ctx.author.id, member.id, reason)
         embed = discord.Embed()
-        embed.title = "Wyciszenie"
-        embed.description = f"🔇 {ctx.author.mention} wyciszył {member.mention} z powodu `{reason}`"
+        embed.title = "Wyciszenie" if ctx.interaction.guild_locale == "pl" else "Mute"
+        embed.description = (
+            f"🔇 {ctx.author.mention} wyciszył {member.mention} z powodu `{reason}`"
+            if ctx.interaction.guild_locale == "pl"
+            else f"🔇 {ctx.author.mention} muted {member.mention} because of `{reason}`"
+        )
         await ctx.send_followup(embed=embed)
         try:
             await member.send(
                 f"🔇 {ctx.author.mention} wyciszył Cię na serwerze **{ctx.guild.name}** z powodu `{reason}`"
+                if ctx.interaction.guild_locale == "pl"
+                else f"🔇 {ctx.author.mention} muted you on **{ctx.guild.name}** because of `{reason}`"
             )
         except discord.Forbidden:
             pass
@@ -263,11 +298,19 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         await member.remove_roles(mutedrole)
         await self.save_to_event_logs(ctx.guild.id, "unmute", ctx.author.id, member.id, "Brak")
         embed = discord.Embed()
-        embed.title = "Odciszenie"
-        embed.description = f"🔊 {ctx.author.mention} odciszył **{member.mention}**"
+        embed.title = "Odciszenie" if ctx.interaction.guild_locale == "pl" else "Unmute"
+        embed.description = (
+            f"🔊 {ctx.author.mention} odciszył **{member.mention}**"
+            if ctx.interaction.guild_locale == "pl"
+            else f"🔊 {ctx.author.mention} unmuted **{member.mention}**"
+        )
         await ctx.send_followup(embed=embed)
         try:
-            await member.send(f"🔊 {ctx.author.mention} odciszył Cię na serwerze **{ctx.guild.name}**")
+            await member.send(
+                f"🔊 {ctx.author.mention} odciszył Cię na serwerze **{ctx.guild.name}**"
+                if ctx.interaction.guild_locale == "pl"
+                else f"🔊 {ctx.author.mention} unmuted you on **{ctx.guild.name}**"
+            )
         except discord.Forbidden:
             pass
 
@@ -306,8 +349,12 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
         ).save()
         await self.save_to_event_logs(ctx.guild.id, "warn", ctx.author.id, member.id, reason)
         embed = discord.Embed()
-        embed.title = "Ostrzeżenie"
-        embed.description = f"⚠️ {member.mention} został ostrzeżony przez {ctx.author.mention} z powodu `{reason}`"
+        embed.title = "Ostrzeżenie" if ctx.interaction.guild_locale == "pl" else "Warn"
+        embed.description = (
+            f"⚠️ {member.mention} został ostrzeżony przez {ctx.author.mention} z powodu `{reason}`"
+            if ctx.interaction.guild_locale == "pl"
+            else f"⚠️ {member.mention} are warned by {ctx.author.mention} because of `{reason}`"
+        )
         embed.color = discord.Color.gold()
         await ctx.send_followup(embed=embed)
 
@@ -331,23 +378,35 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     ):
         await ctx.defer()
         embed = discord.Embed()
-        embed.title = "Ostrzeżenia"
+        embed.title = "Ostrzeżenia" if ctx.interaction.locale == "pl" else "Warns"
         embed.color = discord.Color.gold()
         warns: list[database.discord.Warns] = database.discord.Warns.objects(server=ctx.guild.id, member=member.id)
         if len(warns) == 0:
-            embed.description = "✅ Brak ostrzeżeń"
+            embed.description = "✅ Brak ostrzeżeń" if ctx.interaction.locale == "pl" else "✅ No warnings"
         elif len(warns) == 1:
-            embed.description = f"{member.mention} otrzymał/a **1** ostrzeżenie\n\n"
+            embed.description = (
+                f"{member.mention} otrzymał/a **1** ostrzeżenie\n\n"
+                if ctx.interaction.locale == "pl"
+                else f"{member.mention} has **1** warning\n\n"
+            )
             embed.description += (
                 f"1. `{warns[0].reason}` od <@{warns[0].given_by}> w dniu {warns[0].date.strftime('%d-%m-%Y %H:%M')}"
+                if ctx.interaction.locale == "pl"
+                else f"1. `{warns[0].reason}` from <@{warns[0].given_by}> on {warns[0].date.strftime('%d-%m-%Y %H:%M')}"
             )
         else:
-            embed.description = f"{member.mention} otrzymał/a **{len(warns)}** {'ostrzeżenia' if len(warns) % 10 >= 2 or len(warns) % 10 <=4 else 'ostrzeżeń'}\n\n"
+            embed.description = (
+                f"{member.mention} otrzymał/a **{len(warns)}** {'ostrzeżenia' if len(warns) % 10 >= 2 or len(warns) % 10 <=4 else 'ostrzeżeń'}\n\n"
+                if ctx.interaction.locale == "pl"
+                else f"{member.mention} has **{len(warns)}** warnings\n\n"
+            )
             i = 0
             for warn in warns:
                 i += 1
                 embed.description += (
                     f"{i}. `{warn.reason}` od <@{warn.given_by}> w dniu {warn.date.strftime('%d-%m-%Y %H:%M')}\n"
+                    if ctx.interaction.locale == "pl"
+                    else f"{i}. `{warn.reason}` from <@{warn.given_by}> on {warn.date.strftime('%d-%m-%Y %H:%M')}\n"
                 )
         await ctx.send_followup(embed=embed)
 
@@ -364,7 +423,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             await payload.member.add_roles(role)
 
     @slash_command(
-        description="Create advert",
+        description="Create announcement",
         description_localizations={"pl": "Utwórz ogłoszenie"},
         guild_ids=config["guild_ids"],
     )
@@ -373,18 +432,20 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def advert(self, ctx: discord.ApplicationContext):
         class ExecModal(Modal):
             def __init__(self) -> None:
-                super().__init__("Ogłoszenie")
+                super().__init__("Ogłoszenie" if ctx.interaction.locale == "pl" else "Announcement")
                 self.add_item(
                     InputText(
-                        label="Treść ogłoszenia",
-                        placeholder="Atorin jest super!",
+                        label="Treść ogłoszenia" if ctx.interaction.locale == "pl" else "Content of announcement",
+                        placeholder="Atorin jest super!"
+                        if ctx.interaction.locale == "pl"
+                        else "Atorin is the best bot in the entire universe!",
                         style=discord.InputTextStyle.long,
                     )
                 )
 
             async def callback(self, interaction: discord.Interaction):
                 embed = discord.Embed()
-                embed.title = "Ogłoszenie"
+                embed.title = "Ogłoszenie" if interaction.guild_locale == "pl" else "Announcement"
                 embed.description = self.children[0].value
                 embed.set_thumbnail(url=str(ctx.guild.icon))
                 interaction = await interaction.response.send_message(embeds=[embed])

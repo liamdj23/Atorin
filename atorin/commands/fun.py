@@ -32,7 +32,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         if r.status_code == 200:
             data = r.json()
             embed = discord.Embed()
-            embed.title = "Losowe zdjęcie Shiba Inu"
+            embed.title = "Losowe zdjęcie Shiba Inu" if ctx.interaction.locale == "pl" else "Random photo of Shiba Inu"
             embed.set_image(url=data[0])
             await ctx.send_followup(embed=embed)
         else:
@@ -55,7 +55,11 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         ),
     ):
         if len(text) > 48:
-            raise commands.BadArgument(f"Treść paska jest zbyt długa! Max. 48 znaków, podano {len(text)}.")
+            raise commands.BadArgument(
+                f"Treść paska jest zbyt długa! Max. 48 znaków, podano {len(text)}."
+                if ctx.interaction.locale == "pl"
+                else f"Your text is too long! Max. 48 characters, given {len(text)}."
+            )
         await ctx.defer()
         async with httpx.AsyncClient() as client:
             r = await client.post(
@@ -66,7 +70,9 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         if r.status_code == 200:
             image = r.content
             embed = discord.Embed()
-            embed.title = "Twój pasek z Wiadomości"
+            embed.title = (
+                "Twój pasek z Wiadomości" if ctx.interaction.locale == "pl" else "Your headline from Polish TV news"
+            )
             embed.set_image(url="attachment://tvp.png")
             await ctx.send_followup(
                 embed=embed,
@@ -87,7 +93,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         if r.status_code == 200:
             data = r.json()
             embed = discord.Embed()
-            embed.title = "Losowe zdjęcie kota"
+            embed.title = "Losowe zdjęcie kota" if ctx.interaction.locale == "pl" else "Random photo of cat"
             embed.set_image(url=data[0]["url"])
             await ctx.send_followup(embed=embed)
         else:
@@ -105,7 +111,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         if r.status_code == 200:
             data = r.json()
             embed = discord.Embed()
-            embed.title = "Losowe zdjęcie lisa"
+            embed.title = "Losowe zdjęcie lisa" if ctx.interaction.locale == "pl" else "Random photo of fox"
             embed.set_image(url=data["image"])
             await ctx.send_followup(embed=embed)
         else:
@@ -131,7 +137,11 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         f = Figlet()
         figlet = f.renderText(text)
         if len(figlet) > 1990:
-            raise commands.BadArgument("Wygenerowany figlet jest za długi. Wybierz inny tekst i spróbuj ponownie.")
+            raise commands.BadArgument(
+                "Wygenerowany figlet jest za długi. Wybierz inny tekst i spróbuj ponownie."
+                if ctx.interaction.locale == "pl"
+                else "Generated figlet is too long. Choose shorter text and try again."
+            )
         embed = discord.Embed()
         embed.title = "Figlet"
         embed.description = f"```{figlet}```"
@@ -149,7 +159,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         if r.status_code == 200:
             text = r.text.replace("\n", "")
             embed = discord.Embed()
-            embed.title = "Losowy commit"
+            embed.title = "Losowy commit" if ctx.interaction.locale == "pl" else "Random commit"
             embed.description = f"`git commit -m '{text}'`"
             await ctx.send_followup(embed=embed)
         else:
@@ -172,7 +182,11 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         ),
     ):
         if len(text) > 25:
-            raise commands.BadArgument(f"Treść osiągnięcia jest zbyt długa! Max. 25 znaków, podano {len(text)}.")
+            raise commands.BadArgument(
+                f"Treść osiągnięcia jest zbyt długa! Max. 25 znaków, podano {len(text)}."
+                if ctx.interaction.locale == "pl"
+                else f"Your text is too long! Max. 25 characters, given {len(text)}."
+            )
         await ctx.defer()
         text = (
             unicodedata.normalize("NFKD", text)
@@ -184,13 +198,20 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         template = Image.open("assets/achievement/{0}.png".format(randint(1, 39)))
         d1 = ImageDraw.Draw(template)
         font = ImageFont.truetype("assets/achievement/font.ttf", 16)
-        d1.text((60, 7), "Osiagniecie zdobyte!", font=font, fill=(255, 255, 0))
+        d1.text(
+            (60, 7),
+            "Osiagniecie zdobyte!" if ctx.interaction.locale == "pl" else "Achievement get!",
+            font=font,
+            fill=(255, 255, 0),
+        )
         d1.text((60, 30), text, font=font)
         img = BytesIO()
         template.save(img, "PNG")
         img.seek(0)
         embed = discord.Embed()
-        embed.title = "Twoje Minecraftowe osiągnięcie"
+        embed.title = (
+            "Twoje Minecraftowe osiągnięcie" if ctx.interaction.locale == "pl" else "Your Minecraft achievement"
+        )
         embed.set_image(url="attachment://achievement.png")
         await ctx.send_followup(embed=embed, file=discord.File(img, filename="achievement.png"))
 
@@ -234,7 +255,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         template.save(img, "PNG")
         img.seek(0)
         embed = discord.Embed()
-        embed.title = "Twój mem z Drake"
+        embed.title = "Twój mem z Drake" if ctx.interaction.locale == "pl" else "Your Drake meme"
         embed.set_image(url="attachment://drake.png")
         await ctx.send_followup(embed=embed, file=discord.File(img, filename="drake.png"))
 
@@ -270,7 +291,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         code.save(img, "PNG")
         img.seek(0)
         embed = discord.Embed()
-        embed.title = "Twój kod QR"
+        embed.title = "Twój kod QR" if ctx.interaction.locale == "pl" else "Your QR code"
         embed.set_image(url="attachment://qr.png")
         await ctx.send_followup(file=discord.File(img, filename="qr.png"))
 
@@ -348,7 +369,9 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         template.save(img, "PNG")
         img.seek(0)
         embed = discord.Embed()
-        embed.title = f"Twój plakat WANTED z {user}"
+        embed.title = (
+            f"Twój plakat WANTED z {user}" if ctx.interaction.locale == "pl" else f"Your WANTED poster with {user}"
+        )
         embed.set_image(url="attachment://wanted.png")
         await ctx.send_followup(embed=embed, file=discord.File(img, filename="wanted.png"))
 
@@ -364,7 +387,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         if r.status_code == 200:
             data = r.json()
             embed = discord.Embed()
-            embed.title = "Losowe zdjęcie psa"
+            embed.title = "Losowe zdjęcie psa" if ctx.interaction.locale == "pl" else "Random photo of dog"
             embed.set_image(url=data["message"])
             await ctx.send_followup(embed=embed)
         else:
@@ -375,8 +398,11 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     )
     async def flip(self, ctx: discord.ApplicationContext):
         embed = discord.Embed()
-        embed.title = "Rzut monetą"
-        embed.description = f"🪙 **{'Orzeł' if randint(0, 1) == 1 else 'Reszka'}**"
+        embed.title = "Rzut monetą" if ctx.interaction.locale == "pl" else "Coin flip"
+        if ctx.interaction.locale == "pl":
+            embed.description = f"🪙 **{'Orzeł' if randint(0, 1) == 1 else 'Reszka'}**"
+        else:
+            embed.description = f"🪙 **{'Heads' if randint(0, 1) == 1 else 'Tails'}**"
         await ctx.respond(embed=embed)
 
     @slash_command(
@@ -396,7 +422,11 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         ),
     ):
         if len(text) > 140:
-            raise commands.BadArgument(f"Treść mema jest zbyt długa! Max. 140 znaków, podano {len(text)}")
+            raise commands.BadArgument(
+                f"Treść mema jest zbyt długa! Max. 140 znaków, podano {len(text)}"
+                if ctx.interaction.locale == "pl"
+                else f"Your text is too long! Max. 140 characters, given {len(text)}"
+            )
         await ctx.defer()
         template = Image.open("assets/changemymind/changemymind.jpg")
         txt = Image.new("RGBA", (700, 350), (0, 0, 0, 0))
@@ -540,7 +570,9 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         if r.status_code != 200:
             raise commands.CommandError(r.text)
         embed = discord.Embed()
-        embed.title = "Astronomiczne zdjęcie dnia"
+        embed.title = (
+            "Astronomiczne zdjęcie dnia" if ctx.interaction.locale == "pl" else "Astronomy Picture of the Day"
+        )
         embed.description = f"**{soup.find_all('b')[0].text.strip()}**"
         try:
             embed.set_image(url=f"{r.url}{soup.find_all('p')[0].img['src']}")
@@ -606,7 +638,11 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                 headers={"User-agent": "Atorin"},
             )
         if not latest.status_code == 200:
-            raise commands.CommandError("Wystąpił błąd przy pobieraniu komiksu, spróbuj ponownie później.")
+            raise commands.CommandError(
+                "Wystąpił błąd przy pobieraniu komiksu, spróbuj ponownie później."
+                if ctx.interaction.locale == "pl"
+                else "Error has occurred while downloading comic, try again later."
+            )
         latest_number = latest.json()["num"]
         random_comic = randint(1, latest_number)
         async with httpx.AsyncClient() as client:
@@ -615,7 +651,11 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                 headers={"User-agent": "Atorin"},
             )
         if not comic.status_code == 200:
-            raise commands.CommandError("Wystąpił błąd przy pobieraniu komiksu, spróbuj ponownie później.")
+            raise commands.CommandError(
+                "Wystąpił błąd przy pobieraniu komiksu, spróbuj ponownie później."
+                if ctx.interaction.locale == "pl"
+                else "Error has occurred while downloading comic, try again later."
+            )
         comic_data = comic.json()
         embed = discord.Embed()
         embed.title = comic_data["title"]

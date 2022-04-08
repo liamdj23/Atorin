@@ -155,26 +155,36 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             should_connect = ctx.command.name in ("play",)
 
         if not ctx.author.voice or not ctx.author.voice.channel:
-            raise commands.CommandError("Musisz być połączony do kanału głosowego!")
+            raise commands.CommandError(
+                "Musisz być połączony do kanału głosowego!"
+                if ctx.interaction.locale == "pl"
+                else "You must be connected to a voice channel!"
+            )
 
         if not player.is_connected:
             if not should_connect:
-                raise commands.CommandError("Atorin nie odtwarza muzyki!")
+                raise commands.CommandError(
+                    "Atorin nie odtwarza muzyki!" if ctx.interaction.locale == "pl" else "Atorin is not playing music!"
+                )
 
             permissions = ctx.author.voice.channel.permissions_for(ctx.me)
 
             if not permissions.connect or not permissions.speak:
                 raise commands.CommandError(
-                    "Atorin nie ma uprawnień potrzebnych do odtwarzania muzyki."
-                    " Daj roli `Atorin` uprawnienia `Łączenie` oraz `Mówienie`"
-                    " i spróbuj ponownie."
+                    "Atorin nie ma uprawnień potrzebnych do odtwarzania muzyki. Daj roli `Atorin` uprawnienia `Łączenie` oraz `Mówienie` i spróbuj ponownie."
+                    if ctx.interaction.locale == "pl"
+                    else "Atorin doesn't have permissions for playing music. Add `Connect` and `Speak` permissions to `Atorin` role and try again."
                 )
 
             player.store("channel", ctx.channel.id)
             await ctx.author.voice.channel.connect(cls=LavalinkVoiceClient)
         else:
             if int(player.channel_id) != ctx.author.voice.channel.id:
-                raise commands.CommandError("Nie jesteś połączony do kanału na którym jest Atorin!")
+                raise commands.CommandError(
+                    "Nie jesteś połączony do kanału na którym jest Atorin!"
+                    if ctx.interaction.locale == "pl"
+                    else "You are not connected to a voice channel where Atorin is playing music!"
+                )
 
     async def track_hook(self, event):
         if isinstance(event, lavalink.events.QueueEndEvent):
@@ -189,17 +199,23 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         if isinstance(event, lavalink.events.TrackStartEvent):
             song = event.track
             channel = self.bot.get_channel(event.player.fetch("channel"))
+            lang = event.player.fetch("lang")
             embed = discord.Embed()
-            embed.title = "Teraz odtwarzane"
-            embed.add_field(name="🎧 Utwór", value=song.title, inline=False)
+            embed.title = "Teraz odtwarzane" if lang == "pl" else "Now playing"
+            embed.add_field(name="🎧 Utwór" if lang == "pl" else "🎧 Track", value=song.title, inline=False)
             if not song.duration == 9223372036854775807:
                 embed.add_field(
-                    name="🛤️ Długość",
+                    name="🛤️ Długość" if lang == "pl" else "🛤️ Duration",
                     value=str(timedelta(milliseconds=song.duration)).split(".")[0],
                 )
             else:
-                embed.add_field(name="🛤️ Długość", value="🔴 Na żywo")
-            embed.add_field(name="💃 Zaproponowany przez", value=f"<@{song.requester}>")
+                embed.add_field(
+                    name="🛤️ Długość" if lang == "pl" else "🛤️ Duration",
+                    value="🔴 Na żywo" if lang == "pl" else "🔴 Live",
+                )
+            embed.add_field(
+                name="💃 Zaproponowany przez" if lang == "pl" else "💃 Requested by", value=f"<@{song.requester}>"
+            )
             embed.set_thumbnail(url=f"https://img.youtube.com/vi/{song.identifier}/maxresdefault.jpg")
             await channel.send(embed=embed)
 
@@ -222,6 +238,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         """Searches and plays a song from a given query."""
         await ctx.defer()
         player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
+        player.store("lang", ctx.interaction.guild_locale)
         query = query.strip("<>")
 
         if not url_rx.match(query):
@@ -237,7 +254,9 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         results = await player.node.get_tracks(query)
 
         if not results or not results["tracks"]:
-            return await ctx.send_followup("❌ Nie znaleziono utworu o podanej nazwie!")
+            return await ctx.send_followup(
+                "❌ Nie znaleziono utworu o podanej nazwie!" if ctx.interaction.locale == "pl" else "❌ Song not found!"
+            )
 
         embed = discord.Embed()
 
@@ -253,11 +272,13 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             for track in tracks:
                 player.add(requester=ctx.author.id, track=track)
 
-            embed.title = "Dodano playlistę do kolejki!"
-            embed.description = f'{results["playlistInfo"]["name"]} - {len(tracks)} utworów'
+            embed.title = (
+                "Dodano playlistę do kolejki!" if ctx.interaction.locale == "pl" else "Playlist added to queue!"
+            )
+            embed.description = f'{results["playlistInfo"]["name"]} - {len(tracks)} {"utworów" if ctx.interaction.locale == "pl" else "tracks"}'
         else:
             track = results["tracks"][0]
-            embed.title = "Dodano do kolejki"
+            embed.title = "Dodano do kolejki" if ctx.interaction.locale == "pl" else "Added to queue"
             embed.description = f'[{track["info"]["title"]}]({track["info"]["uri"]})'
             embed.set_thumbnail(url=f"https://img.youtube.com/vi/{track['info']['identifier']}/maxresdefault.jpg")
             track = lavalink.models.AudioTrack(track, ctx.author.id)
@@ -282,10 +303,12 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             await player.stop()
             await ctx.voice_client.disconnect(force=True)
             embed = discord.Embed()
-            embed.description = "⏹ **Zatrzymano odtwarzanie.**"
+            embed.description = "⏹ **Zatrzymano odtwarzanie.**" if ctx.interaction.locale == "pl" else "⏹ **Stopped.**"
             await ctx.send_followup(embed=embed)
         else:
-            raise commands.CommandError("Atorin nie odtwarza muzyki!")
+            raise commands.CommandError(
+                "Atorin nie odtwarza muzyki!" if ctx.interaction.locale == "pl" else "Atorin is not playing music!"
+            )
 
     @slash_command(
         description="Pause music",
@@ -298,10 +321,16 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         if not player.paused:
             await player.set_pause(True)
             embed = discord.Embed()
-            embed.description = "⏸ **Wstrzymano odtwarzanie. Aby wznowić wpisz `/resume`.**"
+            embed.description = (
+                "⏸ **Wstrzymano odtwarzanie. Aby wznowić wpisz `/resume`.**"
+                if ctx.interaction.locale == "pl"
+                else "⏸ **Paused. To resume playing, use `/resume`.**"
+            )
             await ctx.send_followup(embed=embed)
         else:
-            raise commands.CommandError("Atorin nie odtwarza muzyki!")
+            raise commands.CommandError(
+                "Atorin nie odtwarza muzyki!" if ctx.interaction.locale == "pl" else "Atorin is not playing music!"
+            )
 
     @slash_command(
         description="Resume music",
@@ -314,10 +343,12 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         if player.paused:
             await player.set_pause(False)
             embed = discord.Embed()
-            embed.description = "▶️ **Wznowiono odtwarzanie.**"
+            embed.description = "▶️ **Wznowiono odtwarzanie.**" if ctx.interaction.locale == "pl" else "▶️ **Resumed**"
             await ctx.send_followup(embed=embed)
         else:
-            raise commands.CommandError("Atorin nie odtwarza muzyki!")
+            raise commands.CommandError(
+                "Atorin nie odtwarza muzyki!" if ctx.interaction.locale == "pl" else "Atorin is not playing music!"
+            )
 
     @slash_command(
         description="Skip song",
@@ -343,14 +374,18 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
                 if number > len(player.queue):
                     raise commands.BadArgument(
                         "Podano niepoprawny numer utworu! Sprawdź kolejkę komendą `/queue view`"
+                        if ctx.interaction.locale == "pl"
+                        else "Track number is not valid! Check queue by using `/queue view`"
                     )
                 player.queue = player.queue[number - 1 :]
             await player.skip()
             embed = discord.Embed()
-            embed.description = "⏭ ️**Pominięto utwór.**"
+            embed.description = "⏭ ️**Pominięto utwór.**" if ctx.interaction.locale == "pl" else "⏭ ️**Skipped.**"
             await ctx.send_followup(embed=embed)
         else:
-            raise commands.CommandError("Atorin nie odtwarza muzyki!")
+            raise commands.CommandError(
+                "Atorin nie odtwarza muzyki!" if ctx.interaction.locale == "pl" else "Atorin is not playing music!"
+            )
 
     @slash_command(
         description="Set volume",
@@ -371,16 +406,20 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         ),
     ):
         await ctx.defer()
-        if vol > 100 or vol < 0:
-            raise commands.BadArgument("Wartość musi być w przedziale od 1 do 100!")
         player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         if player.is_playing:
             await player.set_volume(vol)
             embed = discord.Embed()
-            embed.description = f"🔉 **Ustawiono glośność na {vol}%.**"
+            embed.description = (
+                f"🔉 **Ustawiono glośność na {vol}%.**"
+                if ctx.interaction.locale == "pl"
+                else f"🔉 **Volume set to {vol}%.**"
+            )
             await ctx.send_followup(embed=embed)
         else:
-            raise commands.CommandError("Atorin nie odtwarza muzyki!")
+            raise commands.CommandError(
+                "Atorin nie odtwarza muzyki!" if ctx.interaction.locale == "pl" else "Atorin is not playing music!"
+            )
 
     queue_group = SlashCommandGroup(
         name="queue",
@@ -411,10 +450,14 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         embed = discord.Embed()
         if not player.queue:
-            embed.description = "🕳️ **Kolejka jest pusta!**"
+            embed.description = (
+                "🕳️ **Kolejka jest pusta!**" if ctx.interaction.locale == "pl" else "🕳️ **Queue is empty!**"
+            )
             return await ctx.send_followup(embed=embed)
         fmt = "\n".join(f"{emoji_numbers[i]} **{song.title}**" for i, song in enumerate(player.queue, start=1))
-        embed.title = f"Utwory w kolejce: {len(player.queue)}"
+        embed.title = (
+            f"{'Utwory w kolejce' if ctx.interaction.locale == 'pl' else 'Tracks in queue'}: {len(player.queue)}"
+        )
         embed.description = fmt
         await ctx.send_followup(embed=embed)
 
@@ -428,10 +471,16 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         embed = discord.Embed()
         if not player.queue:
-            embed.description = "🕳️ **Kolejka jest pusta!**"
+            embed.description = (
+                "🕳️ **Kolejka jest pusta!**" if ctx.interaction.locale == "pl" else "🕳️ **Queue is empty!**"
+            )
             return await ctx.send_followup(embed=embed)
-        embed.title = "Wyczyszczono kolejkę"
-        embed.description = f"✅  **Pomyślnie usunięto *{len(player.queue)}* utworów z kolejki.**"
+        embed.title = "Wyczyszczono kolejkę" if ctx.interaction.locale == "pl" else "Queue cleared"
+        embed.description = (
+            f"✅  **Pomyślnie usunięto *{len(player.queue)}* utworów z kolejki.**"
+            if ctx.interaction.locale == "pl"
+            else f"✅  **Removed *{len(player.queue)}* tracks from queue.**"
+        )
         player.queue = []
         await ctx.send_followup(embed=embed)
 
@@ -456,13 +505,19 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
         embed = discord.Embed()
         if not player.queue:
-            embed.description = "🕳️ **Kolejka jest pusta!**"
+            embed.description = (
+                "🕳️ **Kolejka jest pusta!**" if ctx.interaction.locale == "pl" else "🕳️ **Queue is empty!**"
+            )
             return await ctx.send_followup(embed=embed)
         try:
             song: lavalink.AudioTrack = player.queue.pop(number - 1)
         except IndexError:
-            raise commands.BadArgument("Podano niepoprawny numer utworu! Sprawdź kolejkę komendą `/queue view`")
-        embed.title = "Usunięto z kolejki"
+            raise commands.BadArgument(
+                "Podano niepoprawny numer utworu! Sprawdź kolejkę komendą `/queue view`"
+                if ctx.interaction.locale == "pl"
+                else "Track number is not valid! Check queue by using `/queue view`"
+            )
+        embed.title = "Usunięto z kolejki" if ctx.interaction.locale == "pl" else "Removed from queue"
         embed.description = f"🗑 {song.title}"
         await ctx.send_followup(embed=embed)
 
@@ -477,38 +532,57 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         if player.is_playing:
             song: lavalink.AudioTrack = player.current
             embed = discord.Embed()
-            embed.title = "Teraz odtwarzane"
-            embed.add_field(name="🎧 Utwór", value=song.title, inline=False)
+            embed.title = "Teraz odtwarzane" if ctx.interaction.locale == "pl" else "Now playing"
+            embed.add_field(
+                name="🎧 Utwór" if ctx.interaction.locale == "pl" else "🎧 Track", value=song.title, inline=False
+            )
             if not song.duration == 9223372036854775807:
                 duration = str(timedelta(milliseconds=song.duration))
                 position = str(timedelta(milliseconds=round(player.position))).split(".")[0]
                 progress = progress_bar(round(player.position) / song.duration * 100)[:-5]
                 embed.add_field(
-                    name="🛤️ Postęp",
+                    name="🛤️ Postęp" if ctx.interaction.locale == "pl" else "🛤️ Progress",
                     value=f"```css\n{progress} {position}/{duration}```",
                     inline=False,
                 )
             else:
-                embed.add_field(name="🛤️ Postęp", value="🔴 Na żywo")
-
+                embed.add_field(
+                    name="🛤️ Postęp" if ctx.interaction.locale == "pl" else "🛤️ Progress",
+                    value="🔴 Na żywo" if ctx.interaction.locale == "pl" else "🔴 Live",
+                )
+            if ctx.interaction.locale == "pl":
+                embed.add_field(
+                    name="🔂 Powtarzanie utworu",
+                    value="✅ Włączone" if player.repeat else "❌ Wyłączone",
+                )
+                embed.add_field(
+                    name="🎚 Bass Boost",
+                    value="✅ Włączony" if player.fetch("bassboost") else "❌ Wyłączony",
+                )
+                embed.add_field(name="🔀 Losowo", value="✅ Włączony" if player.shuffle else "❌ Wyłączony")
+            else:
+                embed.add_field(
+                    name="🔂 Repeat",
+                    value="✅ ON" if player.repeat else "❌ OFF",
+                )
+                embed.add_field(
+                    name="🎚 Bass Boost",
+                    value="✅ ON" if player.fetch("bassboost") else "❌ OFF",
+                )
+                embed.add_field(name="🔀 Shuffle", value="✅ ON" if player.shuffle else "❌ OFF")
             embed.add_field(
-                name="🔂 Powtarzanie utworu",
-                value="✅ Włączone" if player.repeat else "❌ Wyłączone",
+                name="🔉 Głośność" if ctx.interaction.locale == "pl" else "🔉 Volume", value=f"{player.volume}%"
             )
-            embed.add_field(name="🔉 Głośność", value=f"{player.volume}%")
             embed.add_field(
-                name="🎚 Bass Boost",
-                value="✅ Włączony" if player.fetch("bassboost") else "❌ Wyłączony",
-            )
-            embed.add_field(name="🔀 Losowo", value="✅ Włączony" if player.shuffle else "❌ Wyłączony")
-            embed.add_field(
-                name="💃 Zaproponowany przez",
+                name="💃 Zaproponowany przez" if ctx.interaction.locale == "pl" else "💃 Requested by",
                 value=f"<@{song.requester}>",
             )
             embed.set_thumbnail(url=f"https://img.youtube.com/vi/{song.identifier}/maxresdefault.jpg")
             await ctx.send_followup(embed=embed)
         else:
-            raise commands.CommandError("Atorin nie odtwarza muzyki!")
+            raise commands.CommandError(
+                "Atorin nie odtwarza muzyki!" if ctx.interaction.locale == "pl" else "Atorin is not playing music!"
+            )
 
     @slash_command(
         description="Set song repeat",
@@ -522,9 +596,12 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             player.repeat = False
         else:
             player.repeat = True
-        await ctx.send_followup(
-            f"🔂 Powtarzanie aktualnego utworu zostało {'włączone' if player.repeat else 'wyłączone'}."
-        )
+        if ctx.interaction.locale == "pl":
+            await ctx.send_followup(
+                f"🔂 Powtarzanie aktualnego utworu zostało {'włączone' if player.repeat else 'wyłączone'}."
+            )
+        else:
+            await ctx.send_followup(f"🔂 Song repeat is now {'enabled' if player.repeat else 'disabled'}.")
 
     @slash_command(
         description="Play queue randomly",
@@ -538,9 +615,12 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             player.shuffle = False
         else:
             player.shuffle = True
-        await ctx.send_followup(
-            f"🔀 Losowe odtwarzanie kolejki zostało {'włączone' if player.shuffle else 'wyłączone'}."
-        )
+        if ctx.interaction.locale == "pl":
+            await ctx.send_followup(
+                f"🔀 Losowe odtwarzanie kolejki zostało {'włączone' if player.shuffle else 'wyłączone'}."
+            )
+        else:
+            await ctx.send_followup(f"🔀 Shuffle is now {'enabled' if player.shuffle else 'disabled'}.")
 
     @slash_command(description="Bass Boost", guild_ids=config["guild_ids"])
     async def bassboost(self, ctx: discord.ApplicationContext):
@@ -555,7 +635,14 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         else:
             await player.remove_filter(equalizer)
             player.store("bassboost", False)
-        await ctx.send_followup(f"🎚 Bass boost został **{'włączony' if player.fetch('bassboost') else 'wyłączony'}**.")
+        if ctx.interaction.locale == "pl":
+            await ctx.send_followup(
+                f"🎚 Bass boost został **{'włączony' if player.fetch('bassboost') else 'wyłączony'}**."
+            )
+        else:
+            await ctx.send_followup(
+                f"🎚 Bass boost is now **{'enabled' if player.fetch('bassboost') else 'disabled'}**."
+            )
 
     @slash_command(
         description="Lyrics", description_localizations={"pl": "Tekst piosenki"}, guild_ids=config["guild_ids"]
@@ -578,7 +665,11 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         if not title:
             player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(ctx.guild.id)
             if not player or not player.is_playing:
-                raise commands.BadArgument("Atorin nie odtwarza muzyki, musisz podać tytuł utworu!")
+                raise commands.BadArgument(
+                    "Atorin nie odtwarza muzyki, musisz podać tytuł utworu!"
+                    if ctx.interaction.locale == "pl"
+                    else "Atorin is not playing music, you have to enter song title!"
+                )
             song: lavalink.AudioTrack = player.current
             title: str = song.title.split(" (")[0]
             from_player = True
@@ -589,15 +680,23 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
                 headers={"User-agent": "Atorin"},
             )
         if not search.status_code == 200:
-            raise commands.CommandError(f"Wystąpił błąd podczas wyszukiwania tekstu piosenki! [{search.status_code}]")
+            raise commands.CommandError(
+                f"Wystąpił błąd podczas wyszukiwania tekstu piosenki! [{search.status_code}]"
+                if ctx.interaction.locale == "pl"
+                else "Error has occurred while searching for lyrics!"
+            )
         search_data = search.json()["response"]["sections"]
         if not search_data:
             if from_player:
                 raise commands.BadArgument(
                     "Nie znaleziono tekstu odtwarzanego utworu! Spróbuj wpisać komendę jeszcze raz, podając tytuł utworu."
+                    if ctx.interaction.locale == "pl"
+                    else "Lyrics of currently playing song cannot be found! Try enter the song title when using this command."
                 )
             else:
-                raise commands.BadArgument("Nie znaleziono tekstu podanego utworu!")
+                raise commands.BadArgument(
+                    "Nie znaleziono tekstu podanego utworu!" if ctx.interaction.locale == "pl" else "Lyrics not found!"
+                )
         for section in search_data:
             if section["type"] == "song":
                 lyrics_data = section["hits"][0]["result"]
@@ -608,11 +707,19 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         async with httpx.AsyncClient() as client:
             r = await client.get(f"https://genius.com{lyrics_url}", headers={"User-agent": "Atorin"})
         if not r.status_code == 200:
-            raise commands.CommandError(f"Wystąpił błąd podczas pobierania tekstu piosenki! [{r.status_code}]")
+            raise commands.CommandError(
+                f"Wystąpił błąd podczas pobierania tekstu piosenki! [{r.status_code}]"
+                if ctx.interaction.locale == "pl"
+                else "Error has occurred while downloading lyrics!"
+            )
         soup = BeautifulSoup(r.content, "html.parser")
         containers: list[Tag] = soup.find_all("div", attrs={"data-lyrics-container": "true"})
         if not containers:
-            raise commands.CommandError(f"Wystąpił błąd podczas przetwarzania tekstu!")
+            raise commands.CommandError(
+                f"Wystąpił błąd podczas przetwarzania tekstu!"
+                if ctx.interaction.locale == "pl"
+                else "Error has occurred while processing lyrics!"
+            )
         lyrics: str = ""
         for container in containers:
             i_tags: list[Tag] = container.find_all("i")
