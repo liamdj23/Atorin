@@ -241,7 +241,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
         embed.add_field(
             name="🖥 Użycie zasobów" if ctx.interaction.locale == "pl" else "🖥 Resource usage",
             inline=False,
-            value=f"```css\n{progress_bar(int(psutil.cpu_percent()), 'CPU')}\n{progress_bar(int((ram.used / ram.total) * 100), f'RAM {used_ram}/{total_ram}')}\n{progress_bar(int(disk.percent), 'Dysk' if ctx.interaction.locale == 'pl' else 'Disk' + f' {used_disk}/{total_disk}')}```",
+            value=f"```css\n{progress_bar(int(psutil.cpu_percent()), 'CPU')}\n{progress_bar(int((ram.used / ram.total) * 100), f'RAM {used_ram}/{total_ram}')}\n{progress_bar(int(disk.percent), f'Dysk {used_disk}/{total_disk}' if ctx.interaction.locale == 'pl' else f'Disk {used_disk}/{total_disk}')}```",
         )
         await ctx.respond(embed=embed)
 
