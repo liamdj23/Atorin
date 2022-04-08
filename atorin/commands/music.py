@@ -191,7 +191,6 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
                 return
 
             player.store("channel", ctx.channel.id)
-            await ctx.author.voice.channel.connect(cls=LavalinkVoiceClient)
         else:
             if int(player.channel_id) != ctx.author.voice.channel.id:
                 embed.description = (
@@ -303,6 +302,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
         await ctx.send_followup(embed=embed)
 
         if not player.is_playing:
+            await ctx.author.voice.channel.connect(cls=LavalinkVoiceClient)
             await player.play()
 
     @slash_command(
