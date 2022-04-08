@@ -211,7 +211,7 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
                 else "Library with the given name was not found!"
             )
         else:
-            raise commands.CommandError(r.text)
+            raise commands.CommandError(f"{r.text} [{r.status_code}]")
 
     @slash_command(
         description="Informations about libraries from NPM",
@@ -274,7 +274,7 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
                 else "Library with the given name was not found!"
             )
         else:
-            raise commands.CommandError(r.text)
+            raise commands.CommandError(f"{r.text} [{r.status_code}]")
 
     @slash_command(
         description="Search through libraries documentation for Python",
@@ -340,9 +340,9 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
                 )
             else:
                 raise commands.CommandError(
-                    f"Wystąpił błąd przy pobieraniu dokumentacji! ({r.status_code})"
+                    f"Wystąpił błąd przy pobieraniu dokumentacji! [{r.status_code}]"
                     if ctx.interaction.locale == "pl"
-                    else f"Error has occurred while retrieving documentation! ({r.status_code})"
+                    else f"Error has occurred while retrieving documentation! [{r.status_code}]"
                 )
         cache = self.rtfm_cache.get(package)
         results = finder(term, list(cache.items()), key=lambda x: x[0], lazy=False)[:5]

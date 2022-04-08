@@ -20,8 +20,8 @@ from ..utils import get_weather_emoji, progress_bar, convert_size, user_counter
 class HelpButtons(discord.ui.View):
     def __init__(self):
         super().__init__()
-        self.add_item(discord.ui.Button(label="Wsparcie", url="https://buycoffee.to/liamdj23"))
-        self.add_item(discord.ui.Button(label="Discord", url="https://liamdj23.ovh/discord"))
+        self.add_item(discord.ui.Button(emoji="💵", label="Wsparcie", url="https://buycoffee.to/liamdj23"))
+        self.add_item(discord.ui.Button(emoji="🚑", label="Discord", url="https://liamdj23.ovh/discord"))
 
 
 class Info(commands.Cog, name="ℹ Informacje"):
@@ -50,7 +50,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
         if type(user) is int:
             user = await self.bot.fetch_user(user)
             if not user:
-                raise commands.CommandError(
+                raise commands.BadArgument(
                     "Nie znaleziono użytkownika!" if ctx.interaction.locale == "pl" else "User not found!"
                 )
         embed = discord.Embed()
@@ -209,7 +209,11 @@ class Info(commands.Cog, name="ℹ Informacje"):
                 "Nie odnaleziono podanej miejscowości!" if ctx.interaction.locale == "pl" else "City not found!"
             )
         else:
-            raise commands.CommandError(r.text)
+            raise commands.CommandError(
+                f"Wystąpił błąd przy pobieraniu prognozy pogody, spróbuj ponownie później. [{r.status_code}]"
+                if ctx.interaction.locale == "pl"
+                else f"Error has occurred while downloading weather forecast, try again later. [{r.status_code}]"
+            )
 
     @slash_command(
         description="Informations about Atorin",
@@ -278,7 +282,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
         buttons = HelpButtons()
         await ctx.respond(embed=embed, view=buttons)
 
-    async def surname_searcher(ctx: discord.AutocompleteContext):
+    async def surname_searcher(self, ctx: discord.AutocompleteContext):
         if not ctx.value or len(ctx.value) < 2:
             return []
         async with httpx.AsyncClient() as client:
@@ -287,6 +291,8 @@ class Info(commands.Cog, name="ℹ Informacje"):
                 params={"query": ctx.value.lower()},
                 headers={"User-agent": "Atorin"},
             )
+        if r.status_code != 200:
+            return []
         data = r.json()["aaData"]
         return [OptionChoice(name=entry["nazwisko"].lower().capitalize(), value=entry["menuID"]) for entry in data]
 
@@ -315,6 +321,12 @@ class Info(commands.Cog, name="ℹ Informacje"):
                     params={"query": surname},
                     headers={"User-agent": "Atorin"},
                 )
+                if r.status_code != 200:
+                    raise commands.CommandError(
+                        f"Wystąpił błąd przy pobieraniu nazwisk, spróbuj ponownie później. [{r.status_code}]"
+                        if ctx.interaction.locale == "pl"
+                        else f"Error has occurred while downloading surnames, try again later. [{r.status_code}]"
+                    )
             data = r.json()["aaData"]
             if not data:
                 raise commands.BadArgument(
@@ -326,6 +338,12 @@ class Info(commands.Cog, name="ℹ Informacje"):
                 f"https://nazwiska.ijp.pan.pl/haslo/show/id/{surname.strip()}",
                 headers={"User-agent": "Atorin"},
             )
+            if r.status_code != 200:
+                raise commands.CommandError(
+                    f"Wystąpił błąd przy pobieraniu informacji o nazwisku, spróbuj ponownie później. [{r.status_code}]"
+                    if ctx.interaction.locale == "pl"
+                    else f"Error has occurred while downloading informations about surname, try again later. [{r.status_code}]"
+                )
         soup = BeautifulSoup(r.content, "html.parser")
         embed = discord.Embed()
         embed.title = "Nazwiska w Polsce" if ctx.interaction.locale == "pl" else "Surnames in Poland"

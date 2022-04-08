@@ -813,7 +813,7 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     async def cog_before_invoke(self, ctx: discord.ApplicationContext):
         pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=ctx.author.id).first()
         if not ctx.command.name == "create" and pet is None:
-            raise commands.CommandError("Nie posiadasz pupila! Utwórz go komendą /settings create")
+            await ctx.respond("❌ Nie posiadasz pupila! Utwórz go komendą /settings create")
 
     tamagotchi_settings = SlashCommandGroup(
         name="settings",

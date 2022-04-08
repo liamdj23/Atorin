@@ -45,11 +45,11 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
             )
         try:
             await ctx.channel.purge(limit=limit)
-        except discord.HTTPException:
-            raise commands.CommandInvokeError(
-                "Nie udało się usunąć wiadomości, spróbuj jeszcze raz."
+        except discord.HTTPException as e:
+            raise commands.CommandError(
+                f"Nie udało się usunąć wiadomości, spróbuj jeszcze raz. [{e.status}]"
                 if ctx.interaction.locale == "pl"
-                else "Unable to delete messages, try again."
+                else f"Unable to delete messages, try again. [{e.status}]"
             )
         embed = discord.Embed()
         embed.title = "Czyszczenie kanału" if ctx.interaction.guild_locale == "pl" else "Clear channel"

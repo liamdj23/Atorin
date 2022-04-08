@@ -36,7 +36,11 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             embed.set_image(url=data[0])
             await ctx.send_followup(embed=embed)
         else:
-            raise commands.CommandError(r.text)
+            raise commands.CommandError(
+                f"Wystąpił błąd przy pobieraniu zdjęcia, spróbuj ponownie później. [{r.status_code}]"
+                if ctx.interaction.locale == "pl"
+                else f"Error has occurred while downloading photo, try again later. [{r.status_code}]"
+            )
 
     @slash_command(
         description="Generate headline from Polish TV news program",
@@ -79,7 +83,11 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
                 file=discord.File(BytesIO(image), filename="tvp.png"),
             )
         else:
-            raise commands.CommandError(r.text)
+            raise commands.CommandError(
+                f"Wystąpił błąd przy pobieraniu obrazka, spróbuj ponownie później. [{r.status_code}]"
+                if ctx.interaction.locale == "pl"
+                else f"Error has occurred while downloading image, try again later. [{r.status_code}]"
+            )
 
     @slash_command(
         description="Random photo of cat",
@@ -97,7 +105,11 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             embed.set_image(url=data[0]["url"])
             await ctx.send_followup(embed=embed)
         else:
-            raise commands.CommandError(r.text)
+            raise commands.CommandError(
+                f"Wystąpił błąd przy pobieraniu zdjęcia, spróbuj ponownie później. [{r.status_code}]"
+                if ctx.interaction.locale == "pl"
+                else f"Error has occurred while downloading photo, try again later. [{r.status_code}]"
+            )
 
     @slash_command(
         description="Random photo of fox",
@@ -115,7 +127,11 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             embed.set_image(url=data["image"])
             await ctx.send_followup(embed=embed)
         else:
-            raise commands.CommandError(r.text)
+            raise commands.CommandError(
+                f"Wystąpił błąd przy pobieraniu zdjęcia, spróbuj ponownie później. [{r.status_code}]"
+                if ctx.interaction.locale == "pl"
+                else f"Error has occurred while downloading photo, try again later. [{r.status_code}]"
+            )
 
     @slash_command(
         description="Creates ASCII art from text",
@@ -163,7 +179,11 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             embed.description = f"`git commit -m '{text}'`"
             await ctx.send_followup(embed=embed)
         else:
-            raise commands.CommandError(r.text)
+            raise commands.CommandError(
+                f"Wystąpił błąd przy pobieraniu commita, spróbuj ponownie później. [{r.status_code}]"
+                if ctx.interaction.locale == "pl"
+                else f"Error has occurred while downloading commit, try again later. [{r.status_code}]"
+            )
 
     @slash_command(
         description="Create achievement from Minecraft",
@@ -295,54 +315,6 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         embed.set_image(url="attachment://qr.png")
         await ctx.send_followup(file=discord.File(img, filename="qr.png"))
 
-    # @slash_command(
-    #     description="Pokazuje profil z Instagrama", guild_ids=config["guild_ids"]
-    # )
-    # async def instagram(
-    #     self, ctx, name: Option(str, "Nazwa użytkownika na Instagramie")
-    # ):
-    #     await ctx.defer()
-    #     cookies = []
-    #     for cookie in self.bot.config["instagram"]:
-    #         cookies.append(cookie["name"] + "=" + cookie["value"])
-    #     name = name.replace("@", "")
-    #     r = httpx.get(
-    #         f"https://www.instagram.com/{name}/?__a=1",
-    #         headers={"cookie": "; ".join(cookies)},
-    #     )
-    #     if r.status_code == 404:
-    #         raise commands.BadArgument("Nie znaleziono użytkownika o takiej nazwie!")
-    #     data = r.json()
-    #     if "graphql" not in data:
-    #         raise commands.CommandError(r.text)
-    #     embed = discord.Embed()
-    #     user = data["graphql"]["user"]
-    #     embed.title = "Profil {} na Instagramie".format(user["username"])
-    #     if user["full_name"]:
-    #         embed.add_field(name="😊 Pełna nazwa", value=user["full_name"], inline=False)
-    #     if not user["is_private"]:
-    #         embed.add_field(name="🔑 Prywatne", value="Nie")
-    #     else:
-    #         embed.add_field(name="🔑 Prywatne", value="Tak")
-    #     if user["biography"]:
-    #         embed.add_field(
-    #             name="📝 Opis",
-    #             value=f"```yml\n{user['biography']}```",
-    #             inline=False,
-    #         )
-    #     embed.add_field(
-    #         name="😍 Obserwujących", value=str(user["edge_followed_by"]["count"])
-    #     )
-    #     embed.add_field(name="👀 Obserwuje", value=str(user["edge_follow"]["count"]))
-    #     embed.add_field(
-    #         name="🔗 Link",
-    #         value=f"https://instagram.com/{user['username']}",
-    #         inline=False,
-    #     )
-    #     if user["profile_pic_url_hd"]:
-    #         embed.set_thumbnail(url=user["profile_pic_url_hd"])
-    #     await ctx.send_followup(embed=embed)
-
     @slash_command(
         description="Create WANTED poster with selected person",
         description_localizations={"pl": "Tworzy plakat WANTED z wybraną osobą"},
@@ -391,7 +363,11 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             embed.set_image(url=data["message"])
             await ctx.send_followup(embed=embed)
         else:
-            raise commands.CommandError(r.text)
+            raise commands.CommandError(
+                f"Wystąpił błąd przy pobieraniu zdjęcia, spróbuj ponownie później. [{r.status_code}]"
+                if ctx.interaction.locale == "pl"
+                else f"Error has occurred while downloading photo, try again later. [{r.status_code}]"
+            )
 
     @slash_command(
         description="Coin flip", description_localizations={"pl": "Rzut monetą"}, guild_ids=config["guild_ids"]
@@ -568,7 +544,11 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
         soup = BeautifulSoup(r.content, "html.parser")
         soup.find_all("p")[2].p.clear()
         if r.status_code != 200:
-            raise commands.CommandError(r.text)
+            raise commands.CommandError(
+                f"Wystąpił błąd przy pobieraniu zdjęcia, spróbuj ponownie później. [{r.status_code}]"
+                if ctx.interaction.locale == "pl"
+                else f"Error has occurred while downloading photo, try again later. [{r.status_code}]"
+            )
         embed = discord.Embed()
         embed.title = (
             "Astronomiczne zdjęcie dnia" if ctx.interaction.locale == "pl" else "Astronomy Picture of the Day"
@@ -639,9 +619,9 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             )
         if not latest.status_code == 200:
             raise commands.CommandError(
-                "Wystąpił błąd przy pobieraniu komiksu, spróbuj ponownie później."
+                f"Wystąpił błąd przy pobieraniu komiksu, spróbuj ponownie później. [{latest.status_code}]"
                 if ctx.interaction.locale == "pl"
-                else "Error has occurred while downloading comic, try again later."
+                else f"Error has occurred while downloading comic, try again later. [{latest.status_code}]"
             )
         latest_number = latest.json()["num"]
         random_comic = randint(1, latest_number)
@@ -652,9 +632,9 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             )
         if not comic.status_code == 200:
             raise commands.CommandError(
-                "Wystąpił błąd przy pobieraniu komiksu, spróbuj ponownie później."
+                f"Wystąpił błąd przy pobieraniu komiksu, spróbuj ponownie później. [{comic.status_code}]"
                 if ctx.interaction.locale == "pl"
-                else "Error has occurred while downloading comic, try again later."
+                else f"Error has occurred while downloading comic, try again later. [{comic.status_code}]"
             )
         comic_data = comic.json()
         embed = discord.Embed()

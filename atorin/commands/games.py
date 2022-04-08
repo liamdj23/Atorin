@@ -163,13 +163,21 @@ class Games(commands.Cog, name="🕹 Gry"):
                     files=[discord.File(BytesIO(skin.content), filename="skin.png")],
                 )
             else:
-                raise commands.CommandError(skin.text)
+                raise commands.CommandError(
+                    f"Wystąpił błąd przy pobieraniu, spróbuj ponownie później. [{skin.status_code}]"
+                    if ctx.interaction.locale == "pl"
+                    else f"Error has occurred while downloading, try again later. [{skin.status_code}]"
+                )
         elif mojang.status_code == 204:
             raise commands.BadArgument(
                 "Nie znaleziono podanego gracza!" if ctx.interaction.locale == "pl" else "Player not found!"
             )
         else:
-            raise commands.CommandError(mojang.text)
+            raise commands.CommandError(
+                f"Wystąpił błąd przy pobieraniu informacji od Mojangu, spróbuj ponownie później. [{mojang.status_code}]"
+                if ctx.interaction.locale == "pl"
+                else f"Error has occurred while downloading informations from Mojang, try again later. [{mojang.status_code}]"
+            )
 
     @slash_command(
         description="Your statistics in Fortnite",
@@ -245,7 +253,11 @@ class Games(commands.Cog, name="🕹 Gry"):
                 else "Player not found or never played Fortnite!"
             )
         else:
-            raise commands.CommandError(r.text)
+            raise commands.CommandError(
+                f"Wystąpił błąd przy pobieraniu statystyk, spróbuj ponownie później. [{r.status_code}]"
+                if ctx.interaction.locale == "pl"
+                else f"Error has occurred while downloading statistics, try again later. [{r.status_code}]"
+            )
 
     @slash_command(
         description="Your statistics in CS:GO",
@@ -351,11 +363,23 @@ class Games(commands.Cog, name="🕹 Gry"):
                 raise commands.BadArgument(
                     "Nie znaleziono podanego gracza!" if ctx.interaction.locale == "pl" else "Player not found!"
                 )
+            if r.status_code != 200:
+                raise commands.CommandError(
+                    f"Wystąpił błąd przy pobieraniu informacji od Riot Games, spróbuj ponownie później. [{r.status_code}]"
+                    if ctx.interaction.locale == "pl"
+                    else f"Error has occurred while downloading informations from Riot Games, try again later. [{r.status_code}]"
+                )
             summoner = r.json()
             r2 = await client.get(
                 f"https://{region}.api.riotgames.com/lol/league/v4/entries/by-summoner/{summoner['id']}",
                 params={"api_key": config["lol"]},
             )
+            if r2.status_code != 200:
+                raise commands.CommandError(
+                    f"Wystąpił błąd przy pobieraniu informacji od Riot Games, spróbuj ponownie później. [{r.status_code}]"
+                    if ctx.interaction.locale == "pl"
+                    else f"Error has occurred while downloading informations from Riot Games, try again later. [{r.status_code}]"
+                )
         stats = r2.json()
         embed = discord.Embed()
         embed.title = (
