@@ -234,6 +234,17 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
             embed.set_thumbnail(url=f"https://img.youtube.com/vi/{song.identifier}/maxresdefault.jpg")
             await channel.send(embed=embed)
 
+    @commands.Cog.listener()
+    async def on_voice_state_update(
+        self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState
+    ):
+        vc: discord.VoiceChannel = before.channel
+        if vc:
+            player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(vc.guild.id)
+            if player.channel_id == vc.id and vc.members == [vc.guild.me]:
+                await player.stop()
+                await vc.guild.change_voice_state(channel=None)
+
     @slash_command(
         description="Play music from YT/Spotify/Twitch/MP3",
         description_localizations={"pl": "Odtwarza utwór lub playlistę z YT/Spotify/Twitch/MP3 na kanale głosowym"},
