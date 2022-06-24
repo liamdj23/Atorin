@@ -112,18 +112,17 @@ async def server(server_id: int, setting: str):
     user: User = await discord.fetch_user()
     try:
         guild: dict = await discord.bot_request(f"/guilds/{server_id}")
-        channels: dict = await discord.bot_request(f"/guilds/{guild['id']}/channels")
+        if "id" in guild:
+            channels: dict = await discord.bot_request(f"/guilds/{guild['id']}/channels")
+        else:
+            return redirect(url_for("/servers"))
     except Unauthorized:
         return redirect(url_for("/addbot"))
     server_db = database.discord.Server.objects(id=guild["id"]).first()
     if not server_db:
-        server_db = database.discord.Server(
-            id=guild["id"], logs=database.discord.Logs()
-        )
+        server_db = database.discord.Server(id=guild["id"], logs=database.discord.Logs())
         server_db.save()
-    event_logs = database.discord.EventLogs.objects(server=guild["id"]).order_by(
-        "-date"
-    )[:10]
+    event_logs = database.discord.EventLogs.objects(server=guild["id"]).order_by("-date")[:10]
     if request.method == "GET":
         return await render_template(
             "server.html",
@@ -142,11 +141,7 @@ async def server(server_id: int, setting: str):
                 if "state" in data:
                     server_db.logs.enabled = bool(data["state"])
                     server_db.save()
-                    return (
-                        "Zdarzenia zostały włączone!"
-                        if data["state"]
-                        else "Zdarzenia zostały wyłączone!"
-                    )
+                    return "Zdarzenia zostały włączone!" if data["state"] else "Zdarzenia zostały wyłączone!"
                 elif "channel" in data and len(data["channel"]) == 18:
                     if any(channel["id"] == data["channel"] for channel in channels):
                         server_db.logs.channel = int(data["channel"])
