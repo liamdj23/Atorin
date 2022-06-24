@@ -110,14 +110,11 @@ async def server(server_id: int, setting: str):
     if not server_id:
         return redirect(url_for(".servers"))
     user: User = await discord.fetch_user()
-    try:
-        guild: dict = await discord.bot_request(f"/guilds/{server_id}")
-        if "id" in guild:
-            channels: dict = await discord.bot_request(f"/guilds/{guild['id']}/channels")
-        else:
-            return redirect(url_for("/servers"))
-    except Unauthorized:
-        return redirect(url_for("/addbot"))
+    guild: dict = await discord.bot_request(f"/guilds/{server_id}")
+    if "id" in guild:
+        channels: dict = await discord.bot_request(f"/guilds/{guild['id']}/channels")
+    else:
+        return redirect(url_for(".servers"))
     server_db = database.discord.Server.objects(id=guild["id"]).first()
     if not server_db:
         server_db = database.discord.Server(id=guild["id"], logs=database.discord.Logs())
