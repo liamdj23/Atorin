@@ -150,7 +150,7 @@ class Music(commands.Cog, name="🎵 Muzyka (beta)"):
 
         """This check ensures that the bot and command author are in the same voicechannel."""
         player = self.bot.lavalink.player_manager.create(
-            ctx.guild.id, endpoint=str(ctx.guild.me.voice.channel.rtc_region)
+            ctx.guild.id, endpoint=str(ctx.author.voice.channel.rtc_region)
         )
         # Create returns a player if one exists, otherwise creates.
 
