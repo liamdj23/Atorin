@@ -385,7 +385,7 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
     ):
         class ExecModal(Modal):
             def __init__(self) -> None:
-                super().__init__("Uruchamianie kodu" if ctx.interaction.locale == "pl" else "Execute code snippet")
+                super().__init__(title="Uruchamianie kodu" if ctx.interaction.locale == "pl" else "Execute code snippet")
                 self.add_item(
                     InputText(
                         label="Twój kod" if ctx.interaction.locale == "pl" else "Your code",
