@@ -432,7 +432,7 @@ class Admin(commands.Cog, name="🛠 Administracyjne"):
     async def advert(self, ctx: discord.ApplicationContext):
         class ExecModal(Modal):
             def __init__(self) -> None:
-                super().__init__("Ogłoszenie" if ctx.interaction.locale == "pl" else "Announcement")
+                super().__init__(title="Ogłoszenie" if ctx.interaction.locale == "pl" else "Announcement")
                 self.add_item(
                     InputText(
                         label="Treść ogłoszenia" if ctx.interaction.locale == "pl" else "Content of announcement",
