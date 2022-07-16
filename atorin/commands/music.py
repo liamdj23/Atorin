@@ -117,7 +117,7 @@ async def get_song_from_spotify(id: str) -> str:
         raise commands.CommandError(f"Unable to fetch token from Spotify API, try again later. [{r.status_code}]")
 
 
-class Music(commands.Cog, name="🎵 Muzyka (beta)"):
+class Music(commands.Cog, name="🎵 Muzyka"):
     def __init__(self, bot: Atorin):
         self.bot = bot
 

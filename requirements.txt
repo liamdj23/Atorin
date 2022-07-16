@@ -1,4 +1,4 @@
-pycord>=2.0.0
+py-cord>=2.0.0
 PyYAML>=6.0
 mongoengine>=0.23.1
 quart>=0.16.1
