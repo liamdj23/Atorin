@@ -213,28 +213,6 @@ class Music(commands.Cog, name="🎵 Muzyka"):
             player.queue.clear()
             await player.stop()
             await guild.voice_client.disconnect(force=True)
-        if isinstance(event, lavalink.events.TrackStartEvent):
-            song = event.track
-            channel = self.bot.get_channel(event.player.fetch("channel"))
-            lang = event.player.fetch("lang")
-            embed = discord.Embed()
-            embed.title = "Teraz odtwarzane" if lang == "pl" else "Now playing"
-            embed.add_field(name="🎧 Utwór" if lang == "pl" else "🎧 Track", value=song.title, inline=False)
-            if not song.duration == 9223372036854775807:
-                embed.add_field(
-                    name="🛤️ Długość" if lang == "pl" else "🛤️ Duration",
-                    value=str(timedelta(milliseconds=song.duration)).split(".")[0],
-                )
-            else:
-                embed.add_field(
-                    name="🛤️ Długość" if lang == "pl" else "🛤️ Duration",
-                    value="🔴 Na żywo" if lang == "pl" else "🔴 Live",
-                )
-            embed.add_field(
-                name="💃 Zaproponowany przez" if lang == "pl" else "💃 Requested by", value=f"<@{song.requester}>"
-            )
-            embed.set_thumbnail(url=f"https://img.youtube.com/vi/{song.identifier}/maxresdefault.jpg")
-            await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_voice_state_update(
