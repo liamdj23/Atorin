@@ -810,11 +810,6 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
                     pet.health.state = 0
             pet.save()
 
-    async def cog_before_invoke(self, ctx: discord.ApplicationContext):
-        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=ctx.author.id).first()
-        if not ctx.command.name == "create" and pet is None:
-            await ctx.respond("❌ Nie posiadasz pupila! Utwórz go komendą /settings create")
-
     tamagotchi_settings = SlashCommandGroup(
         name="settings",
         description="Pet settings",
@@ -853,6 +848,10 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     )
     async def remove(self, ctx: discord.ApplicationContext):
         await ctx.defer()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=ctx.author.id).first()
+        if pet is None:
+            await ctx.respond("❌ Nie posiadasz pupila! Utwórz go komendą /settings create")
+            return
         embed = discord.Embed()
         embed.title = "Usuwanie pupila"
         embed.description = "❓ **Czy na pewno chcesz usunąć swojego pupila? Utracisz cały postęp oraz posiadane coiny oraz przedmioty.**\n**UWAGA! Ta czynność jest nieodwracalna!**"
@@ -879,6 +878,10 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     )
     async def pet(self, ctx: discord.ApplicationContext):
         await ctx.defer()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=ctx.author.id).first()
+        if pet is None:
+            await ctx.respond("❌ Nie posiadasz pupila! Utwórz go komendą /settings create")
+            return
         img = await generate_status(ctx.author.id)
         embed = discord.Embed()
         embed.title = f"Pupil {ctx.author}"
@@ -896,6 +899,10 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         ctx: discord.ApplicationContext,
     ):
         await ctx.defer()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=ctx.author.id).first()
+        if pet is None:
+            await ctx.respond("❌ Nie posiadasz pupila! Utwórz go komendą /settings create")
+            return
         embed = discord.Embed(title="<:feed:956868052794900491> Jedzenie")
         embed.description = ""
         for item in foods.values():
@@ -922,6 +929,10 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         ctx: discord.ApplicationContext,
     ):
         await ctx.defer()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=ctx.author.id).first()
+        if pet is None:
+            await ctx.respond("❌ Nie posiadasz pupila! Utwórz go komendą /settings create")
+            return
         embed = discord.Embed(title="<:drink:956868053126250516> Napoje")
         embed.description = ""
         for item in drinks.values():
@@ -948,6 +959,10 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         ctx: discord.ApplicationContext,
     ):
         await ctx.defer()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=ctx.author.id).first()
+        if pet is None:
+            await ctx.respond("❌ Nie posiadasz pupila! Utwórz go komendą /settings create")
+            return
         embed = discord.Embed(title="🖼 Tapety")
         embed.description = ""
         for item in wallpapers.values():
@@ -972,6 +987,10 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         ctx: discord.ApplicationContext,
     ):
         await ctx.defer()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=ctx.author.id).first()
+        if pet is None:
+            await ctx.respond("❌ Nie posiadasz pupila! Utwórz go komendą /settings create")
+            return
         embed = discord.Embed(title="<:health:956868053436616744> Lekarstwa")
         embed.description = ""
         for item in potions.values():
@@ -1000,12 +1019,15 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
         coins: Option(int, "Podaj ilość coinów", min_value=1),
     ):
         await ctx.defer()
+        author_pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=ctx.author.id).first()
+        if author_pet is None:
+            await ctx.respond("❌ Nie posiadasz pupila! Utwórz go komendą /settings create")
+            return
         if user.id == ctx.author.id:
             raise commands.BadArgument("Nie możesz przekazać coinów samemu sobie!")
-        author_pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=ctx.author.id).first()
         if author_pet.wallet < coins:
             raise commands.BadArgument("Nie masz takiej ilości coinów!")
-        recipent_pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=ctx.author.id).first()
+        recipent_pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=user.id).first()
         if not recipent_pet:
             raise commands.BadArgument("Odbiorca nie posiada pupila!")
         author_pet.wallet -= coins
@@ -1019,6 +1041,10 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     )
     async def tictactoe(self, ctx: discord.ApplicationContext):
         await ctx.defer()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=ctx.author.id).first()
+        if pet is None:
+            await ctx.respond("❌ Nie posiadasz pupila! Utwórz go komendą /settings create")
+            return
         await ctx.send_followup("Kółko i krzyżyk:", view=TicTacToe())
 
     @tamagotchi_games.command(
@@ -1028,6 +1054,10 @@ class Tamagotchi(commands.Cog, name="📟 Tamagotchi"):
     )
     async def memory(self, ctx: discord.ApplicationContext):
         await ctx.defer()
+        pet: database.tamagotchi.Pet = database.tamagotchi.Pet.objects(owner=ctx.author.id).first()
+        if pet is None:
+            await ctx.respond("❌ Nie posiadasz pupila! Utwórz go komendą /settings create")
+            return
         await ctx.send_followup("Odkrywaj karty i znajdź parę:", view=MemoryGame())
 
 
