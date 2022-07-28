@@ -12,6 +12,7 @@ Made with ❤️ by Piotr Gaździcki.
 
 """
 import subprocess
+import traceback
 from typing import *
 import discord
 import os
@@ -19,7 +20,7 @@ from .config import config
 from .logger import log
 import humanize
 import time
-from discord.ext.commands import CommandError, NoPrivateMessage, MissingPermissions, BotMissingPermissions, BadArgument
+from discord.ext.commands import CommandError, NoPrivateMessage, MissingPermissions, BotMissingPermissions, BadArgument, CommandInvokeError
 import statcord
 import httpx
 
@@ -65,34 +66,27 @@ class Atorin(discord.AutoShardedBot):
     async def on_application_command_error(self, ctx: discord.ApplicationContext, error: CommandError) -> None:
         embed = discord.Embed()
         embed.color = 0xFF0000
-        if hasattr(error, "original"):
-            if isinstance(error.original, NoPrivateMessage):
-                embed.description = (
-                    f"❌ **Tę komendę możesz użyć tylko na serwerze!**"
-                    if ctx.interaction.locale == "pl"
-                    else f"❌ **You can only use this command in the server!**"
-                )
-            elif isinstance(error.original, MissingPermissions):
-                embed.description = (
-                    f"❌ **Nie masz odpowiednich uprawnień do wykonania tej komendy. Wymagane uprawnienia: `{','.join(error.missing_perms)}`**"
-                    if ctx.interaction.locale == "pl"
-                    else f"❌ **You don't have permissions to use this command! Required permissions: `{','.join(error.missing_perms)}`**"
-                )
-            elif isinstance(error.original, BotMissingPermissions):
-                embed.description = (
-                    f"❌ **Atorin nie ma odpowiednich uprawnień do wykonania tej komendy. Wymagane uprawnienia: `{','.join(error.missing_perms)}`**"
-                    if ctx.interaction.locale == "pl"
-                    else f"❌ **Atorin does not have permissions to run this command!. Required permissions: `{','.join(error.missing_perms)}`**"
-                )
-            elif isinstance(error.original, BadArgument):
-                embed.title = "Niepoprawny argument" if ctx.interaction.locale == "pl" else "Invalid argument"
-                embed.description = f"❌ **{error.original}**"
-            else:
-                log.info(f"Unhandled error in {ctx.command.qualified_name}: {error.original.__class__.__name__}")
-                embed.description = f"❌ **{ctx.command.qualified_name.capitalize()} :: {error.original}**"
+        if isinstance(error, BadArgument):
+            embed.title = "Niepoprawny argument" if ctx.interaction.locale == "pl" else "Invalid argument"
+            embed.description = f"❌ **{error.original}**"
+        elif isinstance(error, CommandInvokeError):
+            embed.description = f"❌ **{error.original}**"
+        elif isinstance(error, MissingPermissions):
+            embed.description = (
+                f"❌ **Nie masz odpowiednich uprawnień do wykonania tej komendy. Wymagane uprawnienia: `{','.join(error.missing_perms)}`**"
+                if ctx.interaction.locale == "pl"
+                else f"❌ **{error}**"
+            )
+        elif isinstance(error, BotMissingPermissions):
+            embed.description = (
+                f"❌ **Atorin nie ma odpowiednich uprawnień do wykonania tej komendy. Wymagane uprawnienia: `{','.join(error.missing_perms)}`**"
+                if ctx.interaction.locale == "pl"
+                else f"❌ **{error}**"
+            )
         else:
+            log.info(f"Unhandled error in {ctx.command.qualified_name}:")
+            log.info(f"{''.join(traceback.format_exception(type(error), error, error.__traceback__))}")
             embed.description = f"❌ **{ctx.command.qualified_name.capitalize()} :: {error}**"
-            log.error(f"❌ {ctx.command.qualified_name.capitalize()} :: {error}")
         await ctx.respond(embed=embed)
 
     async def on_ready(self) -> None:

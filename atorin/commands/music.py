@@ -144,64 +144,53 @@ class Music(commands.Cog, name="🎵 Muzyka"):
         return guild_check
 
     async def ensure_voice(self, ctx: discord.ApplicationContext):
+        """This check ensures that the bot and command author are in the same voicechannel."""
         # These are commands that doesn't require author to join a voicechannel
         if ctx.command.name in ("lyrics",):
             return True
 
-        """This check ensures that the bot and command author are in the same voicechannel."""
-        player = self.bot.lavalink.player_manager.create(
-            ctx.guild.id, endpoint=str(ctx.author.voice.channel.rtc_region)
-        )
-        # Create returns a player if one exists, otherwise creates.
-
         # These are commands that require the bot to join a voicechannel (i.e. initiating playback).
-        if isinstance(ctx.command, str):
-            should_connect = ctx.command in ("play",)
-        else:
-            should_connect = ctx.command.name in ("play",)
+        should_connect = ctx.command.name in ("play",)
 
         embed = discord.Embed()
         embed.color = 0xFF0000
         if not ctx.author.voice or not ctx.author.voice.channel:
-            embed.description = (
-                "❌ Musisz być połączony do kanału głosowego!"
+            raise commands.CommandInvokeError(
+                "Musisz być połączony do kanału głosowego!"
                 if ctx.interaction.locale == "pl"
-                else "❌ You must be connected to a voice channel!"
-            )
-            await ctx.respond(embed=embed)
-            return
+                else "You must be connected to a voice channel!"
+                )
+        
+        # Create returns a player if one exists, otherwise creates.
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.create(
+            ctx.guild.id, endpoint=str(ctx.author.voice.channel.rtc_region)
+        )
 
         if not player.is_connected:
             if not should_connect:
-                embed.description = (
-                    "❌ Atorin nie odtwarza muzyki!"
+                raise commands.CommandInvokeError(
+                    "Atorin nie odtwarza muzyki!"
                     if ctx.interaction.locale == "pl"
-                    else "❌ Atorin is not playing music!"
+                    else "Atorin is not playing music!"
                 )
-                await ctx.respond(embed=embed)
-                return
 
             permissions = ctx.author.voice.channel.permissions_for(ctx.me)
 
             if not permissions.connect or not permissions.speak:
-                embed.description = (
-                    "❌ Atorin nie ma uprawnień potrzebnych do odtwarzania muzyki. Daj roli `Atorin` uprawnienia `Łączenie` oraz `Mówienie` i spróbuj ponownie."
+                raise commands.CommandInvokeError(
+                    "Atorin nie ma uprawnień potrzebnych do odtwarzania muzyki. Daj roli `Atorin` uprawnienia `Łączenie` oraz `Mówienie` i spróbuj ponownie."
                     if ctx.interaction.locale == "pl"
-                    else "❌ Atorin doesn't have permissions for playing music. Add `Connect` and `Speak` permissions to `Atorin` role and try again."
+                    else "Atorin doesn't have permissions for playing music. Add `Connect` and `Speak` permissions to `Atorin` role and try again."
                 )
-                await ctx.respond(embed=embed)
-                return
 
             player.store("channel", ctx.channel.id)
         else:
             if int(player.channel_id) != ctx.author.voice.channel.id:
-                embed.description = (
-                    "❌ Nie jesteś połączony do kanału na którym jest Atorin!"
+                raise commands.CommandInvokeError(
+                    "Nie jesteś połączony do kanału na którym jest Atorin!"
                     if ctx.interaction.locale == "pl"
-                    else "❌ You are not connected to a voice channel where Atorin is playing music!"
+                    else "You are not connected to a voice channel where Atorin is playing music!"
                 )
-                await ctx.respond(embed=embed)
-                return
 
     async def track_hook(self, event):
         if isinstance(event, lavalink.events.QueueEndEvent):
