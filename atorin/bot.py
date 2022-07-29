@@ -68,9 +68,9 @@ class Atorin(discord.AutoShardedBot):
         embed.color = 0xFF0000
         if isinstance(error, BadArgument):
             embed.title = "Niepoprawny argument" if ctx.interaction.locale == "pl" else "Invalid argument"
-            embed.description = f"❌ **{error.original}**"
+            embed.description = f"❌ **{error}**"
         elif isinstance(error, CommandInvokeError):
-            embed.description = f"❌ **{error.original}**"
+            embed.description = f"❌ **{error}**"
         elif isinstance(error, MissingPermissions):
             embed.description = (
                 f"❌ **Nie masz odpowiednich uprawnień do wykonania tej komendy. Wymagane uprawnienia: `{','.join(error.missing_perms)}`**"
