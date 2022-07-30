@@ -20,7 +20,7 @@ from .config import config
 from .logger import log
 import humanize
 import time
-from discord.ext.commands import CommandError, NoPrivateMessage, MissingPermissions, BotMissingPermissions, BadArgument, CommandInvokeError
+from discord.ext.commands import CommandError, MissingPermissions, BotMissingPermissions, BadArgument, CommandInvokeError
 import statcord
 import httpx
 
@@ -87,6 +87,11 @@ class Atorin(discord.AutoShardedBot):
             log.info(f"Unhandled error in {ctx.command.qualified_name}:")
             log.info(f"{''.join(traceback.format_exception(type(error), error, error.__traceback__))}")
             embed.description = f"❌ **{ctx.command.qualified_name.capitalize()} :: {error}**"
+            if config["telegram"]:
+                httpx.post(
+                    f"https://api.telegram.org/bot{config['telegram']}/sendMessage",
+                    json={"chat_id": "856810384", "parse_mode": "Markdown", "text": f"🤖 *Wystąpił błąd!*\n🔠 Komenda: `{ctx.command.qualified_name}`\n❌ Błąd: `{error}`"},
+                )
         await ctx.respond(embed=embed)
 
     async def on_ready(self) -> None:
