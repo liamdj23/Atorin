@@ -90,7 +90,7 @@ class Atorin(discord.AutoShardedBot):
             if config["telegram"]:
                 httpx.post(
                     f"https://api.telegram.org/bot{config['telegram']}/sendMessage",
-                    json={"chat_id": "856810384", "parse_mode": "Markdown", "text": f"🤖 *Wystąpił błąd!*\n🔠 Komenda: `{ctx.command.qualified_name}`\n❌ Błąd: `{error}`"},
+                    json={"chat_id": "856810384", "parse_mode": "Markdown", "text": f"🤖 *Wystąpił błąd!*\n🔠 Komenda: `{ctx.command.qualified_name}`\n🏷️ Opcje: `{ctx.selected_options}`\n❌ Błąd: `{error}`"},
                 )
         await ctx.respond(embed=embed)
 
