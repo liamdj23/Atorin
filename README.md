@@ -15,7 +15,6 @@
 - ⚒️ Moderation
 - ℹ️ Information
 - 🕹️ Games
-- 🎵 Music
 - 🌐 Website
 - 🐳 Docker
 
@@ -39,7 +38,7 @@
 
 # Docker
 
-Docker images with Atorin are available in [Docker Hub](https://hub.docker.com/r/liamdj23/atorin) for armv7, aarch64 and amd64.
+Docker images with Atorin are available in [Docker Hub](https://hub.docker.com/r/liamdj23/atorin) for aarch64 and amd64.
 
 - Pull image `docker pull liamdj23/atorin`
 - Run container e.g. `docker run --name atorin -p 8080:8080 -v config.yml:/bot/config.yml liamdj23/atorin`
