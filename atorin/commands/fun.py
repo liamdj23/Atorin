@@ -176,7 +176,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
             text = r.text.replace("\n", "")
             embed = discord.Embed()
             embed.title = "Losowy commit" if ctx.interaction.locale == "pl" else "Random commit"
-            embed.description = f"`git commit -m '{text}'`"
+            embed.description = f'`git commit -m "{text}"`'
             await ctx.send_followup(embed=embed)
         else:
             raise commands.CommandError(
