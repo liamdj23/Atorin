@@ -11,14 +11,11 @@
 Made with ❤️ by Piotr Gaździcki.
 
 """
-import sys, os
 from atorin import Atorin
 from atorin import log
 from atorin import dashboard
-from atorin.config import config
 
 if __name__ == "__main__":
-    # os.system("cls" if sys.platform == "win32" else "clear")
     log.info("🚀 Starting Atorin...")
     bot: Atorin = Atorin()
     log.info("🎛  Starting dashboard at port 8080...")

@@ -11,13 +11,11 @@
 Made with ❤️ by Piotr Gaździcki.
 
 """
-import re
 from io import BytesIO
 from urllib.parse import quote, urlparse
 import humanize
 import httpx
 
-import aiohttp
 import discord
 from discord.ext import commands
 from discord.commands import slash_command, Option, OptionChoice

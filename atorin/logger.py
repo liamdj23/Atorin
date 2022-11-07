@@ -13,7 +13,6 @@ Made with ❤️ by Piotr Gaździcki.
 """
 import logging
 import sys
-import discord
 
 
 class Formatter(logging.Formatter):

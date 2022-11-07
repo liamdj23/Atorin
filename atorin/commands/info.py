@@ -1,9 +1,6 @@
-import time
-from urllib.parse import quote
 import platform
 from datetime import datetime, timedelta
 
-import aiohttp
 from bs4 import BeautifulSoup
 import discord
 import psutil
@@ -169,19 +166,19 @@ class Info(commands.Cog, name="ℹ Informacje"):
             embed.description = f"{emoji} __**{data['weather'][0]['description'].capitalize()}**__"
             embed.add_field(
                 name="🌡️ Temperatura" if ctx.interaction.locale == "pl" else "🌡️ Temperature",
-                value=f"{data['main']['temp']}°C",
+                value=f"{str(data['main']['temp']).split('.')[0]}°C",
             )
             embed.add_field(
                 name="👐 Odczuwalna" if ctx.interaction.locale == "pl" else "👐 Feels like",
-                value=f"{data['main']['feels_like']}°C",
+                value=f"{str(data['main']['feels_like']).split('.')[0]}°C",
             )
             embed.add_field(
                 name="🥶 Najniższa" if ctx.interaction.locale == "pl" else "🥶 Low",
-                value=f"{data['main']['temp_min']}°C",
+                value=f"{str(data['main']['temp_min']).split('.')[0]}°C",
             )
             embed.add_field(
                 name="🥵 Najwyższa" if ctx.interaction.locale == "pl" else "🥵 High",
-                value=f"{data['main']['temp_max']}°C",
+                value=f"{str(data['main']['temp_max']).split('.')[0]}°C",
             )
             embed.add_field(
                 name="🎈 Ciśnienie" if ctx.interaction.locale == "pl" else "🎈 Pressure",
@@ -230,7 +227,7 @@ class Info(commands.Cog, name="ℹ Informacje"):
         embed.description = f"**👨‍💻 {'Autor' if ctx.interaction.locale == 'pl' else 'Author'}: <@272324980522614784>**"
         embed.add_field(
             name=f"🌐 {'Liczba serwerów' if ctx.interaction.locale == 'pl' else 'Servers'}: {len(self.bot.guilds)}",
-            value=f"**#️⃣ {'Liczba kanałów' if ctx.interaction.locale == 'pl' else 'Channels'}: {len(list(self.bot.get_all_channels()))}\n🧑‍🤝‍🧑 {'Liczba użytkowników' if ctx.interaction.locale == 'pl' else 'Users'}: {sum(user_counter(self.bot))}\n🎵 {'Liczba odtwarzaczy' if ctx.interaction.locale == 'pl' else 'Players'}: {lavalink_stats}\n⏱ Uptime: {humanize.naturaldelta(timedelta(seconds=self.bot.get_uptime()))}**",
+            value=f"**#️⃣ {'Liczba kanałów' if ctx.interaction.locale == 'pl' else 'Channels'}: {len(list(self.bot.get_all_channels()))}\n🧑‍🤝‍🧑 {'Liczba użytkowników' if ctx.interaction.locale == 'pl' else 'Users'}: {sum(user_counter(self.bot))}\n⏱ Uptime: {humanize.naturaldelta(timedelta(seconds=self.bot.get_uptime()))}**",
         )
         embed.add_field(
             name="⚙️ Środowisko" if ctx.interaction.locale == "pl" else "⚙️ Environment",
