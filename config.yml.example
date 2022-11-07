@@ -10,12 +10,6 @@ dashboard: # Discord OAuth2
   client_secret: 
   domain: http://127.0.0.1:8080
 steam: 
-lavalink:
-  host: 127.0.0.1
-  port: 2333
-  password: youshallnotpass
-  region: eu
-  node: default-node
 weather: 
 fortnite: 
 spotify:
