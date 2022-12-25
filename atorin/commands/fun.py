@@ -171,7 +171,7 @@ class Fun(commands.Cog, name="🎲 Zabawa"):
     async def commit(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         async with httpx.AsyncClient() as client:
-            r = await client.get("http://whatthecommit.com/index.txt")
+            r = await client.get("https://whatthecommit.com/index.txt")
         if r.status_code == 200:
             text = r.text.replace("\n", "")
             embed = discord.Embed()
