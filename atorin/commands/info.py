@@ -1,3 +1,4 @@
+from io import BytesIO
 import platform
 from datetime import datetime, timedelta
 
@@ -370,6 +371,50 @@ class Info(commands.Cog, name="ℹ Informacje"):
         )
         embed.set_footer(text=f"{'Źródło' if ctx.interaction.locale == 'pl' else 'Source'}: nazwiska.ijp.pan.pl")
         await ctx.send_followup(embed=embed)
+        
+    @slash_command(
+        description="Takes a screenshot of the given website",
+        description_localizations={"pl": "Wykonuje zrzut ekranu podanej strony internetowej"},
+        guild_ids=config["guild_ids"],
+    )
+    async def screenshot(
+        self,
+        ctx: discord.ApplicationContext,
+        url: Option(
+            str,
+            name="url",
+            name_localizations={"pl": "url"},
+            description="Provide link to website",
+            description_localizations={"pl": "Podaj link do strony"},
+        ),
+    ):
+        await ctx.defer()
+        if len(url) < 12 or (not url.startswith("http://") and not url.startswith("https://")):
+            raise commands.BadArgument("Niepoprawny link do strony!" if ctx.interaction.locale == "pl" else "Invalid link!")
+        async with httpx.AsyncClient() as client:
+            r = await client.get(
+                f"https://image.thum.io/get/width/1366/crop/768/png/noanimate/{url}",
+            )
+            
+        embed = discord.Embed()
+        if r.status_code == 200:
+            image = r.content
+            embed = discord.Embed()
+            embed.title = (
+                "Screenshot strony internetowej" if ctx.interaction.locale == "pl" else "Screenshot from website"
+            )
+            embed.description = url
+            embed.set_image(url="attachment://screenshot.png")
+            await ctx.send_followup(
+                embed=embed,
+                file=discord.File(BytesIO(image), filename="screenshot.png"),
+            )
+        else:
+            raise commands.CommandError(
+                f"Wystąpił błąd przy pobieraniu screnshota, spróbuj ponownie później. [{r.status_code}]"
+                if ctx.interaction.locale == "pl"
+                else f"Error has occurred while downloading screenshot, try again later. [{r.status_code}]"
+            )
 
 
 def setup(bot):
