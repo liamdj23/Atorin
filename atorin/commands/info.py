@@ -415,7 +415,92 @@ class Info(commands.Cog, name="ℹ Informacje"):
                 if ctx.interaction.locale == "pl"
                 else f"Error has occurred while downloading screenshot, try again later. [{r.status_code}]"
             )
+    
+    async def zodiac_searcher(self, ctx: discord.AutocompleteContext):
+        en = [
+            OptionChoice(name="♈ Aries", value="aries"),
+            OptionChoice(name="♉ Taurus", value="taurus"),
+            OptionChoice(name="♊ Gemini", value="gemini"),
+            OptionChoice(name="♋ Cancer", value="cancer"),
+            OptionChoice(name="♌ Leo", value="leo"),
+            OptionChoice(name="♍ Virgo", value="virgo"),
+            OptionChoice(name="♎ Libra", value="libra"),
+            OptionChoice(name="♏ Scorpio", value="scorpio"),
+            OptionChoice(name="♐ Sagittarius", value="sagittarius"),
+            OptionChoice(name="♑ Capricorn", value="capricorn"),
+            OptionChoice(name="♒ Aquarius", value="aquarius"),
+            OptionChoice(name="♓ Pisces", value="pisces")
+            ]
+        pl = [
+            OptionChoice(name="♈ Baran", value="baran"),
+            OptionChoice(name="♉ Byk", value="byk"),
+            OptionChoice(name="♊ Bliźnięta", value="bliznieta"),
+            OptionChoice(name="♋ Rak", value="rak"),
+            OptionChoice(name="♌ Lew", value="lew"),
+            OptionChoice(name="♍ Panna", value="panna"),
+            OptionChoice(name="♎ Waga", value="waga"),
+            OptionChoice(name="♏ Skorpion", value="skorpion"),
+            OptionChoice(name="♐ Strzelec", value="strzelec"),
+            OptionChoice(name="♑ Koziorożec", value="koziorozec"),
+            OptionChoice(name="♒ Wodnik", value="wodnik"),
+            OptionChoice(name="♓ Ryby", value="ryby")
+        ]
+        zodiac_list = pl if ctx.interaction.locale == "pl" else en
+        return [zodiac for zodiac in zodiac_list if zodiac.name.startswith(ctx.value.capitalize())]
+    
+            
+    @slash_command(
+        description="Check your horoscope",
+        description_localizations={"pl": "Sprawdź swój horoskop"},
+        guild_ids=config["guild_ids"],
+    )
+    async def horoscope(
+        self,
+        ctx: discord.ApplicationContext,
+        zodiac: Option(
+            str,
+            name="zodiac",
+            name_localizations={"pl": "zodiak"},
+            description="Select your zodiac sign",
+            description_localizations={"pl": "Wybierz swój znak zodiaku"},
+            autocomplete=zodiac_searcher,
+        ),
+    ):
+        await ctx.defer()
+        async with httpx.AsyncClient() as client:
+            if ctx.interaction.locale == "pl":
+                r = await client.get(
+                    f"https://magia.onet.pl/horoskop/zodiakalny-dzienny/{zodiac}",
+                    headers={"User-agent": "Atorin"},
+                )
+            else:
+                r = await client.get(
+                    f"https://astrostyle.com/horoscopes/daily/{zodiac}",
+                    headers={"User-agent": "Atorin"},
+                    follow_redirects=True
+                )
+            if r.status_code != 200:
+                raise commands.CommandError(
+                    f"Wystąpił błąd przy pobieraniu horoskopu, spróbuj ponownie później. [{r.status_code}]"
+                    if ctx.interaction.locale == "pl"
+                    else f"Error has occurred while downloading horoscope, try again later. [{r.status_code}]"
+                )
+        soup = BeautifulSoup(r.content, "html.parser")
+        embed = discord.Embed()
+        if ctx.interaction.locale == "pl":
+            embed.title = f"Horoskop dla {zodiac.capitalize()}"
+            data = soup.find(id="detail")
+            data.h3.decompose()
+            embed.description = "🔮 " + data.p.extract().text.strip()
+            embed.add_field(name="👔 " + data.h3.extract().text.strip(), value=data.p.extract().text.strip())
+            embed.add_field(name="💕 " + data.h3.extract().text.strip(), value=data.p.extract().text.strip())
+            embed.add_field(name="🏥 " + data.h3.extract().text.strip(), value=data.p.extract().text.strip())
+        else:
+            embed.title = f"{zodiac.capitalize()} Horoscope"
+            data = soup.find(class_="horoscope-content").p.text.strip()
+            embed.description = "🔮 " + data
 
+        await ctx.send_followup(embed=embed)
 
 def setup(bot):
     bot.add_cog(Info(bot))
