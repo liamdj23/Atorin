@@ -18,3 +18,4 @@ aiodns>=3.0.0
 Brotlipy>=0.7.0
 cchardet>=2.1.7
 statcord.py>=3.1.0
+whois>=0.9.23

@@ -195,11 +195,11 @@ class Info(commands.Cog, name="ℹ Informacje"):
             )
             embed.add_field(
                 name="🌅 Wschód słońca" if ctx.interaction.locale == "pl" else "🌅 Sunrise",
-                value=f"<t:{data['sys']['sunrise']}:t>",
+                value=f"<t:{data['sys']['sunrise']}:t> (<t:{data['sys']['sunrise']}:R>)",
             )
             embed.add_field(
                 name="🌇 Zachód słońca" if ctx.interaction.locale == "pl" else "🌇 Sunset",
-                value=f"<t:{data['sys']['sunset']}:t>",
+                value=f"<t:{data['sys']['sunset']}:t> (<t:{data['sys']['sunset']}:R>)",
             )
             await ctx.send_followup(embed=embed)
         elif r.status_code == 404:

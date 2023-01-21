@@ -8,6 +8,7 @@ from discord.ext import commands
 from discord.ui import Modal, InputText
 import httpx
 import base64
+import whois
 
 from atorin.bot import Atorin
 from ..config import config
@@ -482,6 +483,57 @@ class Dev(commands.Cog, name="🧑‍💻 Programowanie"):
         embed.add_field(
             name="📋 Tekst" if ctx.interaction.locale == "pl" else "📋 Text", value=f"```{decoded}```", inline=False
         )
+        await ctx.send_followup(embed=embed)
+        
+        
+    @slash_command(
+        description="Informations about domain",
+        description_localizations={"pl": "Informacje o domenie"},
+        guild_ids=config["guild_ids"]
+    )
+    async def whois(
+        self,
+        ctx: discord.ApplicationContext,
+        query: Option(
+            str,
+            name="domain",
+            name_localizations={"pl": "domena"},
+            description="Enter the domain you want to check",
+            description_localizations={"pl": "Podaj domenę, którą chcesz sprawdzić"},
+        ),
+    ):
+        await ctx.defer()
+        if " " in query.strip():
+            raise commands.BadArgument("Domena nie może zawierać spacji!" if ctx.interaction.locale == "pl" else "Domain cannot contain spaces")
+        try:
+            domain = whois.query(query.lower())
+        except whois.exceptions.UnknownTld:
+            raise commands.BadArgument("Niepoprawne rozszerzenie domeny!" if ctx.interaction.locale == "pl" else "Invalid TLD!")
+        except:
+            raise commands.CommandError(f"Wystąpił błąd przy pobieraniu informacji, spróbuj ponownie później!"
+                    if ctx.interaction.locale == "pl"
+                    else f"Error has occurred while retrieving informations, try again later!")
+        if not domain:
+            raise commands.BadArgument("Nie znaleziono informacji o podanej domenie!" if ctx.interaction.locale == "pl" else "No information found for the given domain!")
+        embed = discord.Embed()
+        embed.title = f"Informacje o {domain.name}" if ctx.interaction.locale == "pl" else f"Informations about {domain.name}"
+        if not domain.statuses[0] == "":
+            status = "\n".join([f"[{status.split()[0]}]({status.split()[1]})" for status in domain.statuses])
+            embed.add_field(name="✅ Status", value=status, inline=False)
+        if domain.name_servers:
+            nameservers = "\n".join(domain.name_servers)
+            embed.add_field(name="☎️ Serwery nazw" if ctx.interaction.locale == "pl" else "☎️ Nameservers", value=f"`{nameservers}`", inline=False)
+        if domain.creation_date:
+            embed.add_field(name="🎂 Utworzona" if ctx.interaction.locale == "pl" else "🎂 Created", value=f"<t:{str(domain.creation_date.timestamp()).split('.')[0]}:F>", inline=False)
+        if domain.last_updated:
+            embed.add_field(name="✏️ Ostatnia modyfikacja" if ctx.interaction.locale == "pl" else "✏️ Last modified", value=f"<t:{str(domain.last_updated.timestamp()).split('.')[0]}:F>", inline=False)
+        if domain.expiration_date:
+            embed.add_field(name="⌛ Data wygaśnięcia" if ctx.interaction.locale == "pl" else "⌛ Expiration date", value=f"<t:{str(domain.expiration_date.timestamp()).split('.')[0]}:F>", inline=False)
+        if domain.registrar:
+            embed.add_field(name="🏢 Rejestrator" if ctx.interaction.locale == "pl" else "🏢 Registrar", value=domain.registrar, inline=False)
+        if domain.registrant:
+            embed.add_field(name="🧑 Rejestrujący" if ctx.interaction.locale == "pl" else "🧑 Registrant", value=f"{domain.registrant}, {domain.registrant_country}", inline=False)
+                
         await ctx.send_followup(embed=embed)
 
 
